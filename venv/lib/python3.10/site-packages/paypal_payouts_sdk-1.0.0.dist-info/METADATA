@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: paypal-payouts-sdk
+Version: 1.0.0
+Summary: Python Rest SDK for PayPal Payouts
+Home-page: https://github.com/paypal/Payouts-Python-SDK/
+Author: https://developer.paypal.com
+Author-email: dl-paypal-payouts-sdk@paypal.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+Requires-Dist: paypalhttp
+
+Python Rest SDK for PayPal Payouts
+
+
