@@ -637,3 +637,8 @@ def terms_of_service(request):
     return render(request, "core/terms_of_service.html")
 
 
+
+def order_tracking_view(request):
+    return render(request, "core/order_tracking.html")
+
+
