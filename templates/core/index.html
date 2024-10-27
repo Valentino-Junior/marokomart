@@ -281,142 +281,154 @@
     <!--End category slider-->
     <section class="section-padding mb-30">
         <div class="container">
-            <div class="row">
-                <div class="col-xl-3 col-lg-4 col-md-6 mb-sm-5 mb-md-0">
-                    <h4 class="section-title style-1 mb-30 animated animated">Top Selling</h4>
+            <!-- Main Row with Top Selling and Top Rated Sections -->
+            <div class="row justify-content-center"> <!-- Added justify-content-center for centering -->
+                <!-- Top Selling Premium Spirits Section -->
+                <div class="col-xl-4 col-lg-4 col-md-6 mb-sm-5 mb-md-0">
+                    <h4 class="section-title style-1 mb-30 animated animated text-center">Top Selling Premium Spirits</h4>
                     <div class="product-list-small animated animated">
-                        <article class="row align-items-center hover-up">
+                        <!-- Signature Single Malt -->
+                        <article class="row align-items-center hover-up text-center">
                             <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html"><img
-                                        src="{% static 'assets/imgs/shop/thumbnail-1.jpg' %}" alt="" /></a>
+                                <a href="shop-product-right.html">
+                                    <img src="{% static 'assets/imgs/shop/thumbnail-1.jpg' %}" alt="Premium Whiskey" />
+                                </a>
                             </figure>
                             <div class="col-md-8 mb-0">
                                 <h6>
-                                    <a href="shop-product-right.html">ECOMle Original Coffee-Mate Coffee Creamer</a>
+                                    <a href="shop-product-right.html">Macallan 18 Year Single Malt</a>
                                 </h6>
                                 <div class="product-rate-cover">
                                     <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 90%"></div>
+                                        <div class="product-rating" style="width: 95%"></div>
                                     </div>
-                                    <span class="font-small ml-5 text-muted"> (4.0)</span>
+                                    <span class="font-small ml-5 text-muted"> (4.8)</span>
                                 </div>
                                 <div class="product-price">
-                                    <span>$32.85</span>
-                                    <span class="old-price">$33.8</span>
+                                    <span>$299.99</span>
+                                    <span class="old-price">$329.99</span>
                                 </div>
                             </div>
                         </article>
-                        <article class="row align-items-center hover-up">
+                        <!-- Premium Vodka -->
+                        <article class="row align-items-center hover-up text-center">
                             <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html"><img
-                                        src="{% static 'assets/imgs/shop/thumbnail-2.jpg' %}" alt="" /></a>
+                                <a href="shop-product-right.html">
+                                    <img src="{% static 'assets/imgs/shop/thumbnail-2.jpg' %}" alt="Premium Vodka" />
+                                </a>
                             </figure>
                             <div class="col-md-8 mb-0">
                                 <h6>
-                                    <a href="shop-product-right.html">ECOMle Original Coffee-Mate Coffee Creamer</a>
+                                    <a href="shop-product-right.html">Belvedere Pure Vodka 1.75L</a>
                                 </h6>
                                 <div class="product-rate-cover">
                                     <div class="product-rate d-inline-block">
                                         <div class="product-rating" style="width: 90%"></div>
                                     </div>
-                                    <span class="font-small ml-5 text-muted"> (4.0)</span>
+                                    <span class="font-small ml-5 text-muted"> (4.5)</span>
                                 </div>
                                 <div class="product-price">
-                                    <span>$32.85</span>
-                                    <span class="old-price">$33.8</span>
+                                    <span>$54.99</span>
+                                    <span class="old-price">$59.99</span>
                                 </div>
                             </div>
                         </article>
-                        <article class="row align-items-center hover-up">
+                        <!-- Luxury Tequila -->
+                        <article class="row align-items-center hover-up text-center">
                             <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html"><img
-                                        src="{% static 'assets/imgs/shop/thumbnail-3.jpg' %}" alt="" /></a>
+                                <a href="shop-product-right.html">
+                                    <img src="{% static 'assets/imgs/shop/thumbnail-3.jpg' %}" alt="Premium Tequila" />
+                                </a>
                             </figure>
                             <div class="col-md-8 mb-0">
                                 <h6>
-                                    <a href="shop-product-right.html">ECOMle Original Coffee-Mate Coffee Creamer</a>
+                                    <a href="shop-product-right.html">Clase Azul Reposado Tequila</a>
                                 </h6>
                                 <div class="product-rate-cover">
                                     <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 90%"></div>
+                                        <div class="product-rating" style="width: 92%"></div>
                                     </div>
-                                    <span class="font-small ml-5 text-muted"> (4.0)</span>
+                                    <span class="font-small ml-5 text-muted"> (4.7)</span>
                                 </div>
                                 <div class="product-price">
-                                    <span>$32.85</span>
-                                    <span class="old-price">$33.8</span>
+                                    <span>$179.99</span>
+                                    <span class="old-price">$199.99</span>
                                 </div>
                             </div>
                         </article>
                     </div>
                 </div>
-
-
-                <div class="col-xl-3 col-lg-4 col-md-6 mb-sm-5 mb-md-0 d-none d-xl-block">
-                    <h4 class="section-title style-1 mb-30 animated animated">Top Rated</h4>
+    
+                <!-- Top Rated Craft Spirits Section -->
+                <div class="col-xl-4 col-lg-4 col-md-6 mb-sm-5 mb-md-0">
+                    <h4 class="section-title style-1 mb-30 animated animated text-center">Top Rated Craft Spirits</h4>
                     <div class="product-list-small animated animated">
-                        <article class="row align-items-center hover-up">
+                        <!-- Craft Gin -->
+                        <article class="row align-items-center hover-up text-center">
                             <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html"><img
-                                        src="{% static 'assets/imgs/shop/thumbnail-10.jpg' %}" alt="" /></a>
+                                <a href="shop-product-right.html">
+                                    <img src="{% static 'assets/imgs/shop/thumbnail-10.jpg' %}" alt="Craft Gin" />
+                                </a>
                             </figure>
                             <div class="col-md-8 mb-0">
                                 <h6>
-                                    <a href="shop-product-right.html">Foster Farms Takeout Crispy Classic Buffalo
-                                        Wings</a>
+                                    <a href="shop-product-right.html">Hendrick's Lunar Gin Limited Release</a>
                                 </h6>
                                 <div class="product-rate-cover">
                                     <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 90%"></div>
+                                        <div class="product-rating" style="width: 98%"></div>
                                     </div>
-                                    <span class="font-small ml-5 text-muted"> (4.0)</span>
+                                    <span class="font-small ml-5 text-muted"> (4.9)</span>
                                 </div>
                                 <div class="product-price">
-                                    <span>$32.85</span>
-                                    <span class="old-price">$33.8</span>
+                                    <span>$89.99</span>
+                                    <span class="old-price">$99.99</span>
                                 </div>
                             </div>
                         </article>
-                        <article class="row align-items-center hover-up">
+                        <!-- Small Batch Bourbon -->
+                        <article class="row align-items-center hover-up text-center">
                             <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html"><img
-                                        src="{% static 'assets/imgs/shop/thumbnail-11.jpg' %}" alt="" /></a>
+                                <a href="shop-product-right.html">
+                                    <img src="{% static 'assets/imgs/shop/thumbnail-11.jpg' %}" alt="Craft Bourbon" />
+                                </a>
                             </figure>
                             <div class="col-md-8 mb-0">
                                 <h6>
-                                    <a href="shop-product-right.html">Angie’s Boomchickapop Sweet & Salty Kettle
-                                        Corn</a>
+                                    <a href="shop-product-right.html">Buffalo Trace Single Barrel Select</a>
                                 </h6>
                                 <div class="product-rate-cover">
                                     <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 90%"></div>
+                                        <div class="product-rating" style="width: 94%"></div>
                                     </div>
-                                    <span class="font-small ml-5 text-muted"> (4.0)</span>
+                                    <span class="font-small ml-5 text-muted"> (4.7)</span>
                                 </div>
                                 <div class="product-price">
-                                    <span>$32.85</span>
-                                    <span class="old-price">$33.8</span>
+                                    <span>$69.99</span>
+                                    <span class="old-price">$79.99</span>
                                 </div>
                             </div>
                         </article>
-                        <article class="row align-items-center hover-up">
+                        <!-- Artisanal Mezcal -->
+                        <article class="row align-items-center hover-up text-center">
                             <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html"><img
-                                        src="{% static 'assets/imgs/shop/thumbnail-12.jpg' %}" alt="" /></a>
+                                <a href="shop-product-right.html">
+                                    <img src="{% static 'assets/imgs/shop/thumbnail-12.jpg' %}" alt="Craft Mezcal" />
+                                </a>
                             </figure>
                             <div class="col-md-8 mb-0">
                                 <h6>
-                                    <a href="shop-product-right.html">All Natural Italian-Style Chicken Meatballs</a>
+                                    <a href="shop-product-right.html">Del Maguey Vida Mezcal</a>
                                 </h6>
                                 <div class="product-rate-cover">
                                     <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 90%"></div>
+                                        <div class="product-rating" style="width: 96%"></div>
                                     </div>
-                                    <span class="font-small ml-5 text-muted"> (4.0)</span>
+                                    <span class="font-small ml-5 text-muted"> (4.8)</span>
                                 </div>
                                 <div class="product-price">
-                                    <span>$32.85</span>
-                                    <span class="old-price">$33.8</span>
+                                    <span>$49.99</span>
+                                    <span class="old-price">$54.99</span>
                                 </div>
                             </div>
                         </article>
@@ -424,8 +436,48 @@
                 </div>
             </div>
         </div>
+    
+        <!-- Custom CSS for hover effects and styling -->
+        <style>
+            /* Enhanced hover effect for product cards */
+            .hover-up:hover {
+                transform: translateY(-5px);
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+    
+            /* Styling for section titles */
+            .section-title {
+                position: relative;
+                padding-bottom: 15px;
+            }
+    
+            .section-title:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 60px;
+                height: 2px;
+                background-color: #9b0b0b; /* Dark red for luxury feel */
+            }
+    
+            /* Product price styling */
+            .product-price span {
+                color: #9b0b0b;
+                font-weight: bold;
+            }
+    
+            /* Rating stars color */
+            .product-rating {
+                background-color: #c4a47c; /* Gold color for luxury feel */
+            }
+        </style>
     </section>
     <!--End 4 columns-->
+
+
 </main>
 
 
