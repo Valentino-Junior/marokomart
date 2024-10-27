@@ -1,134 +1,470 @@
 {% extends 'partials/base.html' %}
 {% load static %}
 {% block content %}
+
+<style>
+    :root {
+        --primary: #2E7D32;
+        --secondary: #4CAF50;
+        --accent: #81C784;
+        --text: #1B5E20;
+        --bg: #F1F8E9;
+        --card: rgba(255, 255, 255, 0.95);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        padding: 2rem;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(46, 125, 50, 0.05) 0%, transparent 20%),
+            radial-gradient(circle at 90% 80%, rgba(129, 199, 132, 0.05) 0%, transparent 20%);
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        perspective: 1000px;
+    }
+
+    .info-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 3rem;
+        background: var(--card);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        margin-bottom: 3rem;
+        animation: floatIn 1s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--accent), var(--primary), var(--accent));
+        animation: gradientSlide 3s linear infinite;
+        background-size: 200% 100%;
+    }
+
+    @keyframes gradientSlide {
+        0% { background-position: 100% 0; }
+        100% { background-position: -100% 0; }
+    }
+
+    @keyframes floatIn {
+        0% {
+            opacity: 0;
+            transform: rotateX(20deg) translateY(50px);
+        }
+        100% {
+            opacity: 1;
+            transform: rotateX(0) translateY(0);
+        }
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 2rem;
+        position: relative;
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: var(--accent);
+        animation: expandWidth 1.5s ease-out;
+    }
+
+    @keyframes expandWidth {
+        from { width: 0; }
+        to { width: 100px; }
+    }
+
+    .info-card {
+        background: rgba(255,255,255,0.8);
+        padding: 2rem;
+        border-radius: 15px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        animation: cardAppear 0.5s ease-out backwards;
+    }
+
+    .info-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .info-card:hover .icon-wrapper {
+        transform: scale(1.1);
+        background: var(--primary);
+    }
+
+    .info-card:hover .icon-wrapper i {
+        color: white;
+        transform: rotateY(360deg);
+    }
+
+    @keyframes cardAppear {
+        from {
+            opacity: 0;
+            transform: scale(0.8) translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .icon-wrapper {
+        width: 70px;
+        height: 70px;
+        background: rgba(129, 199, 132, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        transition: all 0.4s ease;
+    }
+
+    .icon-wrapper i {
+        font-size: 1.8rem;
+        color: var(--accent);
+        transition: all 0.6s ease;
+    }
+
+    .info-content h3 {
+        font-size: 1.3rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .info-content p {
+        color: var(--text);
+        line-height: 1.6;
+    }
+
+    .contact-form {
+        background: var(--card);
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        animation: formSlideUp 1s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        display: none;
+        animation: slideDown 0.3s ease-out;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background-color: #E8F5E9;
+        color: #2E7D32;
+        border-left: 4px solid #4CAF50;
+    }
+
+    .alert-error {
+        background-color: #FFEBEE;
+        color: #C62828;
+        border-left: 4px solid #EF5350;
+    }
+
+    .alert i {
+        margin-right: 8px;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes formSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e1e1e1;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.9);
+        font-size: 1rem;
+    }
+
+    input:focus, textarea:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 20px rgba(129, 199, 132, 0.2);
+        transform: translateY(-2px);
+    }
+
+    textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .submit-button {
+        background: var(--primary);
+        color: white;
+        padding: 1.2rem 3rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: bold;
+        position: relative;
+        overflow: hidden;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 200px;
+    }
+
+    .submit-button:disabled {
+        background-color: #81C784;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .submit-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: 0.5s;
+    }
+
+    .submit-button:not(:disabled):hover::before {
+        left: 100%;
+    }
+
+    .submit-button:not(:disabled):hover {
+        background: var(--secondary);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        body {
+            padding: 1rem;
+        }
+
+        .info-container {
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-form {
+            padding: 2rem;
+        }
+    }
+
+    .info-card:nth-child(2) { animation-delay: 0.2s; }
+    .info-card:nth-child(3) { animation-delay: 0.4s; }
+    .info-card:nth-child(4) { animation-delay: 0.6s; }
+
+    .form-success {
+        animation: formSuccess 0.5s ease-out;
+    }
+
+    @keyframes formSuccess {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+
+    .input-success {
+        animation: inputSuccess 1s ease-out;
+    }
+
+    @keyframes inputSuccess {
+        0% { border-color: var(--accent); }
+        100% { border-color: #e1e1e1; }
+    }
+</style>
+
+
+
     <main class="main pages">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
                 <div class="breadcrumb">
                     <a href="index.html" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                    <span></span> Pages <span></span> Contact
+                    <span></span> Contact
                 </div>
             </div>
         </div>
-        <div class="page-content pt-50">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-10 col-lg-12 m-auto">
-                        <section class="row align-items-end mb-50">
-                            <div class="col-lg-4 mb-lg-0 mb-md-5 mb-sm-5">
-                                <h4 class="mb-20 text-brand">How can help you ?</h4>
-                                <h1 class="mb-30">Let us know how we can help you</h1>
-                                <p class="mb-20">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                            </div>
-                            <div class="col-lg-8">
-                                <div class="row">
-                                    <div class="col-lg-6 mb-4">
-                                        <h5 class="mb-20">01. Visit Feedback</h5>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                                    </div>
-                                    <div class="col-lg-6 mb-4">
-                                        <h5 class="mb-20">02. Employer Services</h5>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                                    </div>
-                                    <div class="col-lg-6 mb-lg-0 mb-4">
-                                        <h5 class="mb-20 text-brand">03. Billing Inquiries</h5>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <h5 class="mb-20">04.General Inquiries</h5>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+
+
+        <div class="main-container">
+            <!-- Info Container Section -->
+            <div class="info-container">
+                <h1 class="section-title">Visit Our Store</h1>
+                
+                <div class="info-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Our Location</h3>
+                        <p>205 North Michigan Avenue, Suite 810<br>Chicago, 60601, USA</p>
+                    </div>
+                </div>
+    
+                <div class="info-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Opening Hours</h3>
+                        <p>Monday - Saturday: 10:00 AM - 10:00 PM<br>Sunday: 12:00 PM - 8:00 PM</p>
+                    </div>
+                </div>
+    
+                <div class="info-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Phone</h3>
+                        <p>(123) 456-7890</p>
+                    </div>
+                </div>
+    
+                <div class="info-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Email</h3>
+                        <p>contact@wakilliquor.com</p>
                     </div>
                 </div>
             </div>
-            <section class="container mb-50 d-none d-md-block">
-                <div class="border-radius-15 overflow-hidden">
-                    <div id="map-panes" class="leaflet-map"></div>
-                </div>
-            </section>
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-10 col-lg-12 m-auto">
-                        <section class="mb-50">
-                            <div class="row mb-60">
-                                <div class="col-md-4 mb-4 mb-md-0">
-                                    <h4 class="mb-15 text-brand">Office</h4>
-                                    205 North Michigan Avenue, Suite 810<br />
-                                    Chicago, 60601, USA<br />
-                                    <abbr title="Phone">Phone:</abbr> (123) 456-7890<br />
-                                    <abbr title="Email">Email: </abbr><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="395a56574d585a4d797c4f584b58175a5654">[email&#160;protected]</a><br />
-                                    <a class="btn btn-sm font-weight-bold text-white mt-20 border-radius-5 btn-shadow-brand hover-up"><i class="fi-rs-marker mr-5"></i>View map</a>
-                                </div>
-                                <div class="col-md-4 mb-4 mb-md-0">
-                                    <h4 class="mb-15 text-brand">Studio</h4>
-                                    205 North Michigan Avenue, Suite 810<br />
-                                    Chicago, 60601, USA<br />
-                                    <abbr title="Phone">Phone:</abbr> (123) 456-7890<br />
-                                    <abbr title="Email">Email: </abbr><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="85e6eaebf1e4e6f1c5c0f3e4f7e4abe6eae8">[email&#160;protected]</a><br />
-                                    <a class="btn btn-sm font-weight-bold text-white mt-20 border-radius-5 btn-shadow-brand hover-up"><i class="fi-rs-marker mr-5"></i>View map</a>
-                                </div>
-                                <div class="col-md-4">
-                                    <h4 class="mb-15 text-brand">Shop</h4>
-                                    205 North Michigan Avenue, Suite 810<br />
-                                    Chicago, 60601, USA<br />
-                                    <abbr title="Phone">Phone:</abbr> (123) 456-7890<br />
-                                    <abbr title="Email">Email: </abbr><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2f4c40415b4e4c5b6f6a594e5d4e014c4042">[email&#160;protected]</a><br />
-                                    <a class="btn btn-sm font-weight-bold text-white mt-20 border-radius-5 btn-shadow-brand hover-up"><i class="fi-rs-marker mr-5"></i>View map</a>
-                                </div>
+    
+            <!-- Contact Form Section -->
+            <div class="contact-form">
+                <h2 class="section-title">Get in Touch</h2>
+                <form id="contactForm" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <input type="text" name="full_name" placeholder="Your Name *" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Your Email *" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" name="phone" placeholder="Your Phone">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="subject" placeholder="Subject *" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <textarea name="message" placeholder="Your Message *" required></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <!-- Alert will be shown above the button -->
+                            <div id="alertBox" class="alert"></div>
+                            <div style="text-align: center;">
+                                <button type="submit" class="submit-button">
+                                    <span class="button-text">Send Message</span>
+                                </button>
                             </div>
-                            <div class="row">
-                                <div class="col-xl-8">
-                                    <div class="contact-from-area padding-20-row-col">
-                                        <h5 class="text-brand mb-10">Contact form</h5>
-                                        <h2 class="mb-10">Drop Us a Line</h2>
-                                        <p class="text-muted mb-30 font-sm contact_us_p">Your email address will not be published. Required fields are marked *</p>
-                                        <h4 class="text-success" id="message-response"></h4>
-                                        <form class="contact-form-style mt-30" id="contact-form-ajax"  method="POST">
-                                            {% csrf_token %}
-                                            <div class="row">
-                                                <div class="col-lg-6 col-md-6">
-                                                    <div class="input-style mb-20">
-                                                        <input name="full_name" id="full_name"  placeholder="First Name" type="text" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-6 col-md-6">
-                                                    <div class="input-style mb-20">
-                                                        <input name="email" id="email"  placeholder="Your Email" type="email" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-6 col-md-6">
-                                                    <div class="input-style mb-20">
-                                                        <input name="telephone"  id="phone" placeholder="Your Phone" type="tel" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-6 col-md-6">
-                                                    <div class="input-style mb-20">
-                                                        <input name="subject"  id="subject" placeholder="Subject" type="text" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12 col-md-12">
-                                                    <div class="textarea-style mb-30">
-                                                        <textarea name="message" id="message"  placeholder="Message"></textarea>
-                                                    </div>
-                                                    <button id="contact-form-ajax" class="suebmit submit-auto-width" type="submit">Send message</button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                        <p class="form-messege"></p>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4 pl-50 d-lg-block d-none">
-                                    <img class="border-radius-15 mt-50" src="{% static 'assets/imgs/page/contact-2.png' %}" alt="" />
-                                </div>
-                            </div>
-                        </section>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
+    
+        
     </main>
 {% endblock content %}
