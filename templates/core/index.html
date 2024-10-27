@@ -254,9 +254,9 @@
                 </section>
                 <!--End banners-->
 
-
-
             </div>
+
+            <!-- start Categories -->
             <div class="col-lg-1-5 primary-sidebar sticky-sidebar pt-30">
                 <div class="sidebar-widget widget-category-2 mb-30">
                     <h5 class="section-title style-1 mb-30">Category</h5>
@@ -265,15 +265,17 @@
                         {% for c in categories %}
                         <li>
                             <a href="{% url 'core:category-product-list' c.cid %}"> <img src="{{ c.image.url }}" alt=""
-                                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 10px;" />Milks &
-                                Dairies</a><span class="count">{{c.product_count}}</span>
+                                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 10px;" />{{c.title}}</a><span class="count">{{c.product_count}}</span>
                         </li>
                         {% endfor %}
 
                     </ul>
                 </div>
-
             </div>
+            <!-- end Categories -->
+
+
+
         </div>
     </div>
 
