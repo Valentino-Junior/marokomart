@@ -642,3 +642,11 @@ def order_tracking_view(request):
     return render(request, "core/order_tracking.html")
 
 
+def hot_deals_view(request):
+    return render(request, "core/hot_deals.html")
+
+
+def new_arrivals_view(request):
+    return render(request, "core/new_arrivals.html")
+
+
