@@ -5,6 +5,7 @@ from userauths.models import User
 from taggit.managers import TaggableManager
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 STATUS_CHOICE = (
     ("processing", "Processing"),
@@ -54,41 +55,6 @@ class Category(models.Model):
         return self.title
 
 
-class Tags(models.Model):
-    pass
-
-
-class Vendor(models.Model):
-    vid = ShortUUIDField(unique=True, length=10, max_length=20,
-                         prefix="ven", alphabet="abcdefgh12345")
-
-    title = models.CharField(max_length=100, default="Nestify")
-    image = models.ImageField(
-        upload_to=user_directory_path, default="vendor.jpg")
-    cover_image = models.ImageField(
-        upload_to=user_directory_path, default="vendor.jpg")
-    # description = models.TextField(null=True, blank=True, default="I am am Amazing Vendor")
-    description = CKEditor5Field(config_name='extends', null=True, blank=True)
-
-    address = models.CharField(max_length=100, default="123 Main Street.")
-    contact = models.CharField(max_length=100, default="+123 (456) 789")
-    chat_resp_time = models.CharField(max_length=100, default="100")
-    shipping_on_time = models.CharField(max_length=100, default="100")
-    authentic_rating = models.CharField(max_length=100, default="100")
-    days_return = models.CharField(max_length=100, default="100")
-    warranty_period = models.CharField(max_length=100, default="100")
-
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
-    class Meta:
-        verbose_name_plural = "Vendors"
-
-    def vendor_image(self):
-        return mark_safe('<img src="%s" width="50" height="50" />' % (self.image.url))
-
-    def __str__(self):
-        return self.title
 
 
 class Product(models.Model):
@@ -98,8 +64,6 @@ class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, related_name="category")
-    vendor = models.ForeignKey(
-        Vendor, on_delete=models.SET_NULL, null=True, related_name="product")
 
     title = models.CharField(max_length=100, default="Fresh Pear")
     image = models.ImageField(
@@ -108,32 +72,19 @@ class Product(models.Model):
     description = CKEditor5Field(config_name='extends', null=True, blank=True)
 
     price = models.DecimalField(
-        max_digits=12, decimal_places=2, default="0.00")
+        max_digits=12, decimal_places=2, default="0.00", validators=[MinValueValidator(0)])
     old_price = models.DecimalField(
-        max_digits=12, decimal_places=2, default="2.99")
+        max_digits=12, decimal_places=2, default="0.00", validators=[MinValueValidator(0)])
 
-    specifications = CKEditor5Field(config_name='extends', null=True, blank=True)
-    # specifications = models.TextField(null=True, blank=True)
-    type = models.CharField(
-        max_length=100, default="Organic", null=True, blank=True)
     stock_count = models.CharField(
-        max_length=100, default="10", null=True, blank=True)
-    life = models.CharField(
-        max_length=100, default="100 Days", null=True, blank=True)
-    mfd = models.DateTimeField(auto_now_add=False, null=True, blank=True)
-
-    tags = TaggableManager(blank=True)
-
-    # tags = models.ForeignKey(Tags, on_delete=models.SET_NULL, null=True)
+        max_length=100, default="0", null=True, blank=True)
 
     product_status = models.CharField(
         choices=STATUS, max_length=10, default="in_review")
 
     status = models.BooleanField(default=True)
     in_stock = models.BooleanField(default=True)
-    featured = models.BooleanField(default=False)
-    digital = models.BooleanField(default=False)
-
+    
     sku = ShortUUIDField(unique=True, length=4, max_length=10,
                          prefix="sku", alphabet="1234567890")
 
@@ -178,9 +129,8 @@ class CartOrder(models.Model):
     phone = models.CharField(max_length=100, null=True, blank=True)
 
     address = models.CharField(max_length=100, null=True, blank=True)
-    city = models.CharField(max_length=100, null=True, blank=True)
-    state = models.CharField(max_length=100, null=True, blank=True)
-    country = models.CharField(max_length=100, null=True, blank=True)
+    Town = models.CharField(max_length=100, null=True, blank=True)
+    county = models.CharField(max_length=100, null=True, blank=True)
 
     price = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
     saved = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
@@ -188,7 +138,6 @@ class CartOrder(models.Model):
     
     shipping_method = models.CharField(max_length=100, null=True, blank=True)
     tracking_id = models.CharField(max_length=100, null=True, blank=True)
-    tracking_website_address = models.CharField(max_length=100, null=True, blank=True)
 
 
     paid_status = models.BooleanField(default=False)
@@ -262,7 +211,6 @@ class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     mobile = models.CharField(max_length=300, null=True)
     address = models.CharField(max_length=100, null=True)
-    status = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Address"

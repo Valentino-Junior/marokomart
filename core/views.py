@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from requests import session
 import stripe
 from taggit.models import Tag
-from core.models import Coupon, Product, Category, Vendor, CartOrder, CartOrderProducts, ProductImages, ProductReview, wishlist_model, Address
+from core.models import Coupon, Product, Category, CartOrder, CartOrderProducts, ProductImages, ProductReview, wishlist_model, Address
 from userauths.models import ContactUs, Profile
 from core.forms import ProductReviewForm
 from django.template.loader import render_to_string
@@ -23,7 +23,7 @@ from django.core import serializers
 
 def index(request):
     # bannanas = Product.objects.all().order_by("-id")
-    products = Product.objects.filter(product_status="published", featured=True).order_by("-id")
+    products = Product.objects.filter(product_status="published").order_by("-id")
 
     context = {
         "products":products
@@ -63,25 +63,6 @@ def category_product_list__view(request, cid):
         "products":products,
     }
     return render(request, "core/category-product-list.html", context)
-
-
-def vendor_list_view(request):
-    vendors = Vendor.objects.all()
-    context = {
-        "vendors": vendors,
-    }
-    return render(request, "core/vendor-list.html", context)
-
-
-def vendor_detail_view(request, vid):
-    vendor = Vendor.objects.get(vid=vid)
-    products = Product.objects.filter(vendor=vendor, product_status="published").order_by("-id")
-
-    context = {
-        "vendor": vendor,
-        "products": products,
-    }
-    return render(request, "core/vendor-detail.html", context)
 
 
 def product_detail_view(request, pid):
@@ -185,8 +166,7 @@ def search_view(request):
 
 def filter_product(request):
     categories = request.GET.getlist("category[]")
-    vendors = request.GET.getlist("vendor[]")
-
+   
 
     min_price = request.GET['min_price']
     max_price = request.GET['max_price']
@@ -201,13 +181,7 @@ def filter_product(request):
         products = products.filter(category__id__in=categories).distinct() 
     else:
         products = Product.objects.filter(product_status="published").order_by("-id").distinct()
-    if len(vendors) > 0:
-        products = products.filter(vendor__id__in=vendors).distinct() 
-    else:
-        products = Product.objects.filter(product_status="published").order_by("-id").distinct()    
-    
        
-
     
     data = render_to_string("core/async/product-list.html", {"products": products})
     return JsonResponse({"data": data})

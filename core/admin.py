@@ -1,19 +1,16 @@
 from django.contrib import admin
-from core.models import CartOrderProducts, Coupon, Product, Category, Vendor, CartOrder, ProductImages, ProductReview, wishlist_model, Address
+from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address
 
 class ProductImagesAdmin(admin.TabularInline):
     model = ProductImages
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImagesAdmin]
-    list_editable = ['title', 'price', 'featured', 'product_status']
-    list_display = ['user', 'title', 'product_image', 'price', 'category', 'vendor', 'featured', 'product_status', 'pid']
+    list_editable = ['title', 'price', 'product_status']
+    list_display = ['user', 'title', 'product_image', 'price', 'category', 'product_status', 'pid']
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['title', 'category_image']
-
-class VendorAdmin(admin.ModelAdmin):
-    list_display = ['title', 'vendor_image']
 
 
 class CartOrderAdmin(admin.ModelAdmin):
@@ -34,13 +31,12 @@ class wishlistAdmin(admin.ModelAdmin):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_editable = ['address', 'status']
-    list_display = ['user', 'address', 'status']
+    list_editable = ['mobile', 'address']
+    list_display = ['user', 'mobile', 'address']
 
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Vendor, VendorAdmin)
 admin.site.register(CartOrder, CartOrderAdmin)
 admin.site.register(CartOrderProducts, CartOrderProductsAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)

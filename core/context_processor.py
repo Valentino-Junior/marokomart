@@ -1,11 +1,10 @@
 from ast import Add
-from core.models import Product, Category, Vendor, CartOrder, ProductImages, ProductReview, wishlist_model, Address
+from core.models import Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address
 from django.db.models import Min, Max
 from django.contrib import messages
 
 def default(request):
     categories = Category.objects.all()
-    vendors = Vendor.objects.all()
 
     min_max_price = Product.objects.aggregate(Min("price"), Max("price"))
 
@@ -29,6 +28,5 @@ def default(request):
         'categories':categories,
         'wishlist':wishlist,
         'address':address,
-        'vendors':vendors,
         'min_max_price':min_max_price,
     }

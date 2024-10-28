@@ -162,7 +162,7 @@ def settings(request):
         profile.phone = phone
         profile.bio = bio
         profile.address = address
-        profile.country = country
+        profile.county = country
 
         profile.save()
         messages.success(request, "Profile Updated Successfully")
