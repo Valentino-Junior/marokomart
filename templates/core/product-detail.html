@@ -10,6 +10,42 @@
 <script src="{% static 'assets/js/prism.js' %}"></script>
 <link rel="stylesheet" href="{% static 'assets/css/prism.css' %}">
 
+<!-- Rating styling -->
+<style>
+    .star-rating {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .stars-outer {
+        display: inline-block;
+        position: relative;
+        font-family: "Font Awesome 5 Free";
+    }
+
+    .stars-outer::before {
+        content: "\f005 \f005 \f005 \f005 \f005";
+        font-weight: 400;
+        color: #ccc;
+    }
+
+    .stars-inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .stars-inner::before {
+        content: "\f005 \f005 \f005 \f005 \f005";
+        font-weight: 900;
+        color: #ffc107;
+    }
+</style>
+<!-- End rating styling -->
+
+
 <main class="main">
     <div class="page-header breadcrumb-wrap">
         <div class="container">
@@ -57,14 +93,29 @@
                                         <span class="stock-status out-stock"> -{{p.get_precentage|floatformat:0}}%
                                         </span>
                                         <h2 class="title-detail">{{p.title}}</h2>
+
+                                        <!-- start reviews -->
                                         <div class="product-detail-rating">
                                             <div class="product-rate-cover text-end">
-                                                <div class="product-rate d-inline-block">
-                                                    <div class="product-rating" style="width: 90%"></div>
+                                                <div class="star-rating">
+                                                    {% for i in '12345' %}
+                                                    {% if forloop.counter <= average_rating.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                    {% elif forloop.counter|add:'-0.5'|stringformat:'g' == average_rating.rating|floatformat:'1' %}
+                                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                                    {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                    <span
+                                                        class="ms-2 text-muted">({{ average_rating.rating|floatformat:1 }}
+                                                        - {{reviews.count}}
+                                                        review{% if reviews.count != 1 %}s{% endif %})</span>
                                                 </div>
-                                                <span class="font-small ml-5 text-muted"> (32 reviews)</span>
                                             </div>
                                         </div>
+                                        <!-- end star reviews -->
+
                                         <div class="clearfix product-price-cover">
                                             <div class="product-price primary-color float-left">
                                                 <span class="current-price text-brand">$</span><span
@@ -78,9 +129,7 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="short-desc mb-30">
-                                            <p class="font-lg">{{p.description|safe|truncatechars:150}}</p>
-                                        </div>
+                                        
 
                                         <div class="detail-extralink mb-50">
                                             <br>
@@ -109,12 +158,13 @@
                                         </div>
                                         <div class="font-xs">
                                             <ul class="mr-50 float-start">
-                                                <li class="mb-5">Category: <span class="text-brand">{{p.category}}</span></li>
+                                                <li class="mb-5">Category: <span
+                                                        class="text-brand">{{p.category}}</span></li>
                                                 </li>
                                             </ul>
                                             <ul class="float-start">
                                                 <li class="mb-5">SKU: <a href="#">{{p.sku}}</a></li>
-                                                
+
                                                 <li>Stock:<span class="in-stock text-brand ml-5">{{p.stock_count}} Items
                                                         In Stock</span></li>
                                             </ul>
@@ -130,8 +180,8 @@
                                             <a class="nav-link active" id="Description-tab" data-bs-toggle="tab"
                                                 href="#Description">Description</a>
                                         </li>
-                                       
-                                        
+
+
                                         <li class="nav-item">
                                             <a class="nav-link" id="Reviews-tab" data-bs-toggle="tab"
                                                 href="#Reviews">Reviews ({{ reviews.count }})</a>
@@ -434,6 +484,8 @@
                                 </h4>
                             </div>
                         </div>
+
+
                     </div>
                 </div>
             </div>
