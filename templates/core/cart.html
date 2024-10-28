@@ -127,6 +127,11 @@
                             </div>
                             {% if totalcartitems %}
                                 <button type=submit" class="btn mb-20 w-100">Proceed To CheckOut<i class="fi-rs-sign-out ml-15"></i></button>
+
+                                <a href="{% url 'core:product-list'  %}" class="btn continue-btn">
+                                    <i class="fi-rs-shopping-bag mr-10"></i>
+                                    Continue Shopping
+                                </a>
                             {% endif %}                    
                         </div>
                     </div>
