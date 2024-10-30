@@ -46,6 +46,192 @@
 <!-- End rating styling -->
 
 
+<!-- start delivery information -->
+<style>
+    :root {
+        --primary-color: rgb(59, 183, 126);
+        --primary-light: rgba(59, 183, 126, 0.1);
+        --primary-dark: rgb(45, 160, 105);
+    }
+    
+    .widget-delivery {
+        padding: 30px;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .widget-delivery:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+        border-radius: 5px 5px 0 0;
+    }
+    
+    .widget-delivery:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(59, 183, 126, 0.1);
+    }
+    
+    .delivery-features {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .delivery-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        border-radius: 15px;
+        background: white;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+        animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+    }
+    
+    .delivery-item:nth-child(1) { animation-delay: 0.1s; }
+    .delivery-item:nth-child(2) { animation-delay: 0.2s; }
+    .delivery-item:nth-child(3) { animation-delay: 0.3s; }
+    .delivery-item:nth-child(4) { animation-delay: 0.4s; }
+    
+    .delivery-item:hover {
+        border-color: var(--primary-color);
+        transform: translateX(10px);
+        background: linear-gradient(145deg, white, var(--primary-light));
+    }
+    
+    .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        background: var(--primary-color);
+        color: white;
+        font-size: 22px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .pulse-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        background: var(--primary-color);
+        opacity: 0;
+        transform: scale(1);
+        animation: pulse 2s infinite;
+    }
+    
+    .delivery-item:hover .icon-wrapper {
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 5px 15px rgba(59, 183, 126, 0.3);
+    }
+    
+    .delivery-content {
+        flex: 1;
+    }
+    
+    .delivery-content h6 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        transition: color 0.3s ease;
+    }
+    
+    .delivery-content p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #666;
+        transition: color 0.3s ease;
+    }
+    
+    .delivery-item:hover .delivery-content h6 {
+        color: var(--primary-color);
+    }
+    
+    .section-title.style-3 {
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .section-title.style-3:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: var(--primary-color);
+        border-radius: 4px;
+        animation: widthGrow 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes widthGrow {
+        from { width: 0; }
+        to { width: 60px; }
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+        70% {
+            transform: scale(1.3);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1.3);
+            opacity: 0;
+        }
+    }
+    
+    /* Add subtle floating animation for icons */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .icon-wrapper i {
+        animation: float 3s ease-in-out infinite;
+    }
+    </style>
+<!-- end delivery information -->
+
+
+
 <main class="main">
     <div class="page-header breadcrumb-wrap">
         <div class="container">
@@ -435,44 +621,66 @@
                             </div>
                         </div>
                     </div>
+                    
+                                    
+                    <!-- Start delivery information -->
                     <div class="col-xl-3 primary-sidebar sticky-sidebar mt-30">
-                        <div class="sidebar-widget widget-delivery mb-30 bg-grey-9 box-shadow-none">
-                            <h5 class="section-title style-3 mb-20">Delivery</h5>
-                            <ul>
-                                <li>
-                                    <i class="fi fi-rs-marker mr-10 text-brand"></i>
-                                    <span>
-                                        {{ address.address }} <br />
-                                        <br />
-                                        {% if address.status == True  %}
-                                        <span class="text-success">Verified Address </span>
-                                        {% else %}
-                                        <span class="text-danger">Unverified Address </span>
-                                        {% endif %}
-                                    </span>
-                                    <a href="{% url 'core:dashboard' %}" class="change float-end">Change</a>
-                                </li>
-                                <li class="hr"><span></span></li>
-                            </ul>
-                            <h5 class="section-title style-3 mb-20">Return & Warranty</h5>
-                            <ul>
-                                <li>
-                                    <i class="fi fi-rs-shield-check mr-10 text-brand"></i>
-                                    <span> {{p.vendor.authentic_rating}}% Authentic </span>
-                                </li>
-                                <li>
-                                    <i class="fi fi-rs-time-forward-ten mr-10 text-brand"></i>
-                                    <span> {{p.vendor.days_return}} Days Return </span>
-                                </li>
-                                <li>
-                                    <i class="fi fi-rs-diploma mr-10 text-brand"></i>
-                                    <span> {{p.vendor.warranty_period}} Months Warranty </span>
-                                </li>
-                            </ul>
+                        <div class="sidebar-widget widget-delivery mb-30">
+                            <h5 class="section-title style-3 mb-20">Delivery Information</h5>
+                            <div class="delivery-features">
+                                <!-- Fast Delivery -->
+                                <div class="delivery-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fa fa-shipping-fast"></i>
+                                        <div class="pulse-ring"></div>
+                                    </div>
+                                    <div class="delivery-content">
+                                        <h6>Express Delivery</h6>
+                                        <p>Swift service in Nairobi</p>
+                                    </div>
+                                </div>
+                    
+                                <!-- Easy Return -->
+                                <div class="delivery-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fi fi-rs-refresh"></i>
+                                        <div class="pulse-ring"></div>
+                                    </div>
+                                    <div class="delivery-content">
+                                        <h6>Hassle-free Returns</h6>
+                                        <p>Quick refund guaranteed</p>
+                                    </div>
+                                </div>
+                    
+                                <!-- Age Restriction -->
+                                <div class="delivery-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fi fi-rs-id-badge"></i>
+                                        <div class="pulse-ring"></div>
+                                    </div>
+                                    <div class="delivery-content">
+                                        <h6>Age Verification</h6>
+                                        <p>18+ years required</p>
+                                    </div>
+                                </div>
+                    
+                                <!-- Secure Payment -->
+                                <div class="delivery-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fi fi-rs-shield-check"></i>
+                                        <div class="pulse-ring"></div>
+                                    </div>
+                                    <div class="delivery-content">
+                                        <h6>Safe Payment</h6>
+                                        <p>Secure on delivery</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
-
                     </div>
+                    <!-- End delivery information -->
+
+
                 </div>
             </div>
         </div>
