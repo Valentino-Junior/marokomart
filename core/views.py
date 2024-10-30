@@ -17,9 +17,13 @@ from paypal.standard.forms import PayPalPaymentsForm
 from django.contrib.auth.decorators import login_required
 
 import calendar
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, FloatField
 from django.db.models.functions import ExtractMonth
 from django.core import serializers
+
+from django.db.models.functions import Coalesce
+import math
+
 
 def index(request):
     # bannanas = Product.objects.all().order_by("-id")
@@ -65,46 +69,83 @@ def category_product_list__view(request, cid):
     return render(request, "core/category-product-list.html", context)
 
 
+
 def product_detail_view(request, pid):
-    product = Product.objects.get(pid=pid)
-    # product = get_object_or_404(Product, pid=pid)
-    products = Product.objects.filter(category=product.category).exclude(pid=pid)
-
-    # Getting all reviews related to a product
-    reviews = ProductReview.objects.filter(product=product).order_by("-date")
-
-    # Getting average review
-    average_rating = ProductReview.objects.filter(product=product).aggregate(rating=Avg('rating'))
-
-    # Product Review form
-    review_form = ProductReviewForm()
-
-
-    make_review = True 
-
-    if request.user.is_authenticated:
-
-        user_review_count = ProductReview.objects.filter(user=request.user, product=product).count()
-
-        if user_review_count > 0:
-            make_review = False
+    # Get product or return 404
+    product = get_object_or_404(Product, pid=pid)
     
-    address = "Login To Continue"
-
-
-    p_image = product.p_images.all()
-
+    # Get related products
+    products = Product.objects.filter(category=product.category).exclude(pid=pid)
+    
+    # Get all reviews for the product
+    reviews = ProductReview.objects.filter(product=product).order_by("-date")
+    
+    # Calculate average rating
+    average_rating = reviews.aggregate(
+        rating=Coalesce(Avg('rating', output_field=FloatField()), 0.0)
+    )
+    
+    # Get rating distribution
+    rating_distribution = reviews.values('rating').annotate(
+        count=Count('rating')
+    ).order_by('-rating')
+    
+    # Initialize counts dictionary
+    rating_counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+    
+    # Update with actual counts
+    for item in rating_distribution:
+        rating_counts[item['rating']] = item['count']
+    
+    # Find maximum count for scaling
+    max_count = max(rating_counts.values()) if rating_counts.values() else 1
+    
+    # Prepare rating bars data
+    rating_bars = []
+    for rating in range(5, 0, -1):
+        count = rating_counts[rating]
+        
+        # Calculate bar width
+        if count == 0:
+            width = 0
+        elif count == max_count:
+            width = 100
+        else:
+            log_count = math.log(count + 1)
+            log_max = math.log(max_count + 1)
+            width = min((log_count / log_max) * 100, 100)
+            
+        rating_bars.append({
+            'rating': rating,
+            'count': count,
+            'width': width,
+            'stars_filled': '★' * rating,
+            'stars_empty': '☆' * (5 - rating)
+        })
+    
+    # Handle review form and permissions
+    make_review = True
+    if request.user.is_authenticated:
+        user_review_count = ProductReview.objects.filter(
+            user=request.user, 
+            product=product
+        ).count()
+        make_review = user_review_count == 0
+    
     context = {
         "p": product,
         "make_review": make_review,
-        "review_form": review_form,
-        "p_image": p_image,
+        "review_form": ProductReviewForm(),
         "average_rating": average_rating,
         "reviews": reviews,
         "products": products,
+        "total_reviews": reviews.count(),
+        "rating_bars": rating_bars,
     }
-
+    
     return render(request, "core/product-detail.html", context)
+
+
 
 def tag_list(request, tag_slug=None):
 
