@@ -10,178 +10,6 @@
 <script src="{% static 'assets/js/prism.js' %}"></script>
 <link rel="stylesheet" href="{% static 'assets/css/prism.css' %}">
 
-<!-- Rating styling -->
-<style>
-    .star-rating {
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
-    }
-
-    .star-rating i {
-        font-size: 1.2rem;
-        transition: transform 0.2s ease;
-    }
-
-    .text-warning {
-        color: #ffd700;
-    }
-
-    .rating-value {
-        margin-left: 8px;
-        color: #666;
-        font-size: 0.9rem;
-    }
-
-    .rating-bars {
-        margin-top: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1.2rem;
-    }
-
-    .rating-bar-item {
-        display: grid;
-        grid-template-columns: 130px 1fr 100px;
-        align-items: center;
-        gap: 1rem;
-        opacity: 0;
-        transform: translateX(-20px);
-        animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .rating-label {
-        display: flex;
-        align-items: center;
-    }
-
-    .stars {
-        color: #ffd700;
-        letter-spacing: 2px;
-    }
-
-    .count-display {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.2rem;
-    }
-
-    .count-number {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2d3436;
-    }
-
-    .count-label {
-        font-size: 0.8rem;
-        color: #636e72;
-    }
-
-    .bar-container {
-        height: 12px;
-        background: #f0f0f0;
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
-    .bar {
-        height: 100%;
-        width: var(--bar-width);
-        background: rgb(59, 183, 126);
-        border-radius: 6px;
-        transform-origin: left;
-        animation: growBar 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        position: relative;
-    }
-
-    .bar-fill {
-        height: 100%;
-        width: 100%;
-        background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.2) 50%,
-                rgba(255, 255, 255, 0) 100%);
-        animation: shimmer 2s infinite linear;
-    }
-
-    @keyframes slideIn {
-        0% {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    @keyframes growBar {
-        0% {
-            transform: scaleX(0);
-        }
-
-        100% {
-            transform: scaleX(1);
-        }
-    }
-
-    @keyframes shimmer {
-        0% {
-            transform: translateX(-100%);
-        }
-
-        100% {
-            transform: translateX(100%);
-        }
-    }
-
-    /* Sequential Animation Delays */
-    .rating-bar-item:nth-child(1) {
-        animation-delay: 0.1s;
-    }
-
-    .rating-bar-item:nth-child(2) {
-        animation-delay: 0.2s;
-    }
-
-    .rating-bar-item:nth-child(3) {
-        animation-delay: 0.3s;
-    }
-
-    .rating-bar-item:nth-child(4) {
-        animation-delay: 0.4s;
-    }
-
-    .rating-bar-item:nth-child(5) {
-        animation-delay: 0.5s;
-    }
-
-    /* Hover Effects */
-    .rating-bar-item:hover .bar {
-        filter: brightness(1.05);
-        transition: filter 0.3s ease;
-    }
-
-    .rating-bar-item:hover .count-number {
-        color: rgb(59, 183, 126);
-        transition: color 0.3s ease;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .rating-bar-item {
-            grid-template-columns: 100px 1fr 80px;
-            gap: 0.8rem;
-        }
-
-        .count-number {
-            font-size: 1rem;
-        }
-    }
-</style>
-<!-- End rating styling -->
 
 
 <!-- start delivery information -->
@@ -396,7 +224,7 @@
 <!-- end delivery information -->
 
 
-
+<!-- start rating and review styling -->
 <style>
     /* Main Container Styles */
     .rating-widget {
@@ -626,6 +454,9 @@
         }
     }
 </style>
+<!-- end rating and review styling -->
+
+
 
 <main class="main">
     <div class="page-header breadcrumb-wrap">
