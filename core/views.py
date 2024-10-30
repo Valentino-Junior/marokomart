@@ -147,21 +147,6 @@ def product_detail_view(request, pid):
 
 
 
-def tag_list(request, tag_slug=None):
-
-    products = Product.objects.filter(product_status="published").order_by("-id")
-
-    tag = None 
-    if tag_slug:
-        tag = get_object_or_404(Tag, slug=tag_slug)
-        products = products.filter(tags__in=[tag])
-
-    context = {
-        "products": products,
-        "tag": tag
-    }
-
-    return render(request, "core/tag.html", context)
 
 
 def ajax_add_review(request, pid):

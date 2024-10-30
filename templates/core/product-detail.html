@@ -684,7 +684,11 @@
                                                                     <div class="count-display">
                                                                         <span
                                                                             class="count-number">{{ bar.count }}</span>
-                                                                        <span class="count-label">reviews</span>
+                                                                        <span class="count-label">{% if bar.count <= 1 %}
+                                                                            review
+                                                                        {% else %}
+                                                                            reviews
+                                                                        {% endif %}</span>
                                                                     </div>
                                                                 </div>
                                                                 {% endfor %}
