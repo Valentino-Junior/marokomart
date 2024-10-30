@@ -83,12 +83,6 @@ def product_detail_view(request, pid):
     make_review = True 
 
     if request.user.is_authenticated:
-        
-        try:
-            address = Address.objects.get(user=request.user)
-        except Address.DoesNotExist:
-            address = None
-
 
         user_review_count = ProductReview.objects.filter(user=request.user, product=product).count()
 
@@ -102,7 +96,6 @@ def product_detail_view(request, pid):
 
     context = {
         "p": product,
-        "address": address,
         "make_review": make_review,
         "review_form": review_form,
         "p_image": p_image,
