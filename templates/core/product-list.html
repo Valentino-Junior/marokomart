@@ -2,9 +2,9 @@
 {% load static %}
 {% block content %}
 
-    <head>
-        <style>
-            input[type="range"] {
+<head>
+    <style>
+        input[type="range"] {
             -webkit-appearance: none;
             margin-right: 15px;
             height: 7px;
@@ -13,9 +13,9 @@
             background-image: linear-gradient(#3bb77e, #3bb77e);
             background-size: 100% 100%;
             background-repeat: no-repeat;
-            }
-    
-            input[type="range"]::-webkit-slider-thumb {
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 20px;
             width: 20px;
@@ -24,209 +24,434 @@
             cursor: ew-resize;
             box-shadow: 0 0 2px 0 #555;
             transition: background .3s ease-in-out;
-            }
-    
-            input[type=range]::-webkit-slider-runnable-track  {
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
             -webkit-appearance: none;
             box-shadow: none;
             border: none;
             background: transparent;
-            }
-        </style>
-    
-    </head>
+        }
+    </style>
 
-    <main class="main">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                    <span></span> Shop <span></span> Fillter
-                </div>
+
+
+<style>
+    /* Toast Container Styles */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1060;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Toast Notification Styles */
+    .toast {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        max-width: 400px;
+        transform: translateX(120%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 10px;
+    }
+    
+    .toast.show {
+        transform: translateX(0);
+    }
+    
+    .toast.success {
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .toast.error {
+        border-left: 4px solid #f44336;
+    }
+    
+    .toast.info {
+        border-left: 4px solid #2196F3;
+    }
+    
+    .toast-icon {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .toast.success .toast-icon {
+        color: #4CAF50;
+    }
+    
+    .toast.error .toast-icon {
+        color: #f44336;
+    }
+    
+    .toast.info .toast-icon {
+        color: #2196F3;
+    }
+    
+    .toast-content {
+        flex-grow: 1;
+    }
+    
+    .toast-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #333;
+    }
+    
+    .toast-message {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .toast-close {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 4px;
+        font-size: 18px;
+        line-height: 1;
+        transition: color 0.2s ease;
+    }
+    
+    .toast-close:hover {
+        color: #666;
+    }
+    
+    /* Button States */
+    .button-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .button-loading::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin: -8px 0 0 -8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: button-loading-spinner 0.8s linear infinite;
+    }
+    
+    @keyframes button-loading-spinner {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Out of Stock Button */
+    .out-of-stock {
+        background-color: #f5f5f5 !important;
+        color: #999 !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    
+    /* Wishlist Icon Animation */
+    .add-to-wishlist i {
+        transition: all 0.3s ease;
+    }
+    
+    .add-to-wishlist:hover i {
+        transform: scale(1.2);
+    }
+    
+    .text-danger {
+        color: #ff6b6b !important;
+    }
+    </style>
+
+
+
+
+</head>
+
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> Shop <span></span> Fillter
             </div>
         </div>
-        <div class="container mb-30 mt-30">
-            <div class="row">
-                <div class="col-lg-12">
-                    <a class="shop-filter-toogle" href="#">
-                        <span class="fi-rs-filter mr-5"></span>
-                        Filters
-                        <i class="fi-rs-angle-small-down angle-down"></i>
-                        <i class="fi-rs-angle-small-up angle-up"></i>
-                    </a>
-                    <div class="shop-product-fillter-header">
-                        <div class="row">
-                            <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-2 mb-sm-2">
-                                <div class="card">
-                                    <h5 class="mb-30">By Categories</h5>
-                                    <div class="categories-dropdown-wrap font-heading">
+    </div>
+    <div class="container mb-30 mt-30">
+        <div class="row">
+
+
+
+            <div class="col-lg-12">
+                <a class="shop-filter-toogle" href="#">
+                    <span class="fi-rs-filter mr-5"></span>
+                    Filters
+                    <i class="fi-rs-angle-small-down angle-down"></i>
+                    <i class="fi-rs-angle-small-up angle-up"></i>
+                </a>
+                <div class="shop-product-fillter-header">
+                    <div class="row">
+                        <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-2 mb-sm-2">
+                            <div class="card">
+                                <h5 class="mb-30">By Categories</h5>
+                                <div class="categories-dropdown-wrap font-heading">
+                                    <ul>
+                                        {% for c in categories %}
+                                        <li>
+                                            <input data-filter="category" class="form-check-input filter-checkbox"
+                                                type="checkbox" name="checkbox" id="exampleCheckbox2"
+                                                value="{{ c.id }}" />
+                                            &nbsp;&nbsp;
+                                            <a href="{% url 'core:category-product-list' c.cid %}"> <img
+                                                    src="{{c.image.url}}" alt="" />{{ c.title }}</a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-5 mb-sm-5">
+                            <div class="card">
+                                <h5 class="mb-10">By Price</h5>
+                                <div class="sidebar-widget price_range range">
+                                    <div class="price-filter mb-20">
+                                        <div class="price-filter-inner">
+                                            <div id="slidder-range" class="mb-20"></div>
+                                            <input type="range" name="ranDge"
+                                                value="{{ min_max_price.price__min|floatformat:2 }}"
+                                                class="slider-range" id="range" min="{{ min_max_price.price__min }}"
+                                                max="{{ min_max_price.price__max }}"
+                                                oninput="max_price.value=this.value">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="caption">From: <strong id="slider-range-value1"
+                                                        class="text-brand">${{ min_max_price.price__min|floatformat:2 }}</strong>
+                                                </div>
+                                                <div class="caption">To: <strong id="slider-range-value2"
+                                                        class="text-brand">${{ min_max_price.price__max|floatformat:2 }}</strong>
+                                                </div>
+                                            </div>
+                                            <input type="number" name=""
+                                                value="{{ min_max_price.price__min|floatformat:2 }}" id="max_price"
+                                                min="{{ min_max_price.price__min }}"
+                                                max="{{ min_max_price.price__max }}" placeholder="Current Price"
+                                                onkeyup="range.value=this.value">
+                                        </div>
+                                    </div>
+                                    <div class="custome-checkbox">
+                                        <button class="btn mt-20 w-100" type="button"
+                                            id="price-filter-btn">Filter</button>
+                                        <!-- <h3>{{ min_max_price }}</h3> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="container mb-30 mt-30">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <!-- Sort and Filter Section -->
+                        <div class="shop-product-fillter">
+                            <div class="totall-product">
+                                <p>We found <strong class="text-brand product-count">{{ products.count }}</strong> items
+                                    for you!</p>
+                            </div>
+
+                            <div class="sort-by-product-area">
+                                <!-- Sort By Dropdown -->
+                                <div class="sort-by-cover">
+                                    <div class="sort-by-product-wrap">
+                                        <div class="sort-by">
+                                            <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
+                                        </div>
+                                        <div class="sort-by-dropdown-wrap">
+                                            <span id="current-sort-text">
+                                                {% if current_sort == 'price_low_high' %}
+                                                Price: Low to High
+                                                {% elif current_sort == 'price_high_low' %}
+                                                Price: High to Low
+                                                {% else %}
+                                                Featured
+                                                {% endif %}
+                                                <i class="fi-rs-angle-small-down"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="sort-by-dropdown">
                                         <ul>
-                                            {% for c in categories %}
                                             <li>
-                                                <input data-filter="category" class="form-check-input filter-checkbox" type="checkbox" name="checkbox" id="exampleCheckbox2" value="{{ c.id }}" />
-                                                &nbsp;&nbsp;
-                                                <a href="{% url 'core:category-product-list' c.cid %}"> <img src="{{c.image.url}}" alt="" />{{ c.title }}</a>
+                                                <a href="#" data-sort="price_low_high"
+                                                    class="sort-option {% if current_sort == 'price_low_high' %}active{% endif %}">
+                                                    Price: Low to High
+                                                </a>
                                             </li>
-                                            {% endfor %}
+                                            <li>
+                                                <a href="#" data-sort="price_high_low"
+                                                    class="sort-option {% if current_sort == 'price_high_low' %}active{% endif %}">
+                                                    Price: High to Low
+                                                </a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
-                            
-                            
-                            <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-5 mb-sm-5">
-                                <div class="card">
-                                    <h5 class="mb-10">By Price</h5>
-                                    <div class="sidebar-widget price_range range">
-                                        <div class="price-filter mb-20">
-                                            <div class="price-filter-inner">
-                                                <div id="slidder-range" class="mb-20"></div>
-                                                <input type="range" name="ranDge" value="{{ min_max_price.price__min|floatformat:2 }}" class="slider-range" id="range" min="{{ min_max_price.price__min }}" max="{{ min_max_price.price__max }}" oninput="max_price.value=this.value">
-                                                <div class="d-flex justify-content-between">
-                                                    <div class="caption">From: <strong id="slider-range-value1" class="text-brand">${{ min_max_price.price__min|floatformat:2 }}</strong></div>
-                                                    <div class="caption">To: <strong id="slider-range-value2" class="text-brand">${{ min_max_price.price__max|floatformat:2 }}</strong></div>
-                                                </div>
-                                                <input type="number"  name="" value="{{ min_max_price.price__min|floatformat:2 }}" id="max_price" min="{{ min_max_price.price__min }}" max="{{ min_max_price.price__max }}" placeholder="Current Price" onkeyup="range.value=this.value">
-                                            </div>
-                                        </div>
-                                        <div class="custome-checkbox">
-                                            <button class="btn mt-20 w-100" type="button" id="price-filter-btn">Filter</button>
-                                            <!-- <h3>{{ min_max_price }}</h3> -->
-                                        </div>
-                                    </div>
-                                </div>
+                        </div>
+
+                        <!-- Loading Spinner -->
+                        <div id="loading-spinner" class="text-center my-4" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
+                        </div>
+
+                        <!-- Product Grid Container -->
+                        <div id="product-grid-container">
+                            {% include 'core/includes/product_grid.html' %}
                         </div>
                     </div>
-                </div>
-
-
-                
-                <div class="col-12">
-                    <div class="shop-product-fillter">
-                        <div class="totall-product">
-                            <p>We found <strong class="text-brand">{{products.count}}</strong> items for you!</p>
-                        </div>
-                        <div class="sort-by-product-area">
-                            <div class="sort-by-cover mr-10">
-                                <div class="sort-by-product-wrap">
-                                    <div class="sort-by">
-                                        <span><i class="fi-rs-apps"></i>Show:</span>
-                                    </div>
-                                    <div class="sort-by-dropdown-wrap">
-                                        <span> 50 <i class="fi-rs-angle-small-down"></i></span>
-                                    </div>
-                                </div>
-                                <div class="sort-by-dropdown">
-                                    <ul>
-                                        <li><a class="active" href="#">50</a></li>
-                                        <li><a href="#">100</a></li>
-                                        <li><a href="#">150</a></li>
-                                        <li><a href="#">200</a></li>
-                                        <li><a href="#">All</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="sort-by-cover">
-                                <div class="sort-by-product-wrap">
-                                    <div class="sort-by">
-                                        <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
-                                    </div>
-                                    <div class="sort-by-dropdown-wrap">
-                                        <span> Featured <i class="fi-rs-angle-small-down"></i></span>
-                                    </div>
-                                </div>
-                                <div class="sort-by-dropdown">
-                                    <ul>
-                                        <li><a href="#">Price: Low to High</a></li>
-                                        <li><a href="#">Price: High to Low</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="row product-grid" id="filtered-product">
-
-                        {% for p in products %}
-                        <div class="col-lg-1-5 col-md-4 col-12 col-sm-6">
-                            <div class="product-cart-wrap mb-30">
-                                <div class="product-img-action-wrap">
-                                    <div class="product-img product-img-zoom">
-                                        <a href="{% url 'core:product-detail' p.pid %}">
-                                            <img class="default-img" src="{{ p.image.url }}" alt="" style="height: 280px; width: 280px; object-fit: cover;"   />
-                                            <img class="hover-img" src="{{ p.image.url }}" alt=""  style="height: 280px; width: 280px; object-fit: cover;"  />
-
-                                        </a>
-                                    </div>
-                                    <div class="product-action-1">
-                                        <a aria-label="Add To Wishlist"  class="action-btn add-to-wishlist" data-product-item="{{p.id}}"><i class="fi-rs-heart"></i></a>
-                                        <!-- <a aria-label="Compare" class="action-btn" href="shop-compare.html"><i class="fi-rs-shuffle"></i></a> -->
-                                        <a href="{% url 'core:product-detail' p.pid %}" class="action-btn"><i class="fi-rs-eye"></i></a>
-                                    </div>
-                                    <div class="product-badges product-badges-position product-badges-mrg">
-                                        <span class="hot">-{{p.get_precentage|floatformat:0}}%</span>
-                                    </div>
-                                </div>
-                                <div class="product-content-wrap">
-                                    <div class="product-category">
-                                        <a href="{% url 'core:product-detail' p.pid %}">{{ p.category.title }}</a>
-                                    </div>
-                                    <h2><a href="shop-product-right.html">{{ p.title }}</a></h2>
-                                    <div class="product-rate-cover">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <span class="font-small ml-5 text-muted"> ({{ p.reviews.all.count }})</span>
-
-                                    </div>
-                                   
-                                    <div class="product-card-bottom">
-                                        <div class="product-price">
-                                            <span>$</span> <span class="current-product-price-{{ p.id }}">{{p.price}}</span>
-                                            <span class="old-price">${{p.old_price}}</span>
-                                        </div>
-                                        <div class="add-cart">
-                                            <input type="hidden" value="1" id="product-quantity" class="product-quantity-{{ p.id }}">
-                                            <input type="hidden" class="product-pid-{{ p.id }}" value="{{ p.pid }}">
-                                            <input type="hidden" class="product-image-{{ p.id }}" value="{{ p.image.url }}">
-                                            <input type="hidden" class="product-id-{{ p.id }}" value="{{ p.id }}">
-                                            <input type="hidden" class="product-title-{{ p.id }}" value="{{ p.title }}">
-                                            <div class="d-flex">
-                                                <button class="add add-to-cart-btn" data-index="{{ p.id }}" style="border: none;" id="add-to-cart-btn"><i class="fi-rs-shopping-cart mr-5"></i>Add</button>
-                                                <button style="border: none; background: none;" class="add-to-wishlist" data-product-item="{{p.id}}"><i class="fi-rs-heart" style="fill: aqua;"></i></button>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        
-                    </div>
-                    <!--product grid-->
-                    <!-- <div class="pagination-area mt-20 mb-20">
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination justify-content-start">
-                                <li class="page-item">
-                                    <a class="page-link" href="#"><i class="fi-rs-arrow-small-left"></i></a>
-                                </li>
-                                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item active"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                                <li class="page-item"><a class="page-link" href="#">6</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#"><i class="fi-rs-arrow-small-right"></i></a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div> -->
-
                 </div>
             </div>
-        </div>
-    </main>
+
+
+</main>
+{% endblock %}
+
+
+
+
+</div>
+</div>
+</main>
+
+
+<script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add click handlers for sort options
+        document.querySelectorAll('.sort-option').forEach(function (option) {
+            option.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Update current sort text
+                document.getElementById('current-sort-text').textContent = this.textContent
+                    .trim();
+
+                // Add loading state
+                document.getElementById('filtered-product').style.opacity = '0.5';
+
+                // Navigate to the new URL with sort parameter
+                window.location.href = this.href;
+            });
+        });
+
+        // Initialize tooltips if you're using Bootstrap
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+    });
+</script>
+
+
+
+
+<script>
+    $(document).ready(function() {
+        // Update cart
+        $(document).on("click", ".update-product", function(){
+            let product_id = $(this).data('product');
+            let qty = $('.product-qty-'+product_id).val();
+            
+            if(qty < 1) {
+                qty = 1;
+                $('.product-qty-'+product_id).val(1);
+            }
+            
+            $.ajax({
+                url: '/update-cart/',
+                data: {
+                    'id': product_id,
+                    'qty': qty
+                },
+                dataType: 'json',
+                beforeSend: function(){
+                    // Add loading state
+                    $(".cart-table").addClass('loading');
+                },
+                success: function(response){
+                    $("#cart-list").html(response.data);
+                    // Update cart count in header
+                    if($('.cart-count').length > 0) {
+                        $('.cart-count').text(response.totalcartitems);
+                    }
+                },
+                error: function(error){
+                    console.log('Error:', error);
+                    alert('Error updating cart');
+                },
+                complete: function(){
+                    // Remove loading state
+                    $(".cart-table").removeClass('loading');
+                }
+            });
+        });
     
-{% endblock content %}
-    
+        // Delete from cart
+        $(document).on("click", ".delete-product", function(){
+            let product_id = $(this).data('product');
+            
+            if(confirm('Are you sure you want to remove this item?')) {
+                $.ajax({
+                    url: '/delete-from-cart/',
+                    data: {
+                        'id': product_id,
+                    },
+                    dataType: 'json',
+                    beforeSend: function(){
+                        // Add loading state
+                        $(".cart-table").addClass('loading');
+                    },
+                    success: function(response){
+                        $("#cart-list").html(response.data);
+                        // Update cart count in header
+                        if($('.cart-count').length > 0) {
+                            $('.cart-count').text(response.totalcartitems);
+                        }
+                    },
+                    error: function(error){
+                        console.log('Error:', error);
+                        alert('Error removing item from cart');
+                    },
+                    complete: function(){
+                        // Remove loading state
+                        $(".cart-table").removeClass('loading');
+                    }
+                });
+            }
+        });
+    });
+    </script>

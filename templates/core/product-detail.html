@@ -463,7 +463,7 @@
         <div class="container">
             <div class="breadcrumb">
                 <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                <span></span> <a href="/category/{{ p.category.cid }}/" >{{p.category}}</a> <span></span> {{p.title}}
+                <span></span> <a href="/category/{{ p.category.cid }}/">{{p.category}}</a> <span></span> {{p.title}}
             </div>
         </div>
     </div>
@@ -684,11 +684,12 @@
                                                                     <div class="count-display">
                                                                         <span
                                                                             class="count-number">{{ bar.count }}</span>
-                                                                        <span class="count-label">{% if bar.count <= 1 %}
+                                                                        <span
+                                                                            class="count-label">{% if bar.count <= 1 %}
                                                                             review
-                                                                        {% else %}
+                                                                            {% else %}
                                                                             reviews
-                                                                        {% endif %}</span>
+                                                                            {% endif %}</span>
                                                                     </div>
                                                                 </div>
                                                                 {% endfor %}

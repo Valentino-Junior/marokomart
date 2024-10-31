@@ -24,6 +24,15 @@ from django.core import serializers
 from django.db.models.functions import Coalesce
 import math
 
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+
+from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+from django.contrib import messages
+
 
 def index(request):
     # bannanas = Product.objects.all().order_by("-id")
@@ -37,14 +46,35 @@ def index(request):
 
 
 def product_list_view(request):
-    products = Product.objects.filter(product_status="published").order_by("-id")
-    tags = Tag.objects.all().order_by("-id")[:6]
-
+    """Main view for product list page"""
+    products = Product.objects.filter(product_status="published")
+    sort_by = request.GET.get('sort_by', '')
+    
+    # Apply sorting
+    if sort_by == 'price_low_high':
+        products = products.order_by('price', '-id')
+    elif sort_by == 'price_high_low':
+        products = products.order_by('-price', '-id')
+    else:
+        products = products.order_by("-id")
+    
     context = {
-        "products":products,
-        "tags":tags,
+        "products": products,
+        "current_sort": sort_by,
     }
-
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # If AJAX request, return only the product grid
+        product_grid_html = render_to_string(
+            'core/includes/product_grid.html',
+            context,
+            request=request
+        )
+        return JsonResponse({
+            'product_grid': product_grid_html,
+            'product_count': products.count(),
+        })
+    
     return render(request, 'core/product-list.html', context)
 
 
@@ -213,79 +243,227 @@ def filter_product(request):
 
 
 def add_to_cart(request):
-    cart_product = {}
+    if request.method == 'GET':
+        try:
+            cart_product = {}
+            product_id = request.GET['id']
+            
+            cart_product[str(product_id)] = {
+                'title': request.GET['title'],
+                'qty': request.GET.get('qty', '1'),
+                'price': request.GET['price'],
+                'image': request.GET['image'],
+                'pid': request.GET['pid'],
+            }
 
-    cart_product[str(request.GET['id'])] = {
-        'title': request.GET['title'],
-        'qty': request.GET['qty'],
-        'price': request.GET['price'],
-        'image': request.GET['image'],
-        'pid': request.GET['pid'],
-    }
-
-    if 'cart_data_obj' in request.session:
-        if str(request.GET['id']) in request.session['cart_data_obj']:
-
-            cart_data = request.session['cart_data_obj']
-            cart_data[str(request.GET['id'])]['qty'] = int(cart_product[str(request.GET['id'])]['qty'])
-            cart_data.update(cart_data)
-            request.session['cart_data_obj'] = cart_data
-        else:
-            cart_data = request.session['cart_data_obj']
-            cart_data.update(cart_product)
-            request.session['cart_data_obj'] = cart_data
-
-    else:
-        request.session['cart_data_obj'] = cart_product
-    return JsonResponse({"data":request.session['cart_data_obj'], 'totalcartitems': len(request.session['cart_data_obj'])})
-
+            if 'cart_data_obj' in request.session:
+                if str(product_id) in request.session['cart_data_obj']:
+                    cart_data = request.session['cart_data_obj']
+                    cart_data[str(product_id)]['qty'] = str(
+                        int(cart_data[str(product_id)]['qty']) + 1
+                    )
+                    request.session['cart_data_obj'] = cart_data
+                else:
+                    cart_data = request.session['cart_data_obj']
+                    cart_data.update(cart_product)
+                    request.session['cart_data_obj'] = cart_data
+            else:
+                request.session['cart_data_obj'] = cart_product
+            
+            request.session.modified = True
+            
+            # Get the updated cart count
+            cart_count = len(request.session['cart_data_obj'])
+            
+            return JsonResponse({
+                "data": request.session['cart_data_obj'],
+                'totalcartitems': cart_count,
+                'status': 'success',
+                'message': 'Item added to cart successfully!'
+            })
+            
+        except Exception as e:
+            print(f"Add to cart error: {str(e)}")
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
 
 
 def cart_view(request):
-    cart_total_amount = 0
-    if 'cart_data_obj' in request.session:
-        for p_id, item in request.session['cart_data_obj'].items():
-            cart_total_amount += int(item['qty']) * float(item['price'])
-        return render(request, "core/cart.html", {"cart_data":request.session['cart_data_obj'], 'totalcartitems': len(request.session['cart_data_obj']), 'cart_total_amount':cart_total_amount})
-    else:
+    try:
+        cart_total_amount = 0
+        if 'cart_data_obj' in request.session:
+            for p_id, item in request.session['cart_data_obj'].items():
+                try:
+                    qty = int(item.get('qty', 0))
+                    price = float(item.get('price', 0))
+                    cart_total_amount += qty * price
+                except (ValueError, TypeError):
+                    continue
+            
+            return render(request, "core/cart.html", {
+                "cart_data": request.session['cart_data_obj'],
+                'totalcartitems': len(request.session['cart_data_obj']),
+                'cart_total_amount': cart_total_amount
+            })
+        
         messages.warning(request, "Your cart is empty")
         return redirect("core:index")
-
-
-def delete_item_from_cart(request):
-    product_id = str(request.GET['id'])
-    if 'cart_data_obj' in request.session:
-        if product_id in request.session['cart_data_obj']:
-            cart_data = request.session['cart_data_obj']
-            del request.session['cart_data_obj'][product_id]
-            request.session['cart_data_obj'] = cart_data
+        
+    except Exception as e:
+        print(f"Error in cart_view: {str(e)}")  # Debug print
+        messages.error(request, "Error calculating cart total. Please try again.")
+        return redirect("core:index")
     
-    cart_total_amount = 0
-    if 'cart_data_obj' in request.session:
-        for p_id, item in request.session['cart_data_obj'].items():
-            cart_total_amount += int(item['qty']) * float(item['price'])
+    
 
-    context = render_to_string("core/async/cart-list.html", {"cart_data":request.session['cart_data_obj'], 'totalcartitems': len(request.session['cart_data_obj']), 'cart_total_amount':cart_total_amount})
-    return JsonResponse({"data": context, 'totalcartitems': len(request.session['cart_data_obj'])})
+def cart_view(request):
+    try:
+        cart_total_amount = 0
+        cart_data = request.session.get('cart_data_obj', {})
+        
+        if cart_data:
+            print("Current cart data:", cart_data)  # Debug print
+            
+            for p_id, item in cart_data.items():
+                try:
+                    # Get quantity
+                    qty = item.get('qty', '1')
+                    qty = int(str(qty).strip())
+                    
+                    # Get price
+                    price = item.get('price', '0')
+                    print(f"Processing item {p_id} - Price: {price}, Qty: {qty}")  # Debug print
+                    
+                    # Clean price
+                    price = str(price).replace('$', '').replace(',', '').strip()
+                    price = float(price)
+                    
+                    # Calculate subtotal
+                    subtotal = qty * price
+                    cart_total_amount += subtotal
+                    
+                    # Update item in cart with cleaned values
+                    cart_data[p_id]['qty'] = str(qty)
+                    cart_data[p_id]['price'] = str(price)
+                    cart_data[p_id]['subtotal'] = subtotal
+                    
+                except (ValueError, TypeError) as e:
+                    print(f"Error processing item {p_id}: {str(e)}")  # Debug print
+                    continue
+            
+            # Update session with cleaned data
+            request.session['cart_data_obj'] = cart_data
+            print(f"Cart total amount: {cart_total_amount}")  # Debug print
+            
+            context = {
+                "cart_data": cart_data,
+                'totalcartitems': len(cart_data),
+                'cart_total_amount': cart_total_amount
+            }
+            return render(request, "core/cart.html", context)
+        else:
+            messages.warning(request, "Your cart is empty")
+            return redirect("core:index")
+            
+    except Exception as e:
+        print(f"Cart view error: {str(e)}")  # Debug print
+        messages.error(request, "Error calculating cart total. Please try again.")
+        return redirect("core:index")
+    
 
 
 def update_cart(request):
-    product_id = str(request.GET['id'])
-    product_qty = request.GET['qty']
-
-    if 'cart_data_obj' in request.session:
-        if product_id in request.session['cart_data_obj']:
-            cart_data = request.session['cart_data_obj']
-            cart_data[str(request.GET['id'])]['qty'] = product_qty
+    try:
+        product_id = str(request.GET['id'])
+        product_qty = request.GET['qty']
+        cart_data = request.session.get('cart_data_obj', {})
+        
+        if product_id in cart_data:
+            # Update quantity
+            try:
+                qty = int(str(product_qty).strip())
+                if qty < 1:
+                    qty = 1
+                cart_data[product_id]['qty'] = str(qty)
+            except (ValueError, TypeError):
+                qty = 1
+                cart_data[product_id]['qty'] = '1'
+            
+            # Recalculate totals
+            cart_total_amount = 0
+            for pid, item in cart_data.items():
+                try:
+                    item_qty = int(str(item.get('qty', '1')).strip())
+                    item_price = float(str(item.get('price', '0')).replace('$', '').replace(',', '').strip())
+                    subtotal = item_qty * item_price
+                    cart_data[pid]['subtotal'] = subtotal
+                    cart_total_amount += subtotal
+                except (ValueError, TypeError):
+                    continue
+            
             request.session['cart_data_obj'] = cart_data
-    
-    cart_total_amount = 0
-    if 'cart_data_obj' in request.session:
-        for p_id, item in request.session['cart_data_obj'].items():
-            cart_total_amount += int(item['qty']) * float(item['price'])
+            
+            # Render updated cart
+            context = render_to_string("core/async/cart-list.html", {
+                "cart_data": cart_data,
+                'totalcartitems': len(cart_data),
+                'cart_total_amount': cart_total_amount
+            })
+            
+            return JsonResponse({
+                "data": context,
+                'totalcartitems': len(cart_data)
+            })
+            
+    except Exception as e:
+        print(f"Update Cart Error: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
 
-    context = render_to_string("core/async/cart-list.html", {"cart_data":request.session['cart_data_obj'], 'totalcartitems': len(request.session['cart_data_obj']), 'cart_total_amount':cart_total_amount})
-    return JsonResponse({"data": context, 'totalcartitems': len(request.session['cart_data_obj'])})
+def delete_item_from_cart(request):
+    try:
+        product_id = str(request.GET['id'])
+        cart_data = request.session.get('cart_data_obj', {})
+        
+        if product_id in cart_data:
+            del cart_data[product_id]
+            
+            # Recalculate totals
+            cart_total_amount = 0
+            for pid, item in cart_data.items():
+                try:
+                    qty = int(str(item.get('qty', '1')).strip())
+                    price = float(str(item.get('price', '0')).replace('$', '').replace(',', '').strip())
+                    subtotal = qty * price
+                    cart_data[pid]['subtotal'] = subtotal
+                    cart_total_amount += subtotal
+                except (ValueError, TypeError):
+                    continue
+            
+            request.session['cart_data_obj'] = cart_data
+            
+            # Render updated cart
+            context = render_to_string("core/async/cart-list.html", {
+                "cart_data": cart_data,
+                'totalcartitems': len(cart_data),
+                'cart_total_amount': cart_total_amount
+            })
+            
+            return JsonResponse({
+                "data": context,
+                'totalcartitems': len(cart_data)
+            })
+            
+    except Exception as e:
+        print(f"Delete Cart Error: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+    
 
 
 def save_checkout_info(request):
@@ -536,45 +714,63 @@ def wishlist_view(request):
 
     # w
 
+@login_required
 def add_to_wishlist(request):
-    product_id = request.GET['id']
-    product = Product.objects.get(id=product_id)
-    print("product id isssssssssssss:" + product_id)
+    if request.method == 'GET':
+        try:
+            wishlist_data = {}
+            product_id = request.GET['id']
+            
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Product not found'
+                })
 
-    context = {}
+            # Check if in wishlist
+            wishlist_item = wishlist_model.objects.filter(
+                product=product,
+                user=request.user
+            )
 
-    wishlist_count = wishlist_model.objects.filter(product=product, user=request.user).count()
-    print(wishlist_count)
+            if wishlist_item.exists():
+                # Remove from wishlist
+                wishlist_item.delete()
+                is_added = False
+                message = f"{request.GET.get('title', 'Item')} removed from wishlist"
+            else:
+                # Add to wishlist
+                wishlist_model.objects.create(
+                    user=request.user,
+                    product=product
+                )
+                is_added = True
+                message = f"{request.GET.get('title', 'Item')} added to wishlist"
 
-    if wishlist_count > 0:
-        context = {
-            "bool": True
-        }
-    else:
-        new_wishlist = wishlist_model.objects.create(
-            user=request.user,
-            product=product,
-        )
-        context = {
-            "bool": True
-        }
+            # Get total wishlist items
+            total_items = wishlist_model.objects.filter(user=request.user).count()
 
-    return JsonResponse(context)
+            return JsonResponse({
+                'status': 'success',
+                'message': message,
+                'is_added': is_added,
+                'totalwishlistitems': total_items
+            })
 
+        except Exception as e:
+            print(f"Wishlist Error: {str(e)}")  # Debug print
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
 
-# def remove_wishlist(request):
-#     pid = request.GET['id']
-#     wishlist = wishlist_model.objects.filter(user=request.user).values()
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
 
-#     product = wishlist_model.objects.get(id=pid)
-#     h = product.delete()
-
-#     context = {
-#         "bool": True,
-#         "wishlist":wishlist
-#     }
-#     t = render_to_string("core/async/wishlist-list.html", context)
-#     return JsonResponse({"data": t, "w":wishlist})
 
 def remove_wishlist(request):
     pid = request.GET['id']
