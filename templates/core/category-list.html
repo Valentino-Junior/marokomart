@@ -19,10 +19,11 @@
                 </div>
             </div>
         </div>
+
+
         <div class="page-content mb-50">
             <div class="container">
-                <div class="row">
-                    <div class="col-lg-9">
+                
                         <div class="shop-product-fillter mb-50 pr-30">
                             <div class="totall-product">
                                 <h2>
@@ -44,8 +45,6 @@
                                         <ul>
                                             <li><a class="active" href="#">50</a></li>
                                             <li><a href="#">100</a></li>
-                                            <li><a href="#">150</a></li>
-                                            <li><a href="#">200</a></li>
                                             <li><a href="#">All</a></li>
                                         </ul>
                                     </div>
@@ -61,10 +60,8 @@
                                     </div>
                                     <div class="sort-by-dropdown">
                                         <ul>
-                                            <li><a class="active" href="#">Featured</a></li>
                                             <li><a href="#">Newest</a></li>
-                                            <li><a href="#">Most comments</a></li>
-                                            <li><a href="#">Release Date</a></li>
+                                            <li><a href="#">Most reviews</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -73,6 +70,9 @@
                         <div class="hello">
 
                         </div>
+
+
+
                         <div class="loop-grid pr-30">
                             <div class="row">
                                 {% for c in categories %}
@@ -82,7 +82,7 @@
                                             <img style="height: 300px; width: 300px; object-fit: cover;" class="border-radius-15" src="{{c.image.url}}" alt="" />
                                         </a>
                                         <div class="entry-meta">
-                                            <a class="entry-meta meta-2" href="#"><i class="fi-rs-heart"></i></a>
+                                            <a class="entry-meta meta-2" href="{% url 'core:category-product-list' c.cid %}"><i class="fas fa-eye"></i></a>
                                         </div>
                                     </div>
                                     <div class="entry-content-2">
@@ -99,60 +99,9 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <!-- <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
-                            <nav aria-label="Page navigation example">
-                                <ul class="pagination justify-content-start">
-                                    <li class="page-item">
-                                        <a class="page-link" href="#"><i class="fi-rs-arrow-small-left"></i></a>
-                                    </li>
-                                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                    <li class="page-item active"><a class="page-link" href="#">2</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                    <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">6</a></li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="#"><i class="fi-rs-arrow-small-right"></i></a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div> -->
-                    </div>
-                    <div class="col-lg-3 primary-sidebar sticky-sidebar">
-                        <div class="widget-area">
-                            <div class="sidebar-widget-2 widget_search mb-50">
-                                <div class="search-form">
-                                    <form action="#">
-                                        <input type="text" placeholder="Search…" />
-                                        <button type="submit"><i class="fi-rs-search"></i></button>
-                                    </form>
-                                </div>
-                            </div>
-                            <div class="sidebar-widget widget-category-2 mb-50">
-                                <h5 class="section-title style-1 mb-30">Category</h5>
-                                <ul>
-                                    {% for c in categories %}
-                                    <li>
-                                        <a href="{% url 'core:category-product-list' c.cid %}"> <img src="{{c.image.url}}" alt="" />{{c.title}}</a><span class="count">{{c.category.count}}</span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
 
 
-                            <div class="banner-img wow fadeIn mb-50 animated d-lg-block d-none">
-                                <img src="assets/imgs/banner/banner-11.png" alt="" />
-                                <div class="banner-text">
-                                    <span>Oganic</span>
-                                    <h4>
-                                        Save 17% <br />
-                                        on <span class="text-brand">Oganic</span><br />
-                                        Juice
-                                    </h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                       
             </div>
         </div>
     </main>
