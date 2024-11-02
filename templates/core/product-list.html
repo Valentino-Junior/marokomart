@@ -189,7 +189,7 @@
         <div class="container">
             <div class="breadcrumb">
                 <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                <span></span> Shop <span></span> Fillter
+                <span></span> Shop
             </div>
         </div>
     </div>
@@ -207,25 +207,7 @@
                 </a>
                 <div class="shop-product-fillter-header">
                     <div class="row">
-                        <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-2 mb-sm-2">
-                            <div class="card">
-                                <h5 class="mb-30">By Categories</h5>
-                                <div class="categories-dropdown-wrap font-heading">
-                                    <ul>
-                                        {% for c in categories %}
-                                        <li>
-                                            <input data-filter="category" class="form-check-input filter-checkbox"
-                                                type="checkbox" name="checkbox" id="exampleCheckbox2"
-                                                value="{{ c.id }}" />
-                                            &nbsp;&nbsp;
-                                            <a href="{% url 'core:category-product-list' c.cid %}"> <img
-                                                    src="{{c.image.url}}" alt="" />{{ c.title }}</a>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        
 
 
                         <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-5 mb-sm-5">
