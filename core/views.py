@@ -491,6 +491,7 @@ def delete_item_from_cart(request):
         'message': 'Invalid request method'
     })
 
+
 def save_checkout_info(request):
     cart_total_amount = 0
     total_amount = 0
