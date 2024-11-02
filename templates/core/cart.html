@@ -21,6 +21,8 @@
                 </div>
             </div>
         </div>
+
+
         <form action="{% url 'core:save_checkout_info' %}" method="POST">
             {% csrf_token %}
             <div class="row">
@@ -29,13 +31,11 @@
                         <table class="table table-wishlist">
                             <thead>
                                 <tr class="main-heading">
-
                                     <th scope="col">Product</th>
                                     <th scope="col">Title</th>
                                     <th scope="col">Unit Price</th>
                                     <th scope="col" class="text-center">Quantity</th>
                                     <th scope="col">Subtotal</th>
-                                    <th scope="col" class="">Refresh</th>
                                     <th scope="col" class="end">Remove</th>
                                 </tr>
                             </thead>
@@ -46,82 +46,66 @@
                                     <td class="image product-thumbnail pt-40">
                                         <img src="{{ item.image }}" alt="#">
                                     </td>
+                                    
                                     <td class="product-des product-name">
                                         <h6 class="mb-5">
-                                            <a class="product-name mb-10 text-heading"
-                                                href="{% url 'core:product-detail' item.pid %}">
+                                            <a class="product-name mb-10 text-heading" href="{% url 'core:product-detail' item.pid %}">
                                                 {{ item.title }}
                                             </a>
                                         </h6>
                                     </td>
+
                                     <td class="price" data-title="Price">
-                                        <h4 class="text-body">Ksh{{ item.price|floatformat:2 }}</h4>
+                                        <h4 class="text-body unit-price">Ksh{{ item.price|floatformat:2 }}</h4>
                                     </td>
+
                                     <td class="text-center detail-info" data-title="Stock">
                                         <div class="mr-15">
-                                            <input type="number" class="w-25 product-qty-{{ product_id }}"
-                                                value="{{ item.qty }}" min="1">
+                                            <input type="number" 
+                                                   class="w-25 product-qty" 
+                                                   value="{{ item.qty }}" 
+                                                   min="1" 
+                                                   data-product-id="{{ product_id }}"
+                                                   data-price="{{ item.price }}">
                                         </div>
                                     </td>
+
                                     <td class="price" data-title="Subtotal">
-                                        <h4 class="text-brand">Ksh{{ item.subtotal|floatformat:2 }}</h4>
+                                        <h4 class="text-brand product-subtotal" id="subtotal-{{ product_id }}">
+                                            Ksh{{ item.subtotal|floatformat:2 }}
+                                        </h4>
                                     </td>
+
+                                    
                                     <td class="action text-center" data-title="Remove">
-                                        <a href="javascript:void(0);" class="text-body update-product"
-                                            data-product="{{ product_id }}">
-                                            <i class="fi-rs-refresh"></i>
-                                        </a>
-                                    </td>
-                                    <td class="action text-center" data-title="Remove">
-                                        <a href="javascript:void(0);" class="text-body delete-product"
-                                            data-product="{{ product_id }}">
+                                        <a href="javascript:void(0);" 
+                                           class="text-body delete-product" 
+                                           data-product="{{ product_id }}"
+                                           title="Remove item">
                                             <i class="fi-rs-trash"></i>
                                         </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
-
-                                
                                 {% else %}
                                 <tr>
-                                    <td colspan="7" class="text-center">
-                                        Your cart is empty
-                                    </td>
+                                    <td colspan="6" class="text-center">Your cart is empty</td>
                                 </tr>
                                 {% endif %}
                             </tbody>
                         </table>
-
-                        <div class="row mt-4">
-                            
-
-
-
-                            <h4 class="mb-30">Shipping Details</h4>
-                            <div class="row">
-                                <div class="form-group col-lg-6">
-                                    <label for="">Address</label>
-                                    <input type="text" name="address" value="" placeholder="Address">
-                                </div>
-                                <div class="form-group col-lg-6">
-                                    <label for="">City</label>
-                                    <input type="text" name="city" placeholder="City *" value="">
-                                </div>
-                                <div class="form-group col-lg-6">
-                                    <label for="">State</label>
-                                    <input type="text" name="state" value="" placeholder="State *">
-                                </div>
-                                <div class="form-group col-lg-6">
-                                    <label for="">Country</label>
-                                    <input type="text" name="country" value="" placeholder="Country *">
-                                </div>
-                            </div>
-                        </div>
                     </div>
+
+
                 </div>
+
+
                 <div class="col-lg-4">
+
                     <div class="border p-md-4 cart-totals ml-30">
                         <div class="table-responsive">
+
+                            
                             <div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <p class="fw-bold">Tax</p>
@@ -138,7 +122,7 @@
 
                                 <div class="d-flex justify-content-between mb-2">
                                     <p class="fw-bold">Total</p>
-                                    <p>Ksh{{cart_total_amount}}</p>
+                                    <p class="cart-total">Ksh<span id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
                                 </div>
                             </div>
                         </div>
@@ -154,7 +138,275 @@
                     </div>
                 </div>
             </div>
+
+
         </form>
+
+        
     </div>
 </main>
+
+<!-- start change price functionality  -->
+<script>
+    $(document).ready(function() {
+        // Handle quantity change
+        $('.product-qty').on('change', function() {
+            const input = $(this);
+            const productId = input.data('product-id');
+            const quantity = parseInt(input.val()) || 1;
+            const price = parseFloat(input.data('price'));
+            
+            // Ensure minimum quantity
+            if (quantity < 1) {
+                input.val(1);
+                return;
+            }
+            
+            // Add loading state
+            const row = input.closest('tr');
+            row.css('opacity', '0.6');
+            
+            // Make AJAX request
+            $.ajax({
+                url: '/update-cart/',
+                method: 'GET',
+                data: {
+                    'id': productId,
+                    'qty': quantity
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        // Update subtotal display
+                        $(`#subtotal-${productId}`).text('Ksh' + response.subtotal.toFixed(2));
+                        
+                        // Update cart total
+                        $('#cart-total-amount').text(response.cart_total.toFixed(2));
+                        
+                        // Show success message
+                        showNotification('success', 'Cart Updated', 'Cart has been updated successfully');
+                    } else {
+                        // Show error message
+                        showNotification('error', 'Error', response.message);
+                        input.val(input.data('original-value'));
+                    }
+                },
+                error: function() {
+                    showNotification('error', 'Error', 'Failed to update cart');
+                    input.val(input.data('original-value'));
+                },
+                complete: function() {
+                    row.css('opacity', '1');
+                }
+            });
+        });
+        
+        // Store original values
+        $('.product-qty').each(function() {
+            $(this).data('original-value', $(this).val());
+        });
+        
+        // Notification function
+        function showNotification(type, title, message) {
+            if (!$('#notification-container').length) {
+                $('body').append('<div id="notification-container"></div>');
+            }
+            
+            const notification = $(`
+                <div class="notification ${type}">
+                    <div class="notification-content">
+                        <h4>${title}</h4>
+                        <p>${message}</p>
+                    </div>
+                </div>
+            `);
+            
+            $('#notification-container').append(notification);
+            
+            setTimeout(() => {
+                notification.fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
+    });
+    </script>
+    
+    <style>
+    /* Notification Styles */
+    #notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    
+    .notification {
+        background: white;
+        border-radius: 8px;
+        padding: 15px 25px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 300px;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification.success {
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .notification.error {
+        border-left: 4px solid #f44336;
+    }
+    
+    .notification h4 {
+        margin: 0 0 5px;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .notification p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Input Styles */
+    .product-qty {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .product-qty:focus {
+        border-color: #3BB77E;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.2);
+        outline: none;
+    }
+    
+    /* Loading State */
+    tr {
+        transition: opacity 0.3s ease;
+    }
+    
+    /* Cart Total Styles */
+    .cart-total {
+        font-size: 18px;
+        font-weight: 600;
+        color: #3BB77E;
+    }
+    </style>
+<!-- end change price functionality  -->
+
+
+
+<!-- start delete from cart functionality -->
+<script>
+    $(document).ready(function() {
+        // Delete from cart functionality
+        $('.delete-product').on('click', function(e) {
+            e.preventDefault();
+            
+            const deleteBtn = $(this);
+            const productId = deleteBtn.data('product');
+            const row = deleteBtn.closest('tr');
+            
+            // Show confirmation dialog
+            if (confirm('Are you sure you want to remove this item?')) {
+                // Add loading state
+                row.css('opacity', '0.5');
+                
+                // Make AJAX request
+                $.ajax({
+                    url: '/delete-from-cart/',
+                    method: 'GET',
+                    data: {
+                        'id': productId
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Animate row removal
+                            row.slideUp(300, function() {
+                                $(this).remove();
+                                
+                                // Update cart total
+                                $('#cart-total-amount').text(response.cart_total.toFixed(2));
+                                
+                                // Update cart count in header if exists
+                                $('.cart-count').text(response.cart_count);
+                                
+                                // Show empty cart message if no items left
+                                if (response.cart_count === 0) {
+                                    $('.shopping-summery tbody').html(
+                                        '<tr><td colspan="6" class="text-center">Your cart is empty</td></tr>'
+                                    );
+                                    // Hide checkout button if exists
+                                    $('.checkout-button').hide();
+                                }
+                            });
+                            
+                            // Show success notification
+                            showNotification('success', 'Item Removed', 'Item has been removed from your cart');
+                        } else {
+                            showNotification('error', 'Error', response.message);
+                        }
+                    },
+                    error: function() {
+                        row.css('opacity', '1');
+                        showNotification('error', 'Error', 'Failed to remove item from cart');
+                    }
+                });
+            }
+        });
+
+    
+        // Notification function
+        function showNotification(type, title, message) {
+            if (!$('#notification-container').length) {
+                $('body').append('<div id="notification-container"></div>');
+            }
+            
+            const notification = $(`
+                <div class="notification ${type}">
+                    <div class="notification-content">
+                        <h4>${title}</h4>
+                        <p>${message}</p>
+                    </div>
+                </div>
+            `);
+            
+            $('#notification-container').append(notification);
+            
+            // Add show class after a small delay (for animation)
+            setTimeout(() => {
+                notification.addClass('show');
+            }, 10);
+            
+            // Remove notification after delay
+            setTimeout(() => {
+                notification.removeClass('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    });
+    </script>
+<!-- end delete from cart functionality -->
+
+    
+    
 {% endblock content %}

@@ -340,33 +340,66 @@ def add_to_cart(request):
     })
 
 
-def cart_view(request):
-    try:
-        cart_total_amount = 0
-        if 'cart_data_obj' in request.session:
-            for p_id, item in request.session['cart_data_obj'].items():
-                try:
-                    qty = int(item.get('qty', 0))
-                    price = float(item.get('price', 0))
-                    cart_total_amount += qty * price
-                except (ValueError, TypeError):
-                    continue
+def update_cart(request):
+    if request.method == 'GET':
+        try:
+            product_id = str(request.GET['id'])
+            quantity = int(request.GET['qty'])
             
-            return render(request, "core/cart.html", {
-                "cart_data": request.session['cart_data_obj'],
-                'totalcartitems': len(request.session['cart_data_obj']),
-                'cart_total_amount': cart_total_amount
+            cart_data = request.session.get('cart_data_obj', {})
+            
+            if product_id in cart_data:
+                # Get and clean price
+                price = float(str(cart_data[product_id]['price']).replace('Ksh', '').replace(',', '').strip())
+                
+                # Update quantity
+                cart_data[product_id]['qty'] = str(quantity)
+                
+                # Calculate new subtotal
+                subtotal = quantity * price
+                cart_data[product_id]['subtotal'] = subtotal
+                
+                # Calculate new cart total
+                cart_total = 0
+                for item in cart_data.values():
+                    try:
+                        item_price = float(str(item['price']).replace('Ksh', '').replace(',', '').strip())
+                        item_qty = int(item['qty'])
+                        cart_total += item_price * item_qty
+                    except (ValueError, TypeError):
+                        continue
+                
+                # Update session
+                request.session['cart_data_obj'] = cart_data
+                request.session.modified = True
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'subtotal': subtotal,
+                    'cart_total': cart_total
+                })
+            
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Product not found in cart'
             })
-        
-        messages.warning(request, "Your cart is empty")
-        return redirect("core:index")
-        
-    except Exception as e:
-        print(f"Error in cart_view: {str(e)}")  # Debug print
-        messages.error(request, "Error calculating cart total. Please try again.")
-        return redirect("core:index")
+            
+        except (ValueError, TypeError) as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid quantity or price'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
     
-    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
+
 
 def cart_view(request):
     try:
@@ -374,142 +407,89 @@ def cart_view(request):
         cart_data = request.session.get('cart_data_obj', {})
         
         if cart_data:
-            print("Current cart data:", cart_data)  # Debug print
-            
+            # Calculate subtotals and cart total
             for p_id, item in cart_data.items():
                 try:
-                    # Get quantity
-                    qty = item.get('qty', '1')
-                    qty = int(str(qty).strip())
+                    qty = int(str(item.get('qty', '1')).strip())
+                    price = float(str(item.get('price', '0')).replace('Ksh', '').replace(',', '').strip())
                     
-                    # Get price
-                    price = item.get('price', '0')
-                    print(f"Processing item {p_id} - Price: {price}, Qty: {qty}")  # Debug print
-                    
-                    # Clean price
-                    price = str(price).replace('$', '').replace(',', '').strip()
-                    price = float(price)
-                    
-                    # Calculate subtotal
                     subtotal = qty * price
                     cart_total_amount += subtotal
                     
-                    # Update item in cart with cleaned values
-                    cart_data[p_id]['qty'] = str(qty)
-                    cart_data[p_id]['price'] = str(price)
-                    cart_data[p_id]['subtotal'] = subtotal
+                    # Update item with subtotal
+                    cart_data[p_id].update({
+                        'qty': str(qty),
+                        'price': str(price),
+                        'subtotal': subtotal
+                    })
                     
-                except (ValueError, TypeError) as e:
-                    print(f"Error processing item {p_id}: {str(e)}")  # Debug print
+                except (ValueError, TypeError):
                     continue
             
-            # Update session with cleaned data
+            # Update session with calculated values
             request.session['cart_data_obj'] = cart_data
-            print(f"Cart total amount: {cart_total_amount}")  # Debug print
+            request.session.modified = True
             
-            context = {
+            return render(request, "core/cart.html", {
                 "cart_data": cart_data,
                 'totalcartitems': len(cart_data),
                 'cart_total_amount': cart_total_amount
-            }
-            return render(request, "core/cart.html", context)
-        else:
-            messages.warning(request, "Your cart is empty")
-            return redirect("core:index")
-            
+            })
+        
+        messages.warning(request, "Your cart is empty")
+        return redirect("core:index")
+        
     except Exception as e:
-        print(f"Cart view error: {str(e)}")  # Debug print
+        print(f"Cart view error: {str(e)}")
         messages.error(request, "Error calculating cart total. Please try again.")
         return redirect("core:index")
     
 
 
-def update_cart(request):
-    try:
-        product_id = str(request.GET['id'])
-        product_qty = request.GET['qty']
-        cart_data = request.session.get('cart_data_obj', {})
-        
-        if product_id in cart_data:
-            # Update quantity
-            try:
-                qty = int(str(product_qty).strip())
-                if qty < 1:
-                    qty = 1
-                cart_data[product_id]['qty'] = str(qty)
-            except (ValueError, TypeError):
-                qty = 1
-                cart_data[product_id]['qty'] = '1'
-            
-            # Recalculate totals
-            cart_total_amount = 0
-            for pid, item in cart_data.items():
-                try:
-                    item_qty = int(str(item.get('qty', '1')).strip())
-                    item_price = float(str(item.get('price', '0')).replace('$', '').replace(',', '').strip())
-                    subtotal = item_qty * item_price
-                    cart_data[pid]['subtotal'] = subtotal
-                    cart_total_amount += subtotal
-                except (ValueError, TypeError):
-                    continue
-            
-            request.session['cart_data_obj'] = cart_data
-            
-            # Render updated cart
-            context = render_to_string("core/async/cart-list.html", {
-                "cart_data": cart_data,
-                'totalcartitems': len(cart_data),
-                'cart_total_amount': cart_total_amount
-            })
-            
-            return JsonResponse({
-                "data": context,
-                'totalcartitems': len(cart_data)
-            })
-            
-    except Exception as e:
-        print(f"Update Cart Error: {str(e)}")
-        return JsonResponse({"error": str(e)}, status=400)
-
 def delete_item_from_cart(request):
-    try:
-        product_id = str(request.GET['id'])
-        cart_data = request.session.get('cart_data_obj', {})
-        
-        if product_id in cart_data:
-            del cart_data[product_id]
+    if request.method == 'GET':
+        try:
+            product_id = str(request.GET['id'])
+            cart_data = request.session.get('cart_data_obj', {})
             
-            # Recalculate totals
-            cart_total_amount = 0
-            for pid, item in cart_data.items():
-                try:
-                    qty = int(str(item.get('qty', '1')).strip())
-                    price = float(str(item.get('price', '0')).replace('$', '').replace(',', '').strip())
-                    subtotal = qty * price
-                    cart_data[pid]['subtotal'] = subtotal
-                    cart_total_amount += subtotal
-                except (ValueError, TypeError):
-                    continue
-            
-            request.session['cart_data_obj'] = cart_data
-            
-            # Render updated cart
-            context = render_to_string("core/async/cart-list.html", {
-                "cart_data": cart_data,
-                'totalcartitems': len(cart_data),
-                'cart_total_amount': cart_total_amount
-            })
+            if product_id in cart_data:
+                # Remove item from cart
+                del cart_data[product_id]
+                request.session['cart_data_obj'] = cart_data
+                request.session.modified = True
+                
+                # Calculate new cart total
+                cart_total = 0
+                for item in cart_data.values():
+                    try:
+                        price = float(str(item['price']).replace('Ksh', '').replace(',', '').strip())
+                        qty = int(item['qty'])
+                        cart_total += price * qty
+                    except (ValueError, TypeError):
+                        continue
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Item removed from cart',
+                    'cart_total': cart_total,
+                    'cart_count': len(cart_data)
+                })
             
             return JsonResponse({
-                "data": context,
-                'totalcartitems': len(cart_data)
+                'status': 'error',
+                'message': 'Item not found in cart'
             })
             
-    except Exception as e:
-        print(f"Delete Cart Error: {str(e)}")
-        return JsonResponse({"error": str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
     
-
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
 
 def save_checkout_info(request):
     cart_total_amount = 0
@@ -563,9 +543,9 @@ def save_checkout_info(request):
                 email=email,
                 phone=phone,
                 address=address,
-                city=city,
-                state=state,
-                country=country,
+                # city=city,
+                # state=state,
+                # country=country,
             )
 
             del request.session['full_name']
