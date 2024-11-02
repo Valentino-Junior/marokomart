@@ -1,6 +1,6 @@
 from django import views
 from django.urls import path, include
-from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, ajax_contact_form, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, make_address_default, order_detail, payment_completed_view, payment_failed_view, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, terms_of_service, order_tracking_view, new_arrivals_view, hot_deals_view
+from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, ajax_contact_form, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, make_address_default, order_detail, payment_completed_view, payment_failed_view, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, terms_of_service, order_tracking_view, new_arrivals_view, hot_deals_view, apply_coupon_view
 
 app_name = "core"
 
@@ -41,5 +41,6 @@ urlpatterns = [
     path("order_tracking/", order_tracking_view, name="order_tracking"),
     path("hot_deals/", hot_deals_view, name="hot_deals"),
     path("new_arrivals/", new_arrivals_view, name="new_arrivals"),
+    path('apply-coupon/', apply_coupon_view, name='apply-coupon'),
 
 ]

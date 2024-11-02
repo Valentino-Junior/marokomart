@@ -33,6 +33,8 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.contrib import messages
 
+from decimal import Decimal
+
 
 def index(request):
     # bannanas = Product.objects.all().order_by("-id")
@@ -614,41 +616,89 @@ def create_checkout_session(request, oid):
 
 
 @login_required
-def checkout(request, oid):
-    order = CartOrder.objects.get(oid=oid)
-    order_items = CartOrderProducts.objects.filter(order=order)
-
-   
+def apply_coupon_view(request):
     if request.method == "POST":
-        code = request.POST.get("code")
-        print("code ========", code)
-        coupon = Coupon.objects.filter(code=code, active=True).first()
-        if coupon:
-            if coupon in order.coupons.all():
-                messages.warning(request, "Coupon already activated")
-                return redirect("core:checkout", order.oid)
-            else:
-                discount = order.price * coupon.discount / 100 
-
+        try:
+            code = request.POST.get("code")
+            order_id = request.POST.get("order_id")
+            
+            try:
+                order = CartOrder.objects.get(oid=order_id, user=request.user)
+            except CartOrder.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Order not found'
+                })
+            
+            coupon = Coupon.objects.filter(code=code, active=True).first()
+            
+            if coupon:
+                if coupon in order.coupons.all():
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Coupon already applied'
+                    })
+                
+                # Convert discount to Decimal for accurate calculation
+                discount = Decimal(str(coupon.discount))
+                
+                # Ensure discount doesn't exceed order total
+                if discount > order.price:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Discount amount exceeds order total'
+                    })
+                
+                # Calculate new price by subtracting the fixed discount
+                new_price = order.price - discount
+                
+                # Update order
                 order.coupons.add(coupon)
-                order.price -= discount
+                order.price = new_price
                 order.saved += discount
                 order.save()
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Coupon applied! Ksh{discount} has been deducted',
+                    'new_price': float(new_price),
+                    'discount': float(discount),
+                    'saved': float(order.saved)
+                })
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid coupon code'
+                })
+                
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
 
-                messages.success(request, "Coupon Activated")
-                return redirect("core:checkout", order.oid)
-        else:
-            messages.error(request, "Coupon Does Not Exists")
 
+@login_required
+def checkout(request, oid):
+    try:
+        order = CartOrder.objects.get(oid=oid, user=request.user)
+        order_items = CartOrderProducts.objects.filter(order=order)
         
-
-    context = {
-        "order": order,
-        "order_items": order_items,
-        "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
-
-    }
-    return render(request, "core/checkout.html", context)
+        context = {
+            "order": order,
+            "order_items": order_items,
+            "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
+        }
+        return render(request, "core/checkout.html", context)
+        
+    except CartOrder.DoesNotExist:
+        messages.error(request, "Order not found")
+        return redirect("core:index")
 
 
 @login_required
@@ -665,6 +715,7 @@ def payment_completed_view(request, oid):
 
     }
     return render(request, 'core/payment-completed.html',  context)
+
 
 @login_required
 def payment_failed_view(request):
