@@ -46,7 +46,7 @@
                                     <td class="image product-thumbnail pt-40">
                                         <img src="{{ item.image }}" alt="#">
                                     </td>
-                                    
+
                                     <td class="product-des product-name">
                                         <h6 class="mb-5">
                                             <a class="product-name mb-10 text-heading" href="{% url 'core:product-detail' item.pid %}">
@@ -105,26 +105,26 @@
                     <div class="border p-md-4 cart-totals ml-30">
                         <div class="table-responsive">
 
+                            <div class="d-flex justify-content-between mb-2">
+                                <p class="fw-bold" style="font-weight: bolder; color: #333;">
+                                    CART TOTALS</p>
+                                
+                            </div>
+
                             
                             <div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <p class="fw-bold">Tax</p>
-                                    <p>Ksh 0</p>
-                                </div>
+                                
                                 <div class="d-flex justify-content-between mb-2">
                                     <p class="fw-bold">Shipping</p>
-                                    <p>Ksh0</p>
+                                    <p>Free</p>
                                 </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <p class="fw-bold">Discount</p>
-                                    <p>Ksh0</p>
-                                </div>
-
+                                
                                 <div class="d-flex justify-content-between mb-2">
                                     <p class="fw-bold">Total</p>
                                     <p class="cart-total">Ksh<span id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
                                 </div>
                             </div>
+
                         </div>
                         {% if totalcartitems %}
                         <button type=submit" class="btn mb-20 w-100">Proceed To CheckOut<i
@@ -137,6 +137,7 @@
                         {% endif %}
                     </div>
                 </div>
+                
             </div>
 
 
