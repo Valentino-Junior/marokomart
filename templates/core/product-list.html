@@ -36,147 +36,147 @@
 
 
 
-<style>
-    /* Toast Container Styles */
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1060;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    /* Toast Notification Styles */
-    .toast {
-        background: white;
-        border-radius: 8px;
-        padding: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 300px;
-        max-width: 400px;
-        transform: translateX(120%);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-bottom: 10px;
-    }
-    
-    .toast.show {
-        transform: translateX(0);
-    }
-    
-    .toast.success {
-        border-left: 4px solid #4CAF50;
-    }
-    
-    .toast.error {
-        border-left: 4px solid #f44336;
-    }
-    
-    .toast.info {
-        border-left: 4px solid #2196F3;
-    }
-    
-    .toast-icon {
-        font-size: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-    }
-    
-    .toast.success .toast-icon {
-        color: #4CAF50;
-    }
-    
-    .toast.error .toast-icon {
-        color: #f44336;
-    }
-    
-    .toast.info .toast-icon {
-        color: #2196F3;
-    }
-    
-    .toast-content {
-        flex-grow: 1;
-    }
-    
-    .toast-title {
-        font-weight: 600;
-        margin-bottom: 4px;
-        color: #333;
-    }
-    
-    .toast-message {
-        color: #666;
-        font-size: 14px;
-    }
-    
-    .toast-close {
-        background: none;
-        border: none;
-        color: #999;
-        cursor: pointer;
-        padding: 4px;
-        font-size: 18px;
-        line-height: 1;
-        transition: color 0.2s ease;
-    }
-    
-    .toast-close:hover {
-        color: #666;
-    }
-    
-    /* Button States */
-    .button-loading {
-        position: relative;
-        color: transparent !important;
-    }
-    
-    .button-loading::after {
-        content: "";
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        top: 50%;
-        left: 50%;
-        margin: -8px 0 0 -8px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: button-loading-spinner 0.8s linear infinite;
-    }
-    
-    @keyframes button-loading-spinner {
-        to {
-            transform: rotate(360deg);
+    <style>
+        /* Toast Container Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1060;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-    }
-    
-    /* Out of Stock Button */
-    .out-of-stock {
-        background-color: #f5f5f5 !important;
-        color: #999 !important;
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
-    
-    /* Wishlist Icon Animation */
-    .add-to-wishlist i {
-        transition: all 0.3s ease;
-    }
-    
-    .add-to-wishlist:hover i {
-        transform: scale(1.2);
-    }
-    
-    .text-danger {
-        color: #ff6b6b !important;
-    }
+
+        /* Toast Notification Styles */
+        .toast {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            transform: translateX(120%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .toast.error {
+            border-left: 4px solid #f44336;
+        }
+
+        .toast.info {
+            border-left: 4px solid #2196F3;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        .toast.success .toast-icon {
+            color: #4CAF50;
+        }
+
+        .toast.error .toast-icon {
+            color: #f44336;
+        }
+
+        .toast.info .toast-icon {
+            color: #2196F3;
+        }
+
+        .toast-content {
+            flex-grow: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .toast-message {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .toast-close:hover {
+            color: #666;
+        }
+
+        /* Button States */
+        .button-loading {
+            position: relative;
+            color: transparent !important;
+        }
+
+        .button-loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: button-loading-spinner 0.8s linear infinite;
+        }
+
+        @keyframes button-loading-spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Out of Stock Button */
+        .out-of-stock {
+            background-color: #f5f5f5 !important;
+            color: #999 !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Wishlist Icon Animation */
+        .add-to-wishlist i {
+            transition: all 0.3s ease;
+        }
+
+        .add-to-wishlist:hover i {
+            transform: scale(1.2);
+        }
+
+        .text-danger {
+            color: #ff6b6b !important;
+        }
     </style>
 
 
@@ -195,60 +195,6 @@
     </div>
     <div class="container mb-30 mt-30">
         <div class="row">
-
-
-
-            <div class="col-lg-12">
-                <a class="shop-filter-toogle" href="#">
-                    <span class="fi-rs-filter mr-5"></span>
-                    Filters
-                    <i class="fi-rs-angle-small-down angle-down"></i>
-                    <i class="fi-rs-angle-small-up angle-up"></i>
-                </a>
-                <div class="shop-product-fillter-header">
-                    <div class="row">
-                        
-
-
-                        <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-5 mb-sm-5">
-                            <div class="card">
-                                <h5 class="mb-10">By Price</h5>
-                                <div class="sidebar-widget price_range range">
-                                    <div class="price-filter mb-20">
-                                        <div class="price-filter-inner">
-                                            <div id="slidder-range" class="mb-20"></div>
-                                            <input type="range" name="ranDge"
-                                                value="{{ min_max_price.price__min|floatformat:2 }}"
-                                                class="slider-range" id="range" min="{{ min_max_price.price__min }}"
-                                                max="{{ min_max_price.price__max }}"
-                                                oninput="max_price.value=this.value">
-                                            <div class="d-flex justify-content-between">
-                                                <div class="caption">From: <strong id="slider-range-value1"
-                                                        class="text-brand">${{ min_max_price.price__min|floatformat:2 }}</strong>
-                                                </div>
-                                                <div class="caption">To: <strong id="slider-range-value2"
-                                                        class="text-brand">${{ min_max_price.price__max|floatformat:2 }}</strong>
-                                                </div>
-                                            </div>
-                                            <input type="number" name=""
-                                                value="{{ min_max_price.price__min|floatformat:2 }}" id="max_price"
-                                                min="{{ min_max_price.price__min }}"
-                                                max="{{ min_max_price.price__max }}" placeholder="Current Price"
-                                                onkeyup="range.value=this.value">
-                                        </div>
-                                    </div>
-                                    <div class="custome-checkbox">
-                                        <button class="btn mt-20 w-100" type="button"
-                                            id="price-filter-btn">Filter</button>
-                                        <!-- <h3>{{ min_max_price }}</h3> -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
 
 
             <div class="container mb-30 mt-30">
@@ -362,17 +308,17 @@
 
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Update cart
-        $(document).on("click", ".update-product", function(){
+        $(document).on("click", ".update-product", function () {
             let product_id = $(this).data('product');
-            let qty = $('.product-qty-'+product_id).val();
-            
-            if(qty < 1) {
+            let qty = $('.product-qty-' + product_id).val();
+
+            if (qty < 1) {
                 qty = 1;
-                $('.product-qty-'+product_id).val(1);
+                $('.product-qty-' + product_id).val(1);
             }
-            
+
             $.ajax({
                 url: '/update-cart/',
                 data: {
@@ -380,55 +326,55 @@
                     'qty': qty
                 },
                 dataType: 'json',
-                beforeSend: function(){
+                beforeSend: function () {
                     // Add loading state
                     $(".cart-table").addClass('loading');
                 },
-                success: function(response){
+                success: function (response) {
                     $("#cart-list").html(response.data);
                     // Update cart count in header
-                    if($('.cart-count').length > 0) {
+                    if ($('.cart-count').length > 0) {
                         $('.cart-count').text(response.totalcartitems);
                     }
                 },
-                error: function(error){
+                error: function (error) {
                     console.log('Error:', error);
                     alert('Error updating cart');
                 },
-                complete: function(){
+                complete: function () {
                     // Remove loading state
                     $(".cart-table").removeClass('loading');
                 }
             });
         });
-    
+
         // Delete from cart
-        $(document).on("click", ".delete-product", function(){
+        $(document).on("click", ".delete-product", function () {
             let product_id = $(this).data('product');
-            
-            if(confirm('Are you sure you want to remove this item?')) {
+
+            if (confirm('Are you sure you want to remove this item?')) {
                 $.ajax({
                     url: '/delete-from-cart/',
                     data: {
                         'id': product_id,
                     },
                     dataType: 'json',
-                    beforeSend: function(){
+                    beforeSend: function () {
                         // Add loading state
                         $(".cart-table").addClass('loading');
                     },
-                    success: function(response){
+                    success: function (response) {
                         $("#cart-list").html(response.data);
                         // Update cart count in header
-                        if($('.cart-count').length > 0) {
+                        if ($('.cart-count').length > 0) {
                             $('.cart-count').text(response.totalcartitems);
                         }
                     },
-                    error: function(error){
+                    error: function (error) {
                         console.log('Error:', error);
                         alert('Error removing item from cart');
                     },
-                    complete: function(){
+                    complete: function () {
                         // Remove loading state
                         $(".cart-table").removeClass('loading');
                     }
@@ -436,4 +382,4 @@
             }
         });
     });
-    </script>
+</script>
