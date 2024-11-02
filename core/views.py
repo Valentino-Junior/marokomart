@@ -17,7 +17,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from django.contrib.auth.decorators import login_required
 
 import calendar
-from django.db.models import Count, Avg, FloatField
+from django.db.models import Count, Avg, FloatField, OuterRef, Subquery
 from django.db.models.functions import ExtractMonth
 from django.core import serializers
 
@@ -78,13 +78,58 @@ def product_list_view(request):
     return render(request, 'core/product-list.html', context)
 
 
+
 def category_list_view(request):
+    """
+    View for category listing with sorting options
+    """
+    # Get base queryset
     categories = Category.objects.all()
+    
+    # Add annotations for product and review counts
+    categories = categories.annotate(
+        total_products=Count('category', distinct=True),
+        total_reviews=Count('category__reviews', distinct=True)
+    )
+    
+    # Get sort parameter
+    sort_by = request.GET.get('sort_by', '')
+    
+    # Apply sorting
+    if sort_by == 'most_products':
+        categories = categories.order_by('-total_products', 'title')
+    elif sort_by == 'most_reviews':
+        categories = categories.order_by('-total_reviews', 'title')
+    elif sort_by == 'recently_added':
+        # Assuming you want to sort by the most recent product in each category
+        categories = categories.annotate(
+            latest_product=Subquery(
+                Product.objects.filter(
+                    category=OuterRef('pk')
+                ).order_by('-date').values('date')[:1]
+            )
+        ).order_by('-latest_product', 'title')
+    else:
+        categories = categories.order_by('title')
 
     context = {
-        "categories":categories
+        "categories": categories,
+        "current_sort": sort_by
     }
-    return render(request, 'core/category-list.html', context)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        grid_html = render_to_string(
+            'core/includes/category_grid.html',
+            context,
+            request=request
+        )
+        return JsonResponse({
+            'html': grid_html,
+            'count': categories.count()
+        })
+    
+    return render(request, "core/category-list.html", context)
+
 
 
 def category_product_list__view(request, cid):

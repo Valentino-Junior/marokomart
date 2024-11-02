@@ -2,108 +2,207 @@
 {% load static %}
 {% block content %}
 
-    <main class="main">
-        <div class="page-header mt-30 mb-75">
-            <div class="container">
-                <div class="archive-header">
-                    <div class="row align-items-center">
-                        <div class="col-xl-3">
-                            <h1 class="mb-15">Categories</h1>
-                            <div class="breadcrumb">
-                                <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                                <span></span> Category
-                            </div>
+<main class="main">
+    <div class="page-header mt-30 mb-75">
+        <div class="container">
+            <div class="archive-header">
+                <div class="row align-items-center">
+                    <div class="col-xl-3">
+                        <h1 class="mb-15">Categories</h1>
+                        <div class="breadcrumb">
+                            <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                            <span></span> Category
                         </div>
-                        
                     </div>
+
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <div class="page-content mb-50">
-            <div class="container">
-                
-                        <div class="shop-product-fillter mb-50 pr-30">
-                            <div class="totall-product">
-                                <h2>
-                                    <img class="w-36px mr-10" src="assets/imgs/theme/icons/category-1.svg" alt="" />
-                                    {{categories.count}} Categories
-                                </h2>
+    <div class="page-content mb-50">
+        <div class="container">
+            <div class="shop-product-fillter mb-50 pr-30">
+                <div class="totall-product">
+                    <h2>
+
+                        <span class="category-count">{{categories.count}}</span> Categories
+                    </h2>
+                </div>
+                <div class="sort-by-product-area">
+                    <div class="sort-by-cover">
+                        <div class="sort-by-product-wrap">
+                            <div class="sort-by">
+                                <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
                             </div>
-                            <div class="sort-by-product-area">
-                                <div class="sort-by-cover mr-10">
-                                    <div class="sort-by-product-wrap">
-                                        <div class="sort-by">
-                                            <span><i class="fi-rs-apps"></i>Show:</span>
-                                        </div>
-                                        <div class="sort-by-dropdown-wrap">
-                                            <span> 50 <i class="fi-rs-angle-small-down"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="sort-by-dropdown">
-                                        <ul>
-                                            <li><a class="active" href="#">50</a></li>
-                                            <li><a href="#">100</a></li>
-                                            <li><a href="#">All</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="sort-by-cover">
-                                    <div class="sort-by-product-wrap">
-                                        <div class="sort-by">
-                                            <span><i class="fi-rs-apps-sort"></i>Sort:</span>
-                                        </div>
-                                        <div class="sort-by-dropdown-wrap">
-                                            <span>Featured <i class="fi-rs-angle-small-down"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="sort-by-dropdown">
-                                        <ul>
-                                            <li><a href="#">Newest</a></li>
-                                            <li><a href="#">Most reviews</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
+                            <div class="sort-by-dropdown-wrap">
+                                <span id="current-sort-text">
+                                    {% if current_sort == 'most_products' %}
+                                    Most Products
+                                    {% elif current_sort == 'most_reviews' %}
+                                    Most Reviews
+                                    {% elif current_sort == 'recently_added' %}
+                                    Recently Added
+                                    {% else %}
+                                    Featured
+                                    {% endif %}
+                                    <i class="fi-rs-angle-small-down"></i>
+                                </span>
                             </div>
                         </div>
-                        <div class="hello">
-
+                        <div class="sort-by-dropdown">
+                            <ul>
+                                <li>
+                                    <a href="#"
+                                        class="sort-option {% if current_sort == 'most_products' %}active{% endif %}"
+                                        data-sort="most_products">Most Products</a>
+                                </li>
+                                <li>
+                                    <a href="#"
+                                        class="sort-option {% if current_sort == 'most_reviews' %}active{% endif %}"
+                                        data-sort="most_reviews">Most Reviews</a>
+                                </li>
+                                <li>
+                                    <a href="#"
+                                        class="sort-option {% if current_sort == 'recently_added' %}active{% endif %}"
+                                        data-sort="recently_added">Recently Added</a>
+                                </li>
+                            </ul>
                         </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Loading Spinner -->
+            <div id="loading-overlay" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
 
-
-                        <div class="loop-grid pr-30">
-                            <div class="row">
-                                {% for c in categories %}
-                                <article class="col-xl-4 col-lg-6 col-md-6 text-center hover-up mb-30 animated">
-                                    <div class="post-thumb">
-                                        <a href="{% url 'core:category-product-list' c.cid %}">
-                                            <img style="height: 300px; width: 300px; object-fit: cover;" class="border-radius-15" src="{{c.image.url}}" alt="" />
-                                        </a>
-                                        <div class="entry-meta">
-                                            <a class="entry-meta meta-2" href="{% url 'core:category-product-list' c.cid %}"><i class="fas fa-eye"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="entry-content-2">
-                                        <h4 class="post-title mb-15">
-                                            <a href="{% url 'core:category-product-list' c.cid %}">{{ c.title }}</a>
-                                        </h4>
-                                        <div class="entry-meta font-xs color-grey mt-10 pb-10">
-                                            <div>
-                                                <span class="hit-count mr-10">{{c.category.count}} Product{{c.category.count|pluralize}}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-
-                       
+            <!-- Category Grid -->
+            <div id="category-grid">
+                {% include 'core/includes/category_grid.html' %}
             </div>
         </div>
-    </main>
+    </div>
+
+
+</main>
+
+
+
+<style>
+    #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .sort-by-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        z-index: 1000;
+        min-width: 150px;
+    }
+
+    .sort-by-cover:hover .sort-by-dropdown {
+        display: block;
+    }
+
+    .sort-option {
+        display: block;
+        padding: 8px 15px;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .sort-option:hover {
+        background-color: #f5f5f5;
+        text-decoration: none;
+    }
+
+    .sort-option.active {
+        background-color: #e9ecef;
+        font-weight: 600;
+    }
+
+    #category-grid {
+        transition: opacity 0.3s ease;
+    }
+
+    .loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        // Sort functionality
+        $('.sort-option').on('click', function (e) {
+            e.preventDefault();
+
+            const sortBy = $(this).data('sort');
+            const currentText = $(this).text();
+
+            // Show loading
+            $('#loading-overlay').show();
+            $('#category-grid').addClass('loading');
+
+            // Update active state
+            $('.sort-option').removeClass('active');
+            $(this).addClass('active');
+
+            // Make AJAX request
+            $.ajax({
+                url: window.location.pathname,
+                method: 'GET',
+                data: {
+                    'sort_by': sortBy
+                },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function (response) {
+                    // Update grid content
+                    $('#category-grid').html(response.html);
+                    $('.category-count').text(response.count);
+
+                    // Update sort text
+                    $('#current-sort-text').html(
+                        `${currentText} <i class="fi-rs-angle-small-down"></i>`);
+
+                    // Update URL without page refresh
+                    const url = new URL(window.location);
+                    url.searchParams.set('sort_by', sortBy);
+                    window.history.pushState({}, '', url);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('Error sorting categories. Please try again.');
+                },
+                complete: function () {
+                    // Hide loading
+                    $('#loading-overlay').hide();
+                    $('#category-grid').removeClass('loading');
+                }
+            });
+        });
+    });
+</script>
 
 {% endblock content %}

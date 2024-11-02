@@ -1,0 +1,32 @@
+<div class="loop-grid pr-30">
+    <div class="row">
+        {% for category in categories %}
+        <article class="col-xl-4 col-lg-6 col-md-6 text-center hover-up mb-30 animated">
+            <div class="post-thumb">
+                <a href="{% url 'core:category-product-list' category.cid %}">
+                    <img style="height: 300px; width: 300px; object-fit: cover;" 
+                         class="border-radius-15" 
+                         src="{{category.image.url}}" 
+                         alt="{{ category.title }}" />
+                </a>
+                
+            </div>
+            <div class="entry-content-2">
+                <h4 class="post-title mb-15">
+                    <a href="{% url 'core:category-product-list' category.cid %}">{{ category.title }}</a>
+                </h4>
+                <div class="entry-meta font-xs color-grey mt-10 pb-10">
+                    <div>
+                        <span class="hit-count mr-10">{{ category.total_products }} Product{{ category.total_products|pluralize }}</span>
+                        <span class="hit-count">({{ category.total_reviews }} Review{{ category.total_reviews|pluralize }})</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-12 text-center">
+            <h3>No categories found</h3>
+        </div>
+        {% endfor %}
+    </div>
+</div>
