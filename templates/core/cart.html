@@ -49,7 +49,8 @@
 
                                     <td class="product-des product-name">
                                         <h6 class="mb-5">
-                                            <a class="product-name mb-10 text-heading" href="{% url 'core:product-detail' item.pid %}">
+                                            <a class="product-name mb-10 text-heading"
+                                                href="{% url 'core:product-detail' item.pid %}">
                                                 {{ item.title }}
                                             </a>
                                         </h6>
@@ -61,12 +62,8 @@
 
                                     <td class="text-center detail-info" data-title="Stock">
                                         <div class="mr-15">
-                                            <input type="number" 
-                                                   class="w-25 product-qty" 
-                                                   value="{{ item.qty }}" 
-                                                   min="1" 
-                                                   data-product-id="{{ product_id }}"
-                                                   data-price="{{ item.price }}">
+                                            <input type="number" class="w-25 product-qty" value="{{ item.qty }}" min="1"
+                                                data-product-id="{{ product_id }}" data-price="{{ item.price }}">
                                         </div>
                                     </td>
 
@@ -76,12 +73,10 @@
                                         </h4>
                                     </td>
 
-                                    
+
                                     <td class="action text-center" data-title="Remove">
-                                        <a href="javascript:void(0);" 
-                                           class="text-body delete-product" 
-                                           data-product="{{ product_id }}"
-                                           title="Remove item">
+                                        <a href="javascript:void(0);" class="text-body delete-product"
+                                            data-product="{{ product_id }}" title="Remove item">
                                             <i class="fi-rs-trash"></i>
                                         </a>
                                     </td>
@@ -108,20 +103,21 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <p class="fw-bold" style="font-weight: bolder; color: #333;">
                                     CART TOTALS</p>
-                                
+
                             </div>
 
-                            
+
                             <div>
-                                
+
                                 <div class="d-flex justify-content-between mb-2">
                                     <p class="fw-bold">Shipping</p>
                                     <p>Free</p>
                                 </div>
-                                
+
                                 <div class="d-flex justify-content-between mb-2">
                                     <p class="fw-bold">Total</p>
-                                    <p class="cart-total">Ksh<span id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
+                                    <p class="cart-total">Ksh<span
+                                            id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
                                 </div>
                             </div>
 
@@ -137,36 +133,36 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
             </div>
 
 
         </form>
 
-        
+
     </div>
 </main>
 
 <!-- start change price functionality  -->
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Handle quantity change
-        $('.product-qty').on('change', function() {
+        $('.product-qty').on('change', function () {
             const input = $(this);
             const productId = input.data('product-id');
             const quantity = parseInt(input.val()) || 1;
             const price = parseFloat(input.data('price'));
-            
+
             // Ensure minimum quantity
             if (quantity < 1) {
                 input.val(1);
                 return;
             }
-            
+
             // Add loading state
             const row = input.closest('tr');
             row.css('opacity', '0.6');
-            
+
             // Make AJAX request
             $.ajax({
                 url: '/update-cart/',
@@ -175,43 +171,45 @@
                     'id': productId,
                     'qty': quantity
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.status === 'success') {
                         // Update subtotal display
-                        $(`#subtotal-${productId}`).text('Ksh' + response.subtotal.toFixed(2));
-                        
+                        $(`#subtotal-${productId}`).text('Ksh' + response.subtotal.toFixed(
+                            2));
+
                         // Update cart total
                         $('#cart-total-amount').text(response.cart_total.toFixed(2));
-                        
+
                         // Show success message
-                        showNotification('success', 'Cart Updated', 'Cart has been updated successfully');
+                        showNotification('success', 'Cart Updated',
+                            'Cart has been updated successfully');
                     } else {
                         // Show error message
                         showNotification('error', 'Error', response.message);
                         input.val(input.data('original-value'));
                     }
                 },
-                error: function() {
+                error: function () {
                     showNotification('error', 'Error', 'Failed to update cart');
                     input.val(input.data('original-value'));
                 },
-                complete: function() {
+                complete: function () {
                     row.css('opacity', '1');
                 }
             });
         });
-        
+
         // Store original values
-        $('.product-qty').each(function() {
+        $('.product-qty').each(function () {
             $(this).data('original-value', $(this).val());
         });
-        
+
         // Notification function
         function showNotification(type, title, message) {
             if (!$('#notification-container').length) {
                 $('body').append('<div id="notification-container"></div>');
             }
-            
+
             const notification = $(`
                 <div class="notification ${type}">
                     <div class="notification-content">
@@ -220,19 +218,19 @@
                     </div>
                 </div>
             `);
-            
+
             $('#notification-container').append(notification);
-            
+
             setTimeout(() => {
-                notification.fadeOut(300, function() {
+                notification.fadeOut(300, function () {
                     $(this).remove();
                 });
             }, 3000);
         }
     });
-    </script>
-    
-    <style>
+</script>
+
+<style>
     /* Notification Styles */
     #notification-container {
         position: fixed;
@@ -240,7 +238,7 @@
         right: 20px;
         z-index: 9999;
     }
-    
+
     .notification {
         background: white;
         border-radius: 8px;
@@ -251,38 +249,39 @@
         max-width: 400px;
         animation: slideIn 0.3s ease-out;
     }
-    
+
     .notification.success {
         border-left: 4px solid #4CAF50;
     }
-    
+
     .notification.error {
         border-left: 4px solid #f44336;
     }
-    
+
     .notification h4 {
         margin: 0 0 5px;
         color: #333;
         font-size: 16px;
     }
-    
+
     .notification p {
         margin: 0;
         color: #666;
         font-size: 14px;
     }
-    
+
     @keyframes slideIn {
         from {
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
         }
     }
-    
+
     /* Input Styles */
     .product-qty {
         padding: 8px;
@@ -291,45 +290,45 @@
         text-align: center;
         transition: all 0.3s ease;
     }
-    
+
     .product-qty:focus {
         border-color: #3BB77E;
         box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.2);
         outline: none;
     }
-    
+
     /* Loading State */
     tr {
         transition: opacity 0.3s ease;
     }
-    
+
     /* Cart Total Styles */
     .cart-total {
         font-size: 18px;
         font-weight: 600;
         color: #3BB77E;
     }
-    </style>
+</style>
 <!-- end change price functionality  -->
 
 
 
 <!-- start delete from cart functionality -->
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Delete from cart functionality
-        $('.delete-product').on('click', function(e) {
+        $('.delete-product').on('click', function (e) {
             e.preventDefault();
-            
+
             const deleteBtn = $(this);
             const productId = deleteBtn.data('product');
             const row = deleteBtn.closest('tr');
-            
+
             // Show confirmation dialog
             if (confirm('Are you sure you want to remove this item?')) {
                 // Add loading state
                 row.css('opacity', '0.5');
-                
+
                 // Make AJAX request
                 $.ajax({
                     url: '/delete-from-cart/',
@@ -337,18 +336,19 @@
                     data: {
                         'id': productId
                     },
-                    success: function(response) {
+                    success: function (response) {
                         if (response.status === 'success') {
                             // Animate row removal
-                            row.slideUp(300, function() {
+                            row.slideUp(300, function () {
                                 $(this).remove();
-                                
+
                                 // Update cart total
-                                $('#cart-total-amount').text(response.cart_total.toFixed(2));
-                                
+                                $('#cart-total-amount').text(response.cart_total
+                                    .toFixed(2));
+
                                 // Update cart count in header if exists
                                 $('.cart-count').text(response.cart_count);
-                                
+
                                 // Show empty cart message if no items left
                                 if (response.cart_count === 0) {
                                     $('.shopping-summery tbody').html(
@@ -358,28 +358,30 @@
                                     $('.checkout-button').hide();
                                 }
                             });
-                            
+
                             // Show success notification
-                            showNotification('success', 'Item Removed', 'Item has been removed from your cart');
+                            showNotification('success', 'Item Removed',
+                                'Item has been removed from your cart');
                         } else {
                             showNotification('error', 'Error', response.message);
                         }
                     },
-                    error: function() {
+                    error: function () {
                         row.css('opacity', '1');
-                        showNotification('error', 'Error', 'Failed to remove item from cart');
+                        showNotification('error', 'Error',
+                            'Failed to remove item from cart');
                     }
                 });
             }
         });
 
-    
+
         // Notification function
         function showNotification(type, title, message) {
             if (!$('#notification-container').length) {
                 $('body').append('<div id="notification-container"></div>');
             }
-            
+
             const notification = $(`
                 <div class="notification ${type}">
                     <div class="notification-content">
@@ -388,14 +390,14 @@
                     </div>
                 </div>
             `);
-            
+
             $('#notification-container').append(notification);
-            
+
             // Add show class after a small delay (for animation)
             setTimeout(() => {
                 notification.addClass('show');
             }, 10);
-            
+
             // Remove notification after delay
             setTimeout(() => {
                 notification.removeClass('show');
@@ -405,9 +407,9 @@
             }, 3000);
         }
     });
-    </script>
+</script>
 <!-- end delete from cart functionality -->
 
-    
-    
+
+
 {% endblock content %}
