@@ -8,10 +8,11 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 
 STATUS_CHOICE = (
-    ("processing", "Processing"),
-    ("shipped", "Shipped"),
-    ("delivered", "Delivered"),
-)
+        ('processing', 'Processing'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    )
 
 
 STATUS = (
@@ -116,6 +117,32 @@ class ProductImages(models.Model):
         verbose_name_plural = "Product Images"
 
 
+
+
+class ShippingAddress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100)
+    email = models.EmailField()
+    address = models.CharField(max_length=200)
+    city = models.CharField(max_length=100)
+    is_default = models.BooleanField(default=False)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Shipping Addresses"
+        ordering = ['-is_default', '-date_added']
+
+    def __str__(self):
+        return f"{self.full_name} - {self.city}"
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            # Set all other addresses of this user to non-default
+            ShippingAddress.objects.filter(user=self.user).exclude(id=self.id).update(is_default=False)
+        super().save(*args, **kwargs)
+
+
 ############################################## Cart, Order, OrderITems and Address ##################################
 ############################################## Cart, Order, OrderITems and Address ##################################
 ############################################## Cart, Order, OrderITems and Address ##################################
@@ -124,21 +151,12 @@ class ProductImages(models.Model):
 
 class CartOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100, null=True, blank=True)
-    email = models.CharField(max_length=100, null=True, blank=True)
-    phone = models.CharField(max_length=100, null=True, blank=True)
-
-    address = models.CharField(max_length=100, null=True, blank=True)
-    Town = models.CharField(max_length=100, null=True, blank=True)
-    county = models.CharField(max_length=100, null=True, blank=True)
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
 
     price = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
     saved = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
     coupons = models.ManyToManyField("core.Coupon", blank=True)
-    
-    shipping_method = models.CharField(max_length=100, null=True, blank=True)
     tracking_id = models.CharField(max_length=100, null=True, blank=True)
-
 
     paid_status = models.BooleanField(default=False)
     order_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)

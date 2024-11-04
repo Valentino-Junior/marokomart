@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address
+from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress
 
 class ProductImagesAdmin(admin.TabularInline):
     model = ProductImages
@@ -35,6 +35,12 @@ class AddressAdmin(admin.ModelAdmin):
     list_display = ['user', 'mobile', 'address']
 
 
+class ShippingAddressAdmin(admin.ModelAdmin):
+    
+    list_display = ['user', 'full_name', 'phone', 'email', 'address', 'city', 'is_default', 'date_added']
+
+
+
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(CartOrder, CartOrderAdmin)
@@ -43,3 +49,6 @@ admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(wishlist_model, wishlistAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Coupon)
+
+admin.site.register(ShippingAddress, ShippingAddressAdmin)
+

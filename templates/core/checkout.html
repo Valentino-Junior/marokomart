@@ -50,20 +50,25 @@
                     <h4 class="mb-30">Billing Details</h4>
                     <div class="row">
                         <div class="form-group col-lg-6">
-                            <label for="">Address</label>
-                            <input type="text" name="address" value="" placeholder="Address">
+                            <label for="">First name</label>
+                            <input type="text" name="first_name" value="" placeholder="First name">
                         </div>
                         <div class="form-group col-lg-6">
-                            <label for="">City</label>
-                            <input type="text" name="city" placeholder="City *" value="">
+                            <label for="">Last name</label>
+                            <input type="text" name="last_name" placeholder="Last name (optional)" value="">
                         </div>
                         <div class="form-group col-lg-6">
-                            <label for="">State</label>
-                            <input type="text" name="state" value="" placeholder="State *">
+                            <label for="">Phone</label>
+                            <input type="text" name="phone" value="" placeholder="Phone*">
                         </div>
                         <div class="form-group col-lg-6">
-                            <label for="">Country</label>
-                            <input type="text" name="country" value="" placeholder="Country *">
+                            <label for="">Email address</label>
+                            <input type="text" name="email_address" value="" placeholder="Email address *">
+                        </div>
+
+                        <div class="form-group col-lg-6">
+                            <label for="">Delivery address</label>
+                            <input type="text" name="delivery_address" value="" placeholder="Delivery address *">
                         </div>
                     </div>
                 </div>
@@ -82,7 +87,6 @@
 
                     <div class="summary-item">
                         <span>Subtotal:</span>
-                        <span class="original-price">Ksh{{ order.price|add:order.saved|floatformat:2 }}</span>
                     </div>
                     {% if order.saved > 0 %}
                     <div class="summary-item text-success">
@@ -215,7 +219,7 @@
                                 </div>
                             `;
                             $('.original-price').closest('.summary-item').after(
-                            discountRow);
+                                discountRow);
                         }
 
                         // Show success message
