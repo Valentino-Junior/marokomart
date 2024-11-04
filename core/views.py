@@ -494,89 +494,89 @@ def delete_item_from_cart(request):
     })
 
 
-# def save_checkout_info(request):
-#     cart_total_amount = 0
-#     total_amount = 0
-#     if request.method == "POST":
-#         full_name = request.POST.get("full_name")
-#         email = request.POST.get("email")
-#         mobile = request.POST.get("mobile")
-#         address = request.POST.get("address")
-#         city = request.POST.get("city")
-#         state = request.POST.get("state")
-#         country = request.POST.get("country")
+def save_checkout_info(request):
+    cart_total_amount = 0
+    total_amount = 0
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        mobile = request.POST.get("mobile")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        country = request.POST.get("country")
 
-#         print(full_name)
-#         print(email)
-#         print(mobile)
-#         print(address)
-#         print(city)
-#         print(state)
-#         print(country)
+        print(full_name)
+        print(email)
+        print(mobile)
+        print(address)
+        print(city)
+        print(state)
+        print(country)
 
-#         request.session['full_name'] = full_name
-#         request.session['email'] = email
-#         request.session['mobile'] = mobile
-#         request.session['address'] = address
-#         request.session['city'] = city
-#         request.session['state'] = state
-#         request.session['country'] = country
-
-
-#         if 'cart_data_obj' in request.session:
-
-#             # Getting total amount for Paypal Amount
-#             for p_id, item in request.session['cart_data_obj'].items():
-#                 total_amount += int(item['qty']) * float(item['price'])
+        request.session['full_name'] = full_name
+        request.session['email'] = email
+        request.session['mobile'] = mobile
+        request.session['address'] = address
+        request.session['city'] = city
+        request.session['state'] = state
+        request.session['country'] = country
 
 
-#             full_name = request.session['full_name']
-#             email = request.session['email']
-#             phone = request.session['mobile']
-#             address = request.session['address']
-#             city = request.session['city']
-#             state = request.session['state']
-#             country = request.session['country']
+        if 'cart_data_obj' in request.session:
 
-#             # Create ORder Object
-#             order = CartOrder.objects.create(
-#                 user=request.user,
-#                 price=total_amount,
-#                 # full_name=full_name,
-#                 # email=email,
-#                 # phone=phone,
-#                 # address=address,
-#                 # city=city,
-#                 # state=state,
-#                 # country=country,
-#             )
-
-#             del request.session['full_name']
-#             del request.session['email']
-#             del request.session['mobile']
-#             del request.session['address']
-#             del request.session['city']
-#             del request.session['state']
-#             del request.session['country']
-
-#             # Getting total amount for The Cart
-#             for p_id, item in request.session['cart_data_obj'].items():
-#                 cart_total_amount += int(item['qty']) * float(item['price'])
-
-#                 cart_order_products = CartOrderProducts.objects.create(
-#                     order=order,
-#                     invoice_no="INVOICE_NO-" + str(order.id), # INVOICE_NO-5,
-#                     item=item['title'],
-#                     image=item['image'],
-#                     qty=item['qty'],
-#                     price=item['price'],
-#                     total=float(item['qty']) * float(item['price'])
-#                 )
+            # Getting total amount for Paypal Amount
+            for p_id, item in request.session['cart_data_obj'].items():
+                total_amount += int(item['qty']) * float(item['price'])
 
 
+            full_name = request.session['full_name']
+            email = request.session['email']
+            phone = request.session['mobile']
+            address = request.session['address']
+            city = request.session['city']
+            state = request.session['state']
+            country = request.session['country']
 
-#         return redirect("core:checkout", order.oid)
-#     return redirect("core:checkout", order.oid)
+            # Create ORder Object
+            order = CartOrder.objects.create(
+                user=request.user,
+                price=total_amount,
+                # full_name=full_name,
+                # email=email,
+                # phone=phone,
+                # address=address,
+                # city=city,
+                # state=state,
+                # country=country,
+            )
+
+            del request.session['full_name']
+            del request.session['email']
+            del request.session['mobile']
+            del request.session['address']
+            del request.session['city']
+            del request.session['state']
+            del request.session['country']
+
+            # Getting total amount for The Cart
+            for p_id, item in request.session['cart_data_obj'].items():
+                cart_total_amount += int(item['qty']) * float(item['price'])
+
+                cart_order_products = CartOrderProducts.objects.create(
+                    order=order,
+                    invoice_no="INVOICE_NO-" + str(order.id), # INVOICE_NO-5,
+                    item=item['title'],
+                    image=item['image'],
+                    qty=item['qty'],
+                    price=item['price'],
+                    total=float(item['qty']) * float(item['price'])
+                )
+
+
+
+        return redirect("core:checkout", order.oid)
+    return redirect("core:checkout", order.oid)
 
 
 
@@ -970,55 +970,55 @@ def save_shipping_address(request):
     return JsonResponse({'status': 'error'}, status=400)
 
 
-@login_required
-def save_checkout_info(request):
-    """Save checkout information with the selected shipping address."""
-    if request.method == "POST":
-        address_id = request.POST.get('address_id')
-        try:
-            shipping_address = ShippingAddress.objects.get(id=address_id, user=request.user)
-        except ShippingAddress.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Invalid shipping address'
-            }, status=400)
+# @login_required
+# def save_checkout_info(request):
+#     """Save checkout information with the selected shipping address."""
+#     if request.method == "POST":
+#         address_id = request.POST.get('address_id')
+#         try:
+#             shipping_address = ShippingAddress.objects.get(id=address_id, user=request.user)
+#         except ShippingAddress.DoesNotExist:
+#             return JsonResponse({
+#                 'status': 'error',
+#                 'message': 'Invalid shipping address'
+#             }, status=400)
 
-        cart_total_amount = 0
-        if 'cart_data_obj' in request.session:
-            for p_id, item in request.session['cart_data_obj'].items():
-                cart_total_amount += int(item['qty']) * float(item['price'])
+#         cart_total_amount = 0
+#         if 'cart_data_obj' in request.session:
+#             for p_id, item in request.session['cart_data_obj'].items():
+#                 cart_total_amount += int(item['qty']) * float(item['price'])
             
-            # Create order
-            order = CartOrder.objects.create(
-                user=request.user,
-                price=cart_total_amount,
-                full_name=shipping_address.full_name,
-                email=shipping_address.email,
-                phone=shipping_address.phone,
-                address=shipping_address.address,
-                city=shipping_address.city,
-            )
+#             # Create order
+#             order = CartOrder.objects.create(
+#                 user=request.user,
+#                 price=cart_total_amount,
+#                 full_name=shipping_address.full_name,
+#                 email=shipping_address.email,
+#                 phone=shipping_address.phone,
+#                 address=shipping_address.address,
+#                 city=shipping_address.city,
+#             )
             
-            # Create order products
-            for p_id, item in request.session['cart_data_obj'].items():
-                CartOrderProducts.objects.create(
-                    order=order,
-                    invoice_no=f"INVOICE_NO-{order.id}",
-                    item=item['title'],
-                    image=item['image'],
-                    qty=item['qty'],
-                    price=item['price'],
-                    total=float(item['qty']) * float(item['price'])
-                )
+#             # Create order products
+#             for p_id, item in request.session['cart_data_obj'].items():
+#                 CartOrderProducts.objects.create(
+#                     order=order,
+#                     invoice_no=f"INVOICE_NO-{order.id}",
+#                     item=item['title'],
+#                     image=item['image'],
+#                     qty=item['qty'],
+#                     price=item['price'],
+#                     total=float(item['qty']) * float(item['price'])
+#                 )
 
-            # Clear cart session
-            del request.session['cart_data_obj']
-            request.session.modified = True
+#             # Clear cart session
+#             del request.session['cart_data_obj']
+#             request.session.modified = True
 
-            return JsonResponse({
-                'status': 'success',
-                'order_id': order.id,
-                'redirect_url': f'/checkout/{order.id}/'
-            })
+#             return JsonResponse({
+#                 'status': 'success',
+#                 'order_id': order.id,
+#                 'redirect_url': f'/checkout/{order.id}/'
+#             })
 
-    return JsonResponse({'status': 'error'}, status=400)
+#     return JsonResponse({'status': 'error'}, status=400)
