@@ -360,6 +360,9 @@
             </div>
         </div>
     </header>
+
+    
+
     <div class="mobile-header-active mobile-header-wrapper-style">
         <div class="mobile-header-wrapper-inner">
             <div class="mobile-header-top">
@@ -374,12 +377,31 @@
                 </div>
             </div>
             <div class="mobile-header-content-area">
+                
+
                 <div class="mobile-search search-style-3 mobile-header-border">
-                    <form action="#">
-                        <input type="text" placeholder="Search for items…" />
-                        <button type="submit"><i class="fi-rs-search"></i></button>
+                    <form action="{% url 'core:search' %}" method="GET">
+                        <select class="select-active">
+                            
+
+                            <ul>
+                                {% for c in categories %}
+
+                                <option>
+                                    <a href="{% url 'core:category-product-list' c.cid %}">{{c.title}}</a>
+                                </option>
+                                {% endfor %}
+
+                            </ul>
+                        </select>
+                        <input type="text" placeholder="Search for items..." name="q" />
+                        <button class="material-symbols-outlined" type="submit"><span
+                                class="material-symbols-outlined">search</span></button>
+
                     </form>
                 </div>
+
+
                 <div class="mobile-menu-wrap mobile-header-border">
                     <!-- mobile menu start -->
                     <nav>
@@ -388,51 +410,52 @@
                                 <a href="/">Home</a>
 
                             </li>
+                            
                             <li class="menu-item-has-children">
-                                <a href="#">shop</a>
-
-                            </li>
-                            <li class="menu-item-has-children">
-                                <a href="#">Vendors</a>
+                                <a href="{% url 'core:product-list'  %}">Shop</a>
                             </li>
 
+                            <li class="menu-item-has-children"><a href="{% url 'core:my_orders' %}">My orders</a></li>
+
+
+                            <li class="menu-item-has-children"><a href="{% url 'core:order_tracking' %}">Order Tracking</a></li>
+
+                            <li class="menu-item-has-children"><img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}"
+                                alt="hot deals" /><a href="{% url 'core:new_arrivals' %}">New Arrivals</a></li>
+                            
+                                <li class="menu-item-has-children"><img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}"
+                                    alt="hot deals" /><a href="{% url 'core:hot_deals' %}">Hot Deals</a></li>
+
+
+                            <li class="menu-item-has-children"><a href="{% url 'core:about_us' %}">About Us</a></li>
 
                             <li class="menu-item-has-children">
-                                <a href="#">Pages</a>
+                                <a href="{% url 'core:contact' %}">Contact Us</a>
+                            </li>
+
+                            <li class="menu-item-has-children">
+                                <a href="#">More</a>
                                 <ul class="dropdown">
-                                    <li><a href="#">About Us</a></li>
-                                    <li><a href="#">Contact</a></li>
                                     <li><a href="#">My Account</a></li>
                                     <li><a href="#">Login</a></li>
                                     <li><a href="#">Register</a></li>
                                     <li><a href="#">Forgot password</a></li>
                                     <li><a href="#">Reset password</a></li>
-                                    <li><a href="#">Purchase Guide</a></li>
-                                    <li><a href="#">Privacy Policy</a></li>
-                                    <li><a href="#">Terms of Service</a></li>
-                                    <li><a href="#">404 Page</a></li>
                                 </ul>
                             </li>
-                            <li class="menu-item-has-children">
-                                <a href="#">Language</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">English</a></li>
-                                    <li><a href="#">French</a></li>
-                                    <li><a href="#">German</a></li>
-                                    <li><a href="#">Spanish</a></li>
-                                </ul>
-                            </li>
+
+
+
                         </ul>
                     </nav>
                     <!-- mobile menu end -->
                 </div>
+
                 <div class="mobile-header-info-wrap">
                     <div class="single-mobile-header-info">
                         <a href="#"><i class="fi-rs-marker"></i> Our location </a>
                     </div>
-                    <div class="single-mobile-header-info">
-                        <a href="#"><i class="fi-rs-user"></i>Log In / Sign Up </a>
-                    </div>
+                
                     <div class="single-mobile-header-info">
                         <a href="#"><i class="fi-rs-headphones"></i>(+01) - 2345 - 6789 </a>
                     </div>
@@ -442,11 +465,8 @@
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-twitter-white.svg' %}" alt="" /></a>
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-instagram-white.svg' %}" alt="" /></a>
-                    <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-pinterest-white.svg' %}" alt="" /></a>
-                    <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-youtube-white.svg' %}" alt="" /></a>
                 </div>
-                <div class="site-copyright">Copyright 2019 - Present © Desphixs. All rights reserved. Powered by
-                    Desphixs.</div>
+                <div class="site-copyright">Copyright 2024 - Wakil liquor. All rights reserved.</div>
             </div>
         </div>
     </div>
