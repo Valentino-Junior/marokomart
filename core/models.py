@@ -168,6 +168,7 @@ class CartOrder(models.Model):
     
     class Meta:
         verbose_name_plural = "Cart Order"
+        ordering = ["-order_date"]
 
 
 class CartOrderProducts(models.Model):

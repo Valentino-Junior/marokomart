@@ -683,43 +683,133 @@ def apply_coupon_view(request):
     })
 
 
+# @login_required
+# def checkout(request, oid):
+#     try:
+#         order = CartOrder.objects.get(oid=oid, user=request.user)
+#         order_items = CartOrderProducts.objects.filter(order=order)
+        
+#         context = {
+#             "order": order,
+#             "order_items": order_items,
+#             "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
+#         }
+#         return render(request, "core/checkout.html", context)
+        
+#     except CartOrder.DoesNotExist:
+#         messages.error(request, "Order not found")
+#         return redirect("core:index")
+
+
+# @login_required
+# def payment_completed_view(request, oid):
+#     order = CartOrder.objects.get(oid=oid)
+    
+#     if order.paid_status == False:
+#         order.paid_status = True
+#         order.save()
+        
+#     context = {
+#         "order": order,
+#         "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
+
+#     }
+#     return render(request, 'core/payment-completed.html',  context)
+
+
+# @login_required
+# def payment_failed_view(request):
+#     return render(request, 'core/payment-failed.html')
+
+
+
 @login_required
 def checkout(request, oid):
     try:
-        order = CartOrder.objects.get(oid=oid, user=request.user)
+        order = get_object_or_404(CartOrder, oid=oid, user=request.user)
         order_items = CartOrderProducts.objects.filter(order=order)
-        
         context = {
             "order": order,
             "order_items": order_items,
             "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
         }
         return render(request, "core/checkout.html", context)
-        
     except CartOrder.DoesNotExist:
         messages.error(request, "Order not found")
         return redirect("core:index")
-
-
-@login_required
-def payment_completed_view(request, oid):
-    order = CartOrder.objects.get(oid=oid)
     
-    if order.paid_status == False:
-        order.paid_status = True
-        order.save()
-        
-    context = {
-        "order": order,
-        "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
 
-    }
-    return render(request, 'core/payment-completed.html',  context)
+# New helper function to clear cart
+def clear_cart(request):
+    """Helper function to clear the cart session data"""
+    request.session['cart_data_obj'] = {}
+    request.session.modified = True
 
 
+
+# Modified payment processing view
 @login_required
-def payment_failed_view(request):
-    return render(request, 'core/payment-failed.html')
+def process_payment(request):
+    if request.method == 'POST':
+        oid = request.POST.get('oid')
+        payment_method = request.POST.get('payment_method')
+
+        try:
+            order = get_object_or_404(CartOrder, oid=oid, user=request.user)
+
+            if payment_method == 'stripe':
+                # Implement actual Stripe API payment processing here
+                order.paid_status = True
+                order.save()
+               
+                # Clear session cart
+                clear_cart(request)
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': f'Payment for order {order.oid} successful', 
+                    'redirect': '/',
+                    'cart_count': 0
+                })
+
+            elif payment_method == 'mpesa':
+                # Implement M-Pesa API payment processing here
+                order.paid_status = True
+                order.save()
+                
+                # Clear session cart
+                clear_cart(request)
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': f'Payment for order {order.oid} successful', 
+                    'redirect': '/',
+                    'cart_count': 0
+                })
+
+            elif payment_method == 'cash':
+                # Handle Cash on Delivery
+                order.paid_status = False
+                order.save()
+                
+                # Clear session cart
+                clear_cart(request)
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': f'Order {order.oid} placed successfully', 
+                    'redirect': '/',
+                    'cart_count': 0
+                })
+
+            else:
+                return JsonResponse({'success': False, 'message': 'Invalid payment method'})
+
+        except CartOrder.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Order not found'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
 
 
 @login_required
