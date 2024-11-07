@@ -1,6 +1,6 @@
 from django import views
 from django.urls import path, include
-from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, ajax_contact_form, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, make_address_default, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, terms_of_service, order_tracking_view, new_arrivals_view, hot_deals_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, process_payment, clear_cart, track_order_ajax, my_orders_view, cancel_order, contact_support, singlecategory_list_view
+from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, ajax_contact_form, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, make_address_default, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, terms_of_service, order_tracking_view, new_arrivals_view, hot_deals_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, process_payment, clear_cart, track_order_ajax, my_orders_view, cancel_order, contact_support
 
 app_name = "core"
 
@@ -12,8 +12,6 @@ urlpatterns = [
     path("product/<pid>/", product_detail_view, name="product-detail"),
     path("category/", category_list_view, name="category-list"),
     path("category/<cid>/", category_product_list__view, name="category-product-list"),
-    path("singlecategory_list_view/", singlecategory_list_view, name="singlecategory_list_view"),
-    
     path("ajax-add-review/<int:pid>/", ajax_add_review, name="ajax-add-review"),
     path("search/", search_view, name="search"),
     path("filter-products/", filter_product, name="filter-product"),
