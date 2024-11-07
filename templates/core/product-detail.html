@@ -596,6 +596,7 @@
                                                     <div class="col-lg-6">
                                                         <h4 class="mb-30">Customer feedback</h4>
                                                         <div class="comment-list">
+                                                            {% if reviews %}
                                                             {% for r in reviews %}
                                                             <div
                                                                 class="single-comment justify-content-between d-flex mb-30">
@@ -607,7 +608,7 @@
 
                                                                         {% endif %}
                                                                         <a href="#"
-                                                                            class="font-heading text-brand">{{r.user.username|title}}</a>
+                                                                            class="font-heading text-brand">{{ r.user.username|title }}</a>
                                                                     </div>
 
                                                                     <div class="desc">
@@ -615,8 +616,7 @@
                                                                             class="d-flex justify-content-between mb-10">
                                                                             <div class="d-flex align-items-center">
                                                                                 <span
-                                                                                    class="font-xs text-muted">{{r.date|date:"d M, Y"}}
-                                                                                </span>
+                                                                                    class="font-xs text-muted">{{ r.date|date:"d M, Y" }}</span>
                                                                             </div>
                                                                             <div>
                                                                                 {% for star in r.rating|ljust:r.rating %}
@@ -624,11 +624,14 @@
                                                                                 {% endfor %}
                                                                             </div>
                                                                         </div>
-                                                                        <p class="mb-10">{{ r.review}}</p>
+                                                                        <p class="mb-10">{{ r.review }}</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             {% endfor %}
+                                                            {% else %}
+                                                            <p>No reviews yet.</p>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
 
