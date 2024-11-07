@@ -80,6 +80,38 @@ def product_list_view(request):
     return render(request, 'core/product-list.html', context)
 
 
+def singlecategory_list_view(request):
+    """Main view for product list page"""
+    products = Product.objects.filter(product_status="published")
+    sort_by = request.GET.get('sort_by', '')
+    
+    # Apply sorting
+    if sort_by == 'price_low_high':
+        products = products.order_by('price', '-id')
+    elif sort_by == 'price_high_low':
+        products = products.order_by('-price', '-id')
+    else:
+        products = products.order_by("-id")
+    
+    context = {
+        "products": products,
+        "current_sort": sort_by,
+    }
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # If AJAX request, return only the product grid
+        product_grid_html = render_to_string(
+            'core/includes/singlecategory_grid.html',
+            context,
+            request=request
+        )
+        return JsonResponse({
+            'product_grid': product_grid_html,
+            'product_count': products.count(),
+        })
+    
+    return render(request, 'core/category-product-list.html', context)
+
 
 def category_list_view(request):
     """
