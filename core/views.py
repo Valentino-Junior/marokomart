@@ -1000,8 +1000,74 @@ def terms_of_service(request):
 
 
 
+
+@login_required
+def my_orders_view(request):
+    orders = CartOrder.objects.filter(user=request.user).order_by('-order_date')
+    return render(request, 'core/my_orders.html', {'orders': orders})
+
+
+
 def order_tracking_view(request):
     return render(request, "core/order_tracking.html")
+
+
+
+@login_required
+def cancel_order(request, order_id):
+    if request.method == 'POST':
+        try:
+            order = CartOrder.objects.get(oid=order_id, user=request.user)
+            if order.product_status not in ['delivered', 'cancelled']:
+                order.product_status = 'cancelled'
+                order.save()
+                return JsonResponse({'success': True})
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot cancel this order'
+            })
+        except CartOrder.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Order not found'
+            })
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+@login_required
+def contact_support(request):
+    if request.method == 'POST':
+        # Handle support request
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+
+def track_order_ajax(request):
+    if request.method == 'GET':
+        order_id = request.GET.get('order_id')
+        try:
+            order = CartOrder.objects.get(oid=order_id)
+            
+            response_data = {
+                'status': 'success',
+                'order_data': {
+                    'oid': order.oid,
+                    'date': order.order_date.strftime("%B %d, %Y"),
+                    'status': order.product_status,
+                    'paid_status': order.paid_status,
+                    'price': float(order.price),
+                    'tracking_id': order.tracking_id or 'Not available',
+                }
+            }
+            return JsonResponse(response_data)
+        except CartOrder.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Order not found'
+            })
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
 
 
 def hot_deals_view(request):
