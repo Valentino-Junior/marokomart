@@ -136,7 +136,7 @@ def category_list_view(request):
 
 def category_product_list__view(request, cid):
 
-    category = Category.objects.get(cid=cid) # food, Cosmetics
+    category = Category.objects.get(cid=cid) 
     products = Product.objects.filter(product_status="published", category=category)
 
     context = {
