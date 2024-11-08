@@ -29,7 +29,6 @@
                                             <tr class="main-heading">
                                                 <th scope="col" colspan="2">Product</th>
                                                 <th scope="col">Price</th>
-                                                <th scope="col">Stock Status</th>
                                                 <th scope="col">Action</th>
                                                 <th scope="col">Remove</th>
                                             </tr>
@@ -54,15 +53,7 @@
                                                         {{ w.product.price }}
                                                     </span>
                                                 </td>
-                                                <td class="text-center detail-info" data-title="Stock">
-                                                    <span class="stock-status in-stock mb-0">
-                                                        {% if w.product.in_stock and w.product.stock_count|add:0 > 0 %}
-                                                        In Stock
-                                                        {% else %}
-                                                        Out of Stock
-                                                        {% endif %}
-                                                    </span>
-                                                </td>
+                                                
                                                 {% if w.product.in_stock and w.product.stock_count|add:0 > 0 %}
                                                 <td class="text-right" data-title="Cart">
                                                     <input type="hidden" value="1"

@@ -510,14 +510,14 @@
 
                                         <div class="clearfix product-price-cover">
                                             <div class="product-price primary-color float-left">
-                                                <span class="current-price text-brand">$</span><span
+                                                <span class="current-price text-brand" style="font-size: 36px;">Ksh</span><span
                                                     class="current-price text-brand current-price current-product-price-{{ p.id }}"
-                                                    id="current-product-price">{{p.price}}</span>
+                                                    id="current-product-price" style="font-size: 36px;">{{p.price}}</span>
                                                 <span>
                                                     <span
-                                                        class="save-price font-md color3 ml-15">-{{p.get_precentage|floatformat:0}}%
+                                                        class="save-price font-md color3 ml-15" style="font-size: 12px;">-{{p.get_precentage|floatformat:0}}%
                                                         Off</span>
-                                                    <span class="old-price font-md ml-15">${{p.old_price}}</span>
+                                                    <span class="old-price font-md ml-15" style="font-size: 18px;">Ksh{{p.old_price}}</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -537,10 +537,19 @@
                                                 <input type="hidden" class="product-title-{{ p.id }}"
                                                     value="{{ p.title }}">
 
+                                                {% if p.in_stock and p.stock_count|add:0 > 0 %}
+
 
                                                 <button type="submit" class="button button-add-to-cart add-to-cart-btn"
                                                     data-index="{{ p.id }}" id="add-to-cart-btn"><i
                                                         class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% else %}
+                                                <button  class="button "
+                                                   >Out of stock</button>
+
+                                                {% endif %}
+
+
                                                 <a aria-label="Add To Wishlist"
                                                     class="action-btn hover-up add-to-wishlist"
                                                     data-product-item="{{p.id}}"><i class="fi-rs-heart"></i></a>
