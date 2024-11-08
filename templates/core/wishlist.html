@@ -1,85 +1,320 @@
-
 {% extends 'partials/base.html' %}
 {% load static %}
 {% block content %}
-    <main class="main" id="wishlist-list">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                    <span></span> Shop <span></span> Fillter
-                </div>
+<main class="main" id="wishlist-list">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> Wishlist
             </div>
         </div>
-        <div class="container mb-30 mt-50">
-            <div class="row">
-                <div class="col-xl-10 col-lg-12 m-auto">
-                    <div class="mb-50">
-                        <h1 class="heading-2 mb-10">Your Wishlist</h1>
-                        <h6 class="text-body">There are <span class="text-brand">5</span> products in this list</h6>
-                    </div>
-                    <div class="table-responsive shopping-summery">
-                        <table class="table table-wishlist">
-                            <thead>
-                                <tr class="main-heading">
-                                    <th class="custome-checkbox start pl-30">
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox11" value="" />
-                                        <label class="form-check-label" for="exampleCheckbox11"></label>
-                                    </th>
-                                    <th scope="col" colspan="2">Product</th>
-                                    <th scope="col">Price</th>
-                                    <th scope="col">Stock Status</th>
-                                    <th scope="col">Action</th>
-                                    <th scope="col" class="end">Remove</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for w in w %}
-
-                                {{w}}
-                                
-                                <tr class="pt-30">
-                                    <td class="custome-checkbox pl-30">
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox1" value="" />
-                                        <label class="form-check-label" for="exampleCheckbox1"></label>
-                                    </td>
-                                    <td class="image product-thumbnail pt-40"><img src="{{w.product.image.url}}" alt="#" /></td>
-                                    <td class="product-des product-name">
-                                        <h6><a class="product-name mb-10" href="{% url 'core:product-detail' w.product.pid %}">{{ w.product.title|truncatechars:30 }}</a></h6>
-                                        
-                                    </td>
-                                    <td class="price d-fdlex fs-1" data-title="Price">
-                                        <span class="text-brand">$</span><span class="text-brand current-product-price-{{ w.product.id }}">{{ w.product.price }}</span>
-                                    </td>
-                                    <td class="text-center detail-info" data-title="Stock">
-                                        <span class="stock-status in-stock mb-0"> {% if w.product.in_stock %} In Stock {% else %} Out of Stock {% endif %}</span>
-                                    </td>
-                                    <td class="text-right" data-title="Cart">
-
-
-                                        <input type="hidden" value="1" id="product-quantity" class="product-quantity-{{ w.product.id }}">
-                                        <input type="hidden" class="product-pid-{{ w.product.id }}" value="{{ w.product.pid }}">
-                                        <input type="hidden" class="product-image-{{ w.product.id }}" value="{{ w.product.image.url }}">
-                                        <input type="hidden" class="product-id-{{ w.product.id }}" value="{{ w.product.id }}">
-                                        <input type="hidden" class="product-title-{{ w.product.id }}" value="{{ w.product.title }}">
-
-                                        <button class="btn btn-sm add-to-cart-btn" data-index="{{ w.product.id }}">Add to cart</button>
-                                    </td>
-                                    <td class="action text-center" data-title="Remove">
-                                        <button style="border: none; background: none;" data-wishlist-product="{{ w.id }}"  class="text-body delete-wishlist-product"><i class="fi-rs-trash"></i></button>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td><p>Nothing in wishlist yet...</p></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+    </div>
+    <div class="container mb-30 mt-50">
+        <div class="row">
+            <div class="col-xl-10 col-lg-12 m-auto">
+                <div class="mb-50">
+                    <h1 class="heading-2 mb-10">Your Wishlist</h1>
+                    <h6 class="text-body">There are <span class="text-brand">{{ wishlist_count }}</span> products in
+                        this list</h6>
                 </div>
+                <main class="main">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                {% csrf_token %}
+                                <div class="table-responsive">
+                                    <table class="table wishlist-table">
+                                        <thead>
+                                            <tr class="main-heading">
+                                                <th scope="col" colspan="2">Product</th>
+                                                <th scope="col">Price</th>
+                                                <th scope="col">Stock Status</th>
+                                                <th scope="col">Action</th>
+                                                <th scope="col">Remove</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for w in w %}
+                                            <tr class="pt-30 wishlist-item" data-wishlist-id="{{ w.id }}">
+                                                <td class="image product-thumbnail pt-40" style="padding-left: 12px;">
+                                                    <img src="{{ w.product.image.url }}" alt="#" />
+                                                </td>
+                                                <td class="product-des product-name">
+                                                    <h6>
+                                                        <a class="product-name mb-10"
+                                                            href="{% url 'core:product-detail' w.product.pid %}">
+                                                            {{ w.product.title|truncatechars:30 }}
+                                                        </a>
+                                                    </h6>
+                                                </td>
+                                                <td class="price" data-title="Price">
+                                                    <span class="text-brand">Ksh</span>
+                                                    <span class="text-brand current-product-price-{{ w.product.id }}">
+                                                        {{ w.product.price }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center detail-info" data-title="Stock">
+                                                    <span class="stock-status in-stock mb-0">
+                                                        {% if w.product.in_stock and w.product.stock_count|add:0 > 0 %}
+                                                        In Stock
+                                                        {% else %}
+                                                        Out of Stock
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                                {% if w.product.in_stock and w.product.stock_count|add:0 > 0 %}
+                                                <td class="text-right" data-title="Cart">
+                                                    <input type="hidden" value="1"
+                                                        class="product-quantity-{{ w.product.id }}">
+                                                    <input type="hidden" class="product-pid-{{ w.product.id }}"
+                                                        value="{{ w.product.pid }}">
+                                                    <input type="hidden" class="product-image-{{ w.product.id }}"
+                                                        value="{{ w.product.image.url }}">
+                                                    <input type="hidden" class="product-id-{{ w.product.id }}"
+                                                        value="{{ w.product.id }}">
+                                                    <input type="hidden" class="product-title-{{ w.product.id }}"
+                                                        value="{{ w.product.title }}">
+                                                    <button class="btn btn-sm add-to-cart-btn"
+                                                        data-index="{{ w.product.id }}">
+                                                        Add to cart
+                                                    </button>
+                                                </td>
+
+                                                {% else %}
+                                                <td class="text-center detail-info" data-title="Stock">
+                                                    <span class="stock-status in-stock mb-0">
+                                                        Out of Stock
+                                                    </span>
+                                                </td>
+                                                {% endif %}
+
+                                                <td class="action text-center" data-title="Remove">
+                                                    <button type="button" class="text-body delete-wishlist-btn"
+                                                        style="border: none; background: none;"
+                                                        data-wishlist-id="{{ w.id }}"
+                                                        data-product-title="{{ w.product.title }}">
+                                                        <i class="fi-rs-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr class="no-items-row">
+                                                <td colspan="6" class="text-center">
+                                                    <p>Nothing in wishlist yet...</p>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
-    </main>
+    </div>
+    </div>
+</main>
+
+
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Custom styles for wishlist table */
+    .wishlist-table {
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: transparent;
+        --bs-table-striped-color: var(--bs-body-color);
+        --bs-table-active-bg: transparent;
+        --bs-table-active-color: var(--bs-body-color);
+        --bs-table-hover-bg: rgba(0, 0, 0, 0.02);
+        --bs-table-hover-color: var(--bs-body-color);
+        border-color: #eee;
+    }
+
+    .wishlist-table thead {
+        background-color: #f8f9fa;
+    }
+
+    .wishlist-table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #eee;
+        padding: 1rem;
+    }
+
+    .wishlist-table td {
+        vertical-align: middle;
+        border-bottom: 1px solid #eee;
+        padding: 1.5rem 1rem;
+    }
+
+    .wishlist-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .product-name {
+        color: #253D4E;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .hover-underline:hover {
+        text-decoration: underline;
+    }
+
+    .add-to-cart-btn {
+        background-color: #3BB77E;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .add-to-cart-btn:hover {
+        background-color: #2a9d64;
+        color: white;
+    }
+
+    .delete-wishlist-btn {
+        transition: all 0.3s ease;
+    }
+
+    .delete-wishlist-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .empty-wishlist {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 0;
+    }
+
+    /* Animation for row removal */
+    .wishlist-item {
+        transition: all 0.3s ease;
+    }
+
+    .wishlist-item.removing {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Setup CSRF token for AJAX requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Handle wishlist item removal
+        document.querySelectorAll('.delete-wishlist-btn').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const wishlistId = this.getAttribute('data-wishlist-id');
+                const productTitle = this.getAttribute('data-product-title');
+                const row = this.closest('tr');
+
+                // Disable button to prevent double clicks
+                this.disabled = true;
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('wishlist_id', wishlistId);
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+                // Send AJAX request
+                fetch('/remove-from-wishlist/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Fade out and remove the row
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+
+                                // Check if wishlist is empty
+                                const remainingItems = document.querySelectorAll(
+                                    '.wishlist-item');
+                                if (remainingItems.length === 0) {
+                                    const tbody = document.querySelector(
+                                        '.wishlist-table tbody');
+                                    tbody.innerHTML = `
+                                        <tr class="no-items-row">
+                                            <td colspan="6" class="text-center">
+                                                <p>Nothing in wishlist yet...</p>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }
+                            }, 300);
+
+                            // Show success message
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: data.message,
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        } else {
+                            // Show error message
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'error',
+                                title: data.message,
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        // Show error message
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Error removing item from wishlist',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    })
+                    .finally(() => {
+                        // Re-enable button
+                        this.disabled = false;
+                    });
+            });
+        });
+    });
+</script>
 {% endblock content %}
-    

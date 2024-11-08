@@ -34,6 +34,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 
 from decimal import Decimal
+from django.views.decorators.http import require_http_methods
 
 
 def index(request):
@@ -869,16 +870,22 @@ def make_address_default(request):
     Address.objects.filter(id=id).update(status=True)
     return JsonResponse({"boolean": True})
 
+
 @login_required
 def wishlist_view(request):
-    wishlist = wishlist_model.objects.all()
+    # Filter wishlist items for the logged-in user
+    wishlist = wishlist_model.objects.filter(user=request.user)
+    
+    # Count the number of items in the user's wishlist
+    wishlist_count = wishlist.count()
+    
     context = {
-        "w":wishlist
+        "w": wishlist,
+        "wishlist_count": wishlist_count,
     }
     return render(request, "core/wishlist.html", context)
 
 
-    # w
 
 @login_required
 def add_to_wishlist(request):
@@ -902,10 +909,9 @@ def add_to_wishlist(request):
             )
 
             if wishlist_item.exists():
-                # Remove from wishlist
-                wishlist_item.delete()
+                # Item already exists in wishlist
                 is_added = False
-                message = f"{request.GET.get('title', 'Item')} removed from wishlist"
+                message = f"{request.GET.get('title', 'Item')} already exists in wishlist"
             else:
                 # Add to wishlist
                 wishlist_model.objects.create(
@@ -938,19 +944,35 @@ def add_to_wishlist(request):
     })
 
 
+@login_required
+@require_http_methods(["POST"])
 def remove_wishlist(request):
-    pid = request.GET['id']
-    wishlist = wishlist_model.objects.filter(user=request.user)
-    wishlist_d = wishlist_model.objects.get(id=pid)
-    delete_product = wishlist_d.delete()
-    
-    context = {
-        "bool":True,
-        "w":wishlist
-    }
-    wishlist_json = serializers.serialize('json', wishlist)
-    t = render_to_string('core/async/wishlist-list.html', context)
-    return JsonResponse({'data':t,'w':wishlist_json})
+    try:
+        wishlist_id = request.POST.get('wishlist_id')
+        if not wishlist_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No wishlist ID provided'
+            })
+
+        wishlist_item = get_object_or_404(wishlist_model, 
+                                        id=wishlist_id, 
+                                        user=request.user)
+        product_title = wishlist_item.product.title
+        wishlist_item.delete()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': f'{product_title} has been removed from your wishlist',
+            'wishlist_id': wishlist_id
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
 
 
 
