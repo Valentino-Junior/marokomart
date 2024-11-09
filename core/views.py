@@ -150,6 +150,9 @@ def category_product_list__view(request, cid):
 def product_detail_view(request, pid):
     # Get product or return 404
     product = get_object_or_404(Product, pid=pid)
+
+    # Get all product images including the main image
+    product_images = ProductImages.objects.filter(product=product).order_by('date')
     
     # Get related products
     products = Product.objects.filter(category=product.category).exclude(pid=pid)
@@ -211,6 +214,7 @@ def product_detail_view(request, pid):
     
     context = {
         "p": product,
+        "product_images": product_images,
         "make_review": make_review,
         "review_form": ProductReviewForm(),
         "average_rating": average_rating,
@@ -294,10 +298,12 @@ def add_to_cart(request):
         try:
             cart_product = {}
             product_id = request.GET['id']
+            # Get quantity from request, default to 1 if not provided
+            quantity = int(request.GET.get('quantity', '1'))
             
             cart_product[str(product_id)] = {
                 'title': request.GET['title'],
-                'qty': request.GET.get('qty', '1'),
+                'qty': str(quantity),  # Use the quantity from request
                 'price': request.GET['price'],
                 'image': request.GET['image'],
                 'pid': request.GET['pid'],
@@ -306,8 +312,9 @@ def add_to_cart(request):
             if 'cart_data_obj' in request.session:
                 if str(product_id) in request.session['cart_data_obj']:
                     cart_data = request.session['cart_data_obj']
+                    # Add the new quantity to existing quantity
                     cart_data[str(product_id)]['qty'] = str(
-                        int(cart_data[str(product_id)]['qty']) + 1
+                        int(cart_data[str(product_id)]['qty']) + quantity
                     )
                     request.session['cart_data_obj'] = cart_data
                 else:
@@ -319,6 +326,7 @@ def add_to_cart(request):
             
             request.session.modified = True
             
+            # Get the updated cart count by summing all quantities
             # Get the updated cart count
             cart_count = len(request.session['cart_data_obj'])
             
