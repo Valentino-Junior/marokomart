@@ -32,7 +32,6 @@
                             <thead>
                                 <tr class="main-heading">
                                     <th scope="col">Product</th>
-                                    <th scope="col">Title</th>
                                     <th scope="col">Unit Price</th>
                                     <th scope="col" class="text-center">Quantity</th>
                                     <th scope="col">Subtotal</th>
@@ -43,18 +42,19 @@
                                 {% if cart_data %}
                                 {% for product_id, item in cart_data.items %}
                                 <tr class="pt-30">
-                                    <td class="image product-thumbnail pt-40">
-                                        <img src="{{ item.image }}" alt="#">
-                                    </td>
-
-                                    <td class="product-des product-name">
+                                    <td class="image product-thumbnail pt-10">
                                         <h6 class="mb-5">
                                             <a class="product-name mb-10 text-heading"
                                                 href="{% url 'core:product-detail' item.pid %}">
                                                 {{ item.title }}
                                             </a>
                                         </h6>
+
+                                        <img src="{{ item.image }}" alt="#">
+
                                     </td>
+
+                                
 
                                     <td class="price" data-title="Price">
                                         <h4 class="text-body unit-price">Ksh{{ item.price|floatformat:2 }}</h4>
