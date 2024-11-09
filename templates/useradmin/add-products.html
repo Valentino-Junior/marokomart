@@ -2,130 +2,109 @@
 {% load static %}
 {% load humanize %}
 {{ form.media }}
-{% block content %}   
+{% block content %}
+
 <head>
     <style>
         select {
-        appearance: none;
-        outline: 0;
-        background: rgba(240, 240, 240, 0.548);
-        background-image: none;
-        width: 100%;
-        height: 700px;
-        color: black;
-        cursor: pointer;
-        border: none;
-        border-radius: 3px;
-    }
-     
-    #id_category {
-        position: relative;
-        display: block;
-        width: 15em;
-        font-family: poppins;
-        border: none;
-        height: 3em;
-        line-height: 3;
-        overflow: hidden;
-        border-radius: .25em;
-        padding-bottom: 10px;
-    }
+            appearance: none;
+            outline: 0;
+            background: rgba(240, 240, 240, 0.548);
+            background-image: none;
+            width: 100%;
+            height: 700px;
+            color: black;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+        }
+
+        #id_category {
+            position: relative;
+            display: block;
+            width: 15em;
+            font-family: poppins;
+            border: none;
+            height: 3em;
+            line-height: 3;
+            overflow: hidden;
+            border-radius: .25em;
+            padding-bottom: 10px;
+        }
     </style>
 </head>
-            <section class="content-main">
-                <form method="POST" enctype="multipart/form-data">
+<section class="content-main">
+    <form method="POST" enctype="multipart/form-data">
 
-                <div class="row">
-                    <div class="col-9">
-                        <div class="content-header">
-                            <h2 class="content-title">Add New Product</h2>
-                            <div>
-                                <button class="btn btn-md rounded font-sm hover-up">Publish <i class="fas fa-check-circle ms-2"></i></button>
-                            </div>
-                        </div>
+        <div class="row">
+            <div class="col-9">
+                <div class="content-header">
+                    <h2 class="content-title">Add New Product</h2>
+
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Basic</h4>
                     </div>
-                    
-                    <div class="col-lg-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h4>Basic</h4>
-                            </div>
-                            <div class="card-body">
-                                
-                                {% if form.errors %}
-                                    
-                                
-                                <div class="alert alert-danger">
-                                    <strong>{{ form.errors }}</strong>
-                                </div>
-                                {% endif %}
-                                    {% csrf_token %}
-                                    <div class="mb-4">
-                                        <label for="product_name" class="form-label">Product title</label>
-                                        {{form.title}}
-                                        <!-- <input type="text" placeholder="Type here" class="form-control" id="product_name" /> -->
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="form-label">Full description</label>
-                                        {{form.description}}
+                    <div class="card-body">
 
-                                        <!-- <textarea placeholder="Type here" class="form-control" rows="4"></textarea> -->
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-4">
-                                            <div class="mb-4">
-                                                <label class="form-label">Selling price</label>
-                                                <div class="row gx-2">
+                        {% if form.errors %}
+
+
+                        <div class="alert alert-danger">
+                            <strong>{{ form.errors }}</strong>
+                        </div>
+                        {% endif %}
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Product title</label>
+                            {{form.title}}
+                            <!-- <input type="text" placeholder="Type here" class="form-control" id="product_name" /> -->
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Full description</label>
+                            {{form.description}}
+
+                            <!-- <textarea placeholder="Type here" class="form-control" rows="4"></textarea> -->
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Selling price</label>
+                                    <div class="row gx-2">
                                         {{form.price}}
 
-                                                    <!-- <input placeholder="$" type="text" class="form-control" /> -->
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4">
-                                            <div class="mb-4">
-                                                <label class="form-label">Old price</label>
-                                        {{form.old_price}}
-
-                                                <!-- <input placeholder="$" type="text" class="form-control" /> -->
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4">
-                                            <label class="form-label">Currency</label>
-                                            <select class="form-select">
-                                                <option>Ksh</option>
-                                               
-                                            </select>
-                                        </div>
+                                        <!-- <input placeholder="$" type="text" class="form-control" /> -->
                                     </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label">Stock</label>
-                                        {{form.stock_count}}
-                                        <!-- <input type="text" placeholder="%" class="form-control" id="product_name" /> -->
-                                    </div>
-
-                                   
-                            </div>
-                        </div>
-                        <!-- card end// -->
-                       
-                        <!-- card end// -->
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h4>Media</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="input-upload">
-                                    <img src="{% static 'assets2/imgs/theme/upload.svg' %}" alt="" />
-                                    <!-- <input class="form-control" type="file" /> -->
-                                    {{form.image}}
                                 </div>
                             </div>
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Old price</label>
+                                    {{form.old_price}}
+
+                                    <!-- <input placeholder="$" type="text" class="form-control" /> -->
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <label class="form-label">Currency</label>
+                                <select class="form-select">
+                                    <option>Ksh</option>
+
+                                </select>
+                            </div>
                         </div>
-                        <!-- card end// -->
+
+                        <div class="mb-4">
+                            <label class="form-label">Stock</label>
+                            {{form.stock_count}}
+                            <!-- <input type="text" placeholder="%" class="form-control" id="product_name" /> -->
+                        </div>
+
+
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h4>Others</h4>
@@ -136,19 +115,53 @@
                                         <label class="form-label">Category</label>
                                         {{form.category}}
                                     </div>
-                                    
+
                                 </div>
                                 <!-- row.// -->
                             </div>
                             <br>
-                            
+
                         </div>
-                        <!-- card end// -->
-                        <button class="btn mt-3 btn-md rounded font-sm hover-up" type="submit">Create Product</button>
+
+
                     </div>
                 </div>
-                </form>
-            </section>
-            <!-- content-main end// -->
-              
-            {% endblock content %}
+                <!-- card end// -->
+
+                <!-- card end// -->
+            </div>
+            <div class="col-lg-3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Media</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label">Main Product Image</label>
+                            <div class="input-upload">
+                                <img src="{% static 'assets2/imgs/theme/upload.svg' %}" alt="" />
+                                {{form.image}}
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Additional Product Images</label>
+                            <div class="input-upload">
+                                <img src="{% static 'assets2/imgs/theme/upload.svg' %}" alt="" />
+                                {{form.additional_images}}
+                            </div>
+                            <small class="text-muted">Hold Ctrl (Windows) or Command (Mac) to select multiple
+                                images</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- card end// -->
+
+                <!-- card end// -->
+                <button class="btn mt-3 btn-md rounded font-sm hover-up" type="submit">Create Product</button>
+            </div>
+        </div>
+    </form>
+</section>
+<!-- content-main end// -->
+
+{% endblock content %}

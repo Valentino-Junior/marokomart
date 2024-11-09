@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 
 
-from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview
+from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages
 from userauths.models import Profile, User
 from useradmin.forms import AddProductForm
 from useradmin.decorators import admin_required
@@ -49,22 +49,38 @@ def products(request):
     }
     return render(request, "useradmin/products.html", context)
 
+
+# views.py
 @admin_required
 def add_product(request):
     if request.method == "POST":
         form = AddProductForm(request.POST, request.FILES)
         if form.is_valid():
-            new_form = form.save(commit=False)
-            new_form.user = request.user
-            new_form.save()
+            # Save the main product first
+            new_product = form.save(commit=False)
+            new_product.user = request.user
+            new_product.save()
             form.save_m2m()
+
+            # Handle multiple images
+            files = request.FILES.getlist('additional_images')
+            for f in files:
+                ProductImages.objects.create(
+                    product=new_product,
+                    images=f
+                )
+
             return redirect("useradmin:dashboard-products")
+        else:
+            print(form.errors)  # For debugging
     else:
         form = AddProductForm()
+    
     context = {
-        'form':form
+        'form': form
     }
     return render(request, "useradmin/add-products.html", context)
+
 
 @admin_required
 def edit_product(request, pid):
