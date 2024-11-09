@@ -7,11 +7,12 @@ from django.contrib.auth.hashers import check_password
 
 from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages
 from userauths.models import Profile, User
-from useradmin.forms import AddProductForm
+from useradmin.forms import AddProductForm, EditProductForm
 from useradmin.decorators import admin_required
+from django.http import JsonResponse
 
 import datetime
-
+import os
 
 
 @admin_required
@@ -82,24 +83,77 @@ def add_product(request):
     return render(request, "useradmin/add-products.html", context)
 
 
+# @admin_required
+# def edit_product(request, pid):
+#     product = Product.objects.get(pid=pid)
+
+#     if request.method == "POST":
+#         form = AddProductForm(request.POST, request.FILES, instance=product)
+#         if form.is_valid():
+#             new_form = form.save(commit=False)
+#             new_form.save()
+#             form.save_m2m()
+#             return redirect("useradmin:dashboard-products")
+#     else:
+#         form = AddProductForm(instance=product)
+#     context = {
+#         'form':form,
+#         'product':product,
+#     }
+#     return render(request, "useradmin/edit-products.html", context)
+
+
 @admin_required
 def edit_product(request, pid):
     product = Product.objects.get(pid=pid)
+    product_images = ProductImages.objects.filter(product=product)
 
     if request.method == "POST":
-        form = AddProductForm(request.POST, request.FILES, instance=product)
+        form = EditProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             new_form = form.save(commit=False)
+            
+            # Handle main image
+            if request.FILES.get('image'):
+                new_form.image = request.FILES['image']
+            
             new_form.save()
             form.save_m2m()
+
+            # Handle additional images
+            if request.FILES.getlist('additional_images'):
+                for img in request.FILES.getlist('additional_images'):
+                    ProductImages.objects.create(
+                        product=product,
+                        images=img
+                    )
+
             return redirect("useradmin:dashboard-products")
     else:
-        form = AddProductForm(instance=product)
+        form = EditProductForm(instance=product)
+    
     context = {
-        'form':form,
-        'product':product,
+        'form': form,
+        'product': product,
+        'product_images': product_images,
     }
     return render(request, "useradmin/edit-products.html", context)
+
+@admin_required
+def delete_product_image(request, pid, image_id):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            image = ProductImages.objects.get(id=image_id, product__pid=pid)
+            if image.images:
+                if os.path.exists(image.images.path):
+                    os.remove(image.images.path)
+            image.delete()
+            return JsonResponse({'status': 'success'})
+        except ProductImages.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Image not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 @admin_required
 def delete_product(request, pid):

@@ -7,7 +7,10 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("products/", views.products, name="dashboard-products"),
     path("add-products/", views.add_product, name="dashboard-add-products"),
-    path("edit-products/<pid>/", views.edit_product, name="dashboard-edit-products"),
+    
+    path('edit-product/<str:pid>/', views.edit_product, name='dashboard-edit-products'), 
+    path('delete-product-image/<str:pid>/<int:image_id>/', views.delete_product_image, name='delete_product_image'),
+
     path("delete-products/<pid>/", views.delete_product, name="dashboard-delete-products"),
     path("orders/", views.orders, name="orders"),
     path("order_detail/<id>/", views.order_detail, name="order_detail"),
