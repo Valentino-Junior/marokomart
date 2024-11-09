@@ -517,6 +517,117 @@
 <!-- end add to cart and wishlist styling -->
 
 
+<!-- start images styling -->
+<style>
+    /* Gallery Container */
+    .detail-gallery {
+        position: relative;
+        width: 100%;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 15px;
+    }
+
+    /* Main Image Slider */
+    .product-image-slider {
+        margin-bottom: 20px;
+    }
+
+    .product-image-slider figure {
+        margin: 0;
+        position: relative;
+        width: 100%;
+        padding-top: 100%;
+        /* 1:1 Aspect Ratio */
+        overflow: hidden;
+        border-radius: 8px;
+        background: #f8f8f8;
+    }
+
+    .product-image-slider figure img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    /* Thumbnail Navigation - Updated */
+    /* .slider-nav-thumbnails {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        overflow: hidden;
+    } */
+
+    .slider-nav-thumbnails .thumbnail-item {
+        flex: 0 0 80px;
+        /* Fixed width for thumbnails */
+        height: 80px;
+        /* Fixed height for thumbnails */
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .slider-nav-thumbnails .thumbnail-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background: #f8f8f8;
+    }
+
+    .slider-nav-thumbnails .thumbnail-item:hover {
+        border-color: #3BB77E;
+    }
+
+    .slider-nav-thumbnails .slick-current .thumbnail-item {
+        border-color: #3BB77E;
+    }
+
+    /* Zoom effect on hover */
+    .product-image-slider figure:hover img {
+        transform: scale(1.05);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .slider-nav-thumbnails .thumbnail-item {
+            flex: 0 0 60px;
+            height: 60px;
+        }
+    }
+
+    /* Slick slider custom styling */
+    .product-image-slider .slick-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .product-image-slider .slick-arrow:hover {
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+</style>
+<!-- end images styling -->
+
+
+
 
 <main class="main">
     <div class="page-header breadcrumb-wrap">
@@ -534,113 +645,7 @@
                     <div class="col-xl-9">
                         <div class="product-detail accordion-detail">
                             <div class="row mb-50 mt-30">
-                                <style>
-                                    /* Gallery Container */
-                                    .detail-gallery {
-                                        position: relative;
-                                        width: 100%;
-                                        background: #fff;
-                                        border-radius: 12px;
-                                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-                                        padding: 15px;
-                                    }
-
-                                    /* Main Image Slider */
-                                    .product-image-slider {
-                                        margin-bottom: 20px;
-                                    }
-
-                                    .product-image-slider figure {
-                                        margin: 0;
-                                        position: relative;
-                                        width: 100%;
-                                        padding-top: 100%;
-                                        /* 1:1 Aspect Ratio */
-                                        overflow: hidden;
-                                        border-radius: 8px;
-                                        background: #f8f8f8;
-                                    }
-
-                                    .product-image-slider figure img {
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        object-fit: contain;
-                                        transition: transform 0.3s ease;
-                                    }
-
-                                    /* Thumbnail Navigation - Updated */
-                                    /* .slider-nav-thumbnails {
-                                        display: flex;
-                                        gap: 10px;
-                                        margin-top: 15px;
-                                        overflow: hidden;
-                                    } */
-
-                                    .slider-nav-thumbnails .thumbnail-item {
-                                        flex: 0 0 80px;
-                                        /* Fixed width for thumbnails */
-                                        height: 80px;
-                                        /* Fixed height for thumbnails */
-                                        border-radius: 6px;
-                                        overflow: hidden;
-                                        cursor: pointer;
-                                        border: 2px solid transparent;
-                                        transition: all 0.3s ease;
-                                        position: relative;
-                                    }
-
-                                    .slider-nav-thumbnails .thumbnail-item img {
-                                        width: 100%;
-                                        height: 100%;
-                                        object-fit: cover;
-                                        background: #f8f8f8;
-                                    }
-
-                                    .slider-nav-thumbnails .thumbnail-item:hover {
-                                        border-color: #3BB77E;
-                                    }
-
-                                    .slider-nav-thumbnails .slick-current .thumbnail-item {
-                                        border-color: #3BB77E;
-                                    }
-
-                                    /* Zoom effect on hover */
-                                    .product-image-slider figure:hover img {
-                                        transform: scale(1.05);
-                                    }
-
-                                    /* Responsive adjustments */
-                                    @media (max-width: 768px) {
-                                        .slider-nav-thumbnails .thumbnail-item {
-                                            flex: 0 0 60px;
-                                            height: 60px;
-                                        }
-                                    }
-
-                                    /* Slick slider custom styling */
-                                    .product-image-slider .slick-arrow {
-                                        position: absolute;
-                                        top: 50%;
-                                        transform: translateY(-50%);
-                                        z-index: 2;
-                                        width: 40px;
-                                        height: 40px;
-                                        background: rgba(255, 255, 255, 0.9);
-                                        border-radius: 50%;
-                                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                                        cursor: pointer;
-                                        transition: all 0.3s ease;
-                                    }
-
-                                    .product-image-slider .slick-arrow:hover {
-                                        background: #fff;
-                                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                                    }
-                                </style>
-
+                                
                                 <div class="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
                                     <div class="detail-gallery">
                                         <!-- Main Slider -->
@@ -677,66 +682,12 @@
                                     </div>
                                 </div>
 
-                                <script>
-                                    $(document).ready(function () {
-                                        // Initialize main slider
-                                        $('.product-image-slider').slick({
-                                            slidesToShow: 1,
-                                            slidesToScroll: 1,
-                                            arrows: true,
-                                            fade: true,
-                                            asNavFor: '.slider-nav-thumbnails',
-                                            prevArrow: '<button type="button" class="slick-prev"><i class="fi-rs-angle-left"></i></button>',
-                                            nextArrow: '<button type="button" class="slick-next"><i class="fi-rs-angle-right"></i></button>'
-                                        });
-
-                                        // Initialize thumbnail slider
-                                        $('.slider-nav-thumbnails').slick({
-                                            slidesToShow: 5,
-                                            slidesToScroll: 1,
-                                            asNavFor: '.product-image-slider',
-                                            dots: false,
-                                            arrows: false,
-                                            focusOnSelect: true,
-                                            responsive: [{
-                                                    breakpoint: 1200,
-                                                    settings: {
-                                                        slidesToShow: 4
-                                                    }
-                                                },
-                                                {
-                                                    breakpoint: 992,
-                                                    settings: {
-                                                        slidesToShow: 3
-                                                    }
-                                                },
-                                                {
-                                                    breakpoint: 768,
-                                                    settings: {
-                                                        slidesToShow: 4
-                                                    }
-                                                },
-                                                {
-                                                    breakpoint: 576,
-                                                    settings: {
-                                                        slidesToShow: 3
-                                                    }
-                                                }
-                                            ]
-                                        });
-
-                                        // Zoom functionality
-                                        $('.product-image-slider figure').zoom({
-                                            touch: false
-                                        });
-                                    });
-                                </script>
+                                
                                 <div class="col-md-6 col-sm-12 col-xs-12">
                                     <div class="detail-info pr-30 pl-30">
                                         <span class="stock-status out-stock"> -{{p.get_precentage|floatformat:0}}%
                                         </span>
                                         <h2 class="title-detail">{{p.title}}</h2>
-
 
 
                                         <div class="clearfix product-price-cover">
@@ -1014,7 +965,6 @@
                                             {% endif %}
                                             {% endif %}
                                         </div>
-
 
 
                                     </div>
@@ -1614,4 +1564,63 @@
     }
 </style>
 <!-- end wishlist -->
+
+
+<!-- start zoom image -->
+<script>
+    $(document).ready(function () {
+        // Initialize main slider
+        $('.product-image-slider').slick({
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            arrows: true,
+            fade: true,
+            asNavFor: '.slider-nav-thumbnails',
+            prevArrow: '<button type="button" class="slick-prev"><i class="fi-rs-angle-left"></i></button>',
+            nextArrow: '<button type="button" class="slick-next"><i class="fi-rs-angle-right"></i></button>'
+        });
+
+        // Initialize thumbnail slider
+        $('.slider-nav-thumbnails').slick({
+            slidesToShow: 5,
+            slidesToScroll: 1,
+            asNavFor: '.product-image-slider',
+            dots: false,
+            arrows: false,
+            focusOnSelect: true,
+            responsive: [{
+                    breakpoint: 1200,
+                    settings: {
+                        slidesToShow: 4
+                    }
+                },
+                {
+                    breakpoint: 992,
+                    settings: {
+                        slidesToShow: 3
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    settings: {
+                        slidesToShow: 4
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    settings: {
+                        slidesToShow: 3
+                    }
+                }
+            ]
+        });
+
+        // Zoom functionality
+        $('.product-image-slider figure').zoom({
+            touch: false
+        });
+    });
+</script>
+<!-- end zoom image -->
+
 {% endblock content %}
