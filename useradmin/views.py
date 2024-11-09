@@ -51,7 +51,6 @@ def products(request):
     return render(request, "useradmin/products.html", context)
 
 
-# views.py
 @admin_required
 def add_product(request):
     if request.method == "POST":
@@ -83,24 +82,6 @@ def add_product(request):
     return render(request, "useradmin/add-products.html", context)
 
 
-# @admin_required
-# def edit_product(request, pid):
-#     product = Product.objects.get(pid=pid)
-
-#     if request.method == "POST":
-#         form = AddProductForm(request.POST, request.FILES, instance=product)
-#         if form.is_valid():
-#             new_form = form.save(commit=False)
-#             new_form.save()
-#             form.save_m2m()
-#             return redirect("useradmin:dashboard-products")
-#     else:
-#         form = AddProductForm(instance=product)
-#     context = {
-#         'form':form,
-#         'product':product,
-#     }
-#     return render(request, "useradmin/edit-products.html", context)
 
 
 @admin_required
@@ -138,6 +119,7 @@ def edit_product(request, pid):
         'product_images': product_images,
     }
     return render(request, "useradmin/edit-products.html", context)
+
 
 @admin_required
 def delete_product_image(request, pid, image_id):
