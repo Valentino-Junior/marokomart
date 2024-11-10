@@ -7,12 +7,13 @@ from django.contrib.auth.hashers import check_password
 
 from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages
 from userauths.models import Profile, User
-from useradmin.forms import AddProductForm, EditProductForm
+from useradmin.forms import AddProductForm, EditProductForm, CategoryForm
 from useradmin.decorators import admin_required
 from django.http import JsonResponse
 
 import datetime
 import os
+from django.shortcuts import render, get_object_or_404
 
 
 @admin_required
@@ -248,3 +249,58 @@ def change_password(request):
             return redirect("useradmin:change_password")
     
     return render(request, "useradmin/change_password.html")
+
+
+
+def category_list(request):
+    categories = Category.objects.all()
+    return render(request, 'useradmin/category_management.html', {'categories': categories})
+
+def category_create(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Category created successfully'
+            })
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        })
+
+def category_update(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES, instance=category)
+        if form.is_valid():
+            # Delete old image if new one is uploaded
+            if request.FILES.get('image') and category.image:
+                if os.path.isfile(category.image.path):
+                    os.remove(category.image.path)
+            form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Category updated successfully'
+            })
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        })
+
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        if category.image:
+            if os.path.isfile(category.image.path):
+                os.remove(category.image.path)
+        category.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Category deleted successfully'
+        })
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    })

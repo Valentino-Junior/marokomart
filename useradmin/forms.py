@@ -1,6 +1,28 @@
 # forms.py
 from django import forms
-from core.models import Product, ProductImages
+from core.models import Product, ProductImages, Category
+
+
+class CategoryForm(forms.ModelForm):
+    title = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Category Title'
+        })
+    )
+    image = forms.ImageField(
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        }),
+        required=False
+    )
+
+    class Meta:
+        model = Category
+        fields = ['title', 'image']
+
+
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
