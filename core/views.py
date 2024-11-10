@@ -622,8 +622,6 @@ def create_checkout_session(request, oid):
     return JsonResponse({"sessionId": checkout_session.id})
 
 
-
-
 @login_required
 def apply_coupon_view(request):
     if request.method == "POST":
@@ -633,7 +631,7 @@ def apply_coupon_view(request):
             
             try:
                 order = CartOrder.objects.get(oid=order_id, user=request.user)
-                original_price = order.price + order.saved  # Calculate original price by adding back any saved amount
+                original_price = order.price + order.saved  # Get original price before any discounts
             except CartOrder.DoesNotExist:
                 return JsonResponse({
                     'status': 'error',
@@ -648,7 +646,7 @@ def apply_coupon_view(request):
                     'message': 'Invalid coupon code'
                 })
 
-            # Validation checks
+            # Basic validation checks
             if not coupon.active:
                 return JsonResponse({
                     'status': 'error',
@@ -667,10 +665,11 @@ def apply_coupon_view(request):
                     'message': 'This coupon has reached its usage limit'
                 })
 
+            # Check if this specific coupon has been applied to this order
             if coupon in order.coupons.all():
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'Coupon already applied to this order'
+                    'message': 'This coupon has already been applied'
                 })
             
             # Calculate percentage discount based on original price
@@ -678,27 +677,39 @@ def apply_coupon_view(request):
             discount_amount = (original_price * discount_percentage) / Decimal('100')
             discount_amount = discount_amount.quantize(Decimal('0.01'))
             
-            # Calculate new price
-            new_price = original_price - discount_amount
+            # Calculate new price and total saved
+            new_total_saved = order.saved + discount_amount
+            new_price = original_price - new_total_saved
             
             # Update order
             order.coupons.add(coupon)
             order.price = new_price
-            order.saved = discount_amount
+            order.saved = new_total_saved
             order.save()
 
             # Increment coupon usage counter
             coupon.times_used += 1
             coupon.save()
+
+            # Get all applied coupons info for display
+            applied_coupons = []
+            total_discount_percentage = 0
+            for applied_coupon in order.coupons.all():
+                applied_coupons.append({
+                    'code': applied_coupon.code,
+                    'discount': applied_coupon.discount
+                })
+                total_discount_percentage += applied_coupon.discount
             
             return JsonResponse({
                 'status': 'success',
-                'message': f'Coupon applied! {coupon.discount}% off - Ksh{discount_amount:.2f} has been deducted',
+                'message': f'Coupon applied! {coupon.discount}% off - Additional Ksh{discount_amount:.2f} has been deducted',
                 'subtotal': float(original_price),
                 'new_price': float(new_price),
-                'discount': float(discount_amount),
-                'saved': float(order.saved),
-                'discount_percentage': float(coupon.discount)
+                'total_saved': float(new_total_saved),
+                'current_discount': float(discount_amount),
+                'total_discount_percentage': float(total_discount_percentage),
+                'applied_coupons': applied_coupons
             })
                 
         except Exception as e:

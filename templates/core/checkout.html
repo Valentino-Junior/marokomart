@@ -83,55 +83,67 @@
                     <div class="d-flex align-items-end justify-content-between mb-30">
                         <h4 class="order-summary-title">Order Summary</h4>
                     </div>
-                
+
                     <div class="summary-item">
                         <span class="summary-label">Subtotal:</span>
                         <span class="summary-value">Ksh{{ order.price|add:order.saved|floatformat:2 }}</span>
                     </div>
-                    
+
                     {% if order.saved > 0 %}
-                    <div class="summary-item text-success">
-                        <span class="summary-label">Discount Applied:</span>
-                        <span class="discount-amount">-Ksh{{ order.saved|floatformat:2 }}</span>
+                    <div class="applied-coupons">
+                        {% for coupon in order.coupons.all %}
+                        <div class="summary-item text-success">
+                            <span class="summary-label">Coupon Applied ({{ coupon.code }}):</span>
+                            <span class="discount-amount">{{ coupon.discount }}% off</span>
+                        </div>
+                        {% endfor %}
+                        <div class="summary-item text-success fw-bold">
+                            <span class="summary-label">Total Discount:</span>
+                            <span class="total-discount-amount">-Ksh{{ order.saved|floatformat:2 }}</span>
+                        </div>
                     </div>
                     {% endif %}
-                    
+
                     <div class="summary-item total">
                         <span class="summary-label">Final Total:</span>
                         <span class="final-price">Ksh{{ order.price|floatformat:2 }}</span>
                     </div>
                 </div>
-              
+
                 <div class="row mb-50">
-                  <div class="col-lg-12">
-                    <form id="coupon-form" class="apply-coupon">
-                      {% csrf_token %}
-                      <div class="input-group">
-                        <input type="text" name="code" id="coupon-code" class="form-control" placeholder="Enter Coupon Code..." />
-                        <button class="btn btn-primary" type="submit" id="apply-coupon-btn">
-                          Apply
-                          <span class="loading-spinner d-none">
-                            <i class="fas fa-spinner fa-spin"></i>
-                          </span>
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                    <div class="col-lg-12">
+                        <form id="coupon-form" class="apply-coupon">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" name="code" id="coupon-code" class="form-control"
+                                    placeholder="Enter Coupon Code..." />
+                                <button class="btn btn-primary" type="submit" id="apply-coupon-btn">
+                                    Apply
+                                    <span class="loading-spinner d-none">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-              
+
                 <div class="payment-options">
                     <form id="payment-form" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="oid" value="{{ order.oid }}">
-                
-                        <button type="button" onclick="submitPayment('stripe')" class="btn btn-primary">Pay With Stripe (Credit or Debit Card)</button>
-                        <button type="button" onclick="submitPayment('mpesa')" class="btn btn-success">Pay With M-Pesa</button>
-                        <button type="button" onclick="submitPayment('cash')" class="btn btn-secondary">Cash On Delivery</button>
+
+                        <button type="button" onclick="submitPayment('stripe')" class="btn btn-primary">Pay With Stripe
+                            (Credit or Debit Card)</button>
+                        <button type="button" onclick="submitPayment('mpesa')" class="btn btn-success">Pay With
+                            M-Pesa</button>
+                        <button type="button" onclick="submitPayment('cash')" class="btn btn-secondary">Cash On
+                            Delivery</button>
                     </form>
-                
+
                     <p id="payment-message" class="animate__animated animate__fadeInUp text-center mt-4"></p>
                 </div>
-              </div>
+            </div>
 
 
 
@@ -191,142 +203,146 @@
 <!-- start coupon application -->
 <script>
     $(document).ready(function () {
-    const couponForm = $('#coupon-form');
-    const applyBtn = $('#apply-coupon-btn');
-    const spinner = $('.loading-spinner');
-    let currentRequest = null;
+        const couponForm = $('#coupon-form');
+        const applyBtn = $('#apply-coupon-btn');
+        const spinner = $('.loading-spinner');
+        let currentRequest = null;
 
-    couponForm.on('submit', function (e) {
-        e.preventDefault();
+        couponForm.on('submit', function (e) {
+            e.preventDefault();
 
-        const couponCode = $('#coupon-code').val().trim();
-        if (!couponCode) {
-            showNotification('error', 'Error', 'Please enter a coupon code');
-            return;
-        }
+            const couponCode = $('#coupon-code').val().trim();
+            if (!couponCode) {
+                showNotification('error', 'Error', 'Please enter a coupon code');
+                return;
+            }
 
-        // Show loading state
-        applyBtn.prop('disabled', true);
-        spinner.removeClass('d-none');
+            applyBtn.prop('disabled', true);
+            spinner.removeClass('d-none');
 
-        // Cancel any pending requests
-        if (currentRequest) {
-            currentRequest.abort();
-        }
+            if (currentRequest) {
+                currentRequest.abort();
+            }
 
-        // Make AJAX request
-        currentRequest = $.ajax({
-            url: '{% url "core:apply-coupon" %}',
-            type: 'POST',
-            data: {
-                'code': couponCode,
-                'order_id': '{{ order.oid }}',
-                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
-            },
-            success: function (response) {
-                if (response.status === 'success') {
-                    // Keep subtotal the same, just update its display if needed
-                    $('.summary-value').text(`Ksh${response.subtotal.toFixed(2)}`);
+            currentRequest = $.ajax({
+                url: '{% url "core:apply-coupon" %}',
+                type: 'POST',
+                data: {
+                    'code': couponCode,
+                    'order_id': '{{ order.oid }}',
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // Update subtotal (original price)
+                        $('.summary-value').text(`Ksh${response.subtotal.toFixed(2)}`);
 
-                    // Update or add the discount section
-                    if ($('.text-success').length) {
-                        $('.discount-amount').text(`-Ksh${response.discount.toFixed(2)}`);
-                    } else {
-                        const discountHtml = `
+                        // Update or create coupons section
+                        if ($('.applied-coupons').length) {
+                            // Add new coupon to list
+                            const newCouponHtml = `
                             <div class="summary-item text-success">
-                                <span class="summary-label">Discount Applied:</span>
-                                <span class="discount-amount">-Ksh${response.discount.toFixed(2)}</span>
+                                <span class="summary-label">Coupon Applied (${response.applied_coupons[response.applied_coupons.length-1].code}):</span>
+                                <span class="discount-amount">${response.applied_coupons[response.applied_coupons.length-1].discount}% off</span>
                             </div>
                         `;
-                        $('.summary-item').eq(0).after(discountHtml);
+                            $('.total-discount-amount').closest('.summary-item').before(
+                                newCouponHtml);
+
+                            // Update total discount amount
+                            $('.total-discount-amount').text(
+                                `-Ksh${response.total_saved.toFixed(2)}`);
+                        } else {
+                            // Create new coupons section
+                            const couponsHtml = `
+                            <div class="applied-coupons">
+                                <div class="summary-item text-success">
+                                    <span class="summary-label">Coupon Applied (${response.applied_coupons[0].code}):</span>
+                                    <span class="discount-amount">${response.applied_coupons[0].discount}% off</span>
+                                </div>
+                                <div class="summary-item text-success fw-bold">
+                                    <span class="summary-label">Total Discount:</span>
+                                    <span class="total-discount-amount">-Ksh${response.total_saved.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        `;
+                            $('.summary-item').eq(0).after(couponsHtml);
+                        }
+
+                        // Update final price
+                        $('.final-price').text(`Ksh${response.new_price.toFixed(2)}`);
+
+                        showNotification('success', 'Success', response.message);
+                        $('#coupon-code').val('');
+
+                        if (typeof stripe !== 'undefined') {
+                            updatePaymentAmount(response.new_price);
+                        }
+                    } else {
+                        showNotification('error', 'Error', response.message);
                     }
-
-                    // Update final price
-                    $('.final-price').text(`Ksh${response.new_price.toFixed(2)}`);
-
-                    // Show success message
-                    showNotification('success', 'Success', response.message);
-
-                    // Clear input
-                    $('#coupon-code').val('');
-
-                    // Update payment amount if Stripe is initialized
-                    if (typeof stripe !== 'undefined') {
-                        updatePaymentAmount(response.new_price);
+                },
+                error: function (xhr) {
+                    if (xhr.statusText === "abort") {
+                        return;
                     }
-
-                    // Disable form after successful application
-                    disableCouponForm('Coupon applied successfully');
-                } else {
-                    showNotification('error', 'Error', response.message);
+                    showNotification('error', 'Error', 'Failed to apply coupon');
+                },
+                complete: function () {
+                    currentRequest = null;
+                    applyBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
                 }
-            },
-            error: function (xhr) {
-                if (xhr.statusText === "abort") {
-                    return;
-                }
-                showNotification('error', 'Error', 'Failed to apply coupon');
-            },
-            complete: function () {
-                currentRequest = null;
-                applyBtn.prop('disabled', false);
-                spinner.addClass('d-none');
-            }
+            });
         });
-    });
 
-    function disableCouponForm(message) {
-        couponForm.find('input, button').prop('disabled', true);
-        couponForm.append(`<div class="text-success mt-2"><small>${message}</small></div>`);
-    }
+        function showNotification(type, title, message) {
+            if (!$('#notification-container').length) {
+                $('body').append('<div id="notification-container"></div>');
+            }
 
-    function showNotification(type, title, message) {
-        if (!$('#notification-container').length) {
-            $('body').append('<div id="notification-container"></div>');
-        }
-
-        const notification = $(`
+            const notification = $(`
             <div class="notification ${type}">
                 <h4 style="margin: 0 0 5px; font-size: 16px;">${title}</h4>
                 <p style="margin: 0; font-size: 14px; color: #666;">${message}</p>
             </div>
         `);
 
-        $('#notification-container').append(notification);
-        notification[0].offsetHeight;
-        notification.addClass('show');
+            $('#notification-container').append(notification);
+            notification[0].offsetHeight;
+            notification.addClass('show');
 
-        setTimeout(() => {
-            notification.removeClass('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-});
-    </script>
-    
-    <style>
+            setTimeout(() => {
+                notification.removeClass('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    });
+</script>
+
+<style>
     .order-summary {
         background: #f8f9fa;
         padding: 20px;
         border-radius: 8px;
         margin-top: 20px;
     }
-    
+
     .summary-item {
         display: flex;
         justify-content: space-between;
         padding: 10px 0;
         border-bottom: 1px solid #eee;
     }
-    
+
     .summary-item:last-child {
         border-bottom: none;
     }
-    
+
     .text-success {
         color: #28a745;
     }
-    
+
     .total {
         font-weight: bold;
         font-size: 1.1em;
@@ -334,13 +350,13 @@
         padding-top: 10px;
         border-top: 2px solid #dee2e6;
     }
-    
+
     .apply-coupon {
         display: flex;
         gap: 10px;
         margin: 20px 0;
     }
-    
+
     .apply-coupon input {
         flex: 1;
         padding: 10px 15px;
@@ -348,13 +364,13 @@
         border-radius: 4px;
         transition: border-color 0.3s ease;
     }
-    
+
     .apply-coupon input:focus {
         border-color: #3BB77E;
         outline: none;
         box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.25);
     }
-    
+
     .apply-coupon button {
         padding: 10px 20px;
         background: #3BB77E;
@@ -367,35 +383,40 @@
         align-items: center;
         gap: 8px;
     }
-    
+
     .apply-coupon button:hover {
         background: #2a9d64;
         transform: translateY(-1px);
     }
-    
+
     .apply-coupon button:disabled {
         opacity: 0.7;
         cursor: not-allowed;
         transform: none;
     }
-    
+
     .loading-spinner {
         display: inline-block;
         animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
-    
+
     #notification-container {
         position: fixed;
         top: 20px;
         right: 20px;
         z-index: 9999;
     }
-    
+
     .notification {
         background: white;
         border-radius: 8px;
@@ -406,96 +427,96 @@
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         max-width: 350px;
     }
-    
+
     .notification.show {
         transform: translateX(0);
     }
-    
+
     .notification.success {
         border-left: 4px solid #3BB77E;
     }
-    
+
     .notification.error {
         border-left: 4px solid #dc3545;
     }
-    </style>
+</style>
 <!-- end coupon application -->
 
 
 <style>
     .order-summary {
-  background-color: #f8f9fa;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
+        background-color: #f8f9fa;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
 
-.order-summary-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
+    .order-summary-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
 
-.summary-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
 
-.summary-label {
-  font-weight: 500;
-}
+    .summary-label {
+        font-weight: 500;
+    }
 
-.summary-value {
-  font-weight: 600;
-}
+    .summary-value {
+        font-weight: 600;
+    }
 
-.total {
-  border-top: 1px solid #dee2e6;
-  padding-top: 10px;
-  font-size: 1.2rem;
-}
+    .total {
+        border-top: 1px solid #dee2e6;
+        padding-top: 10px;
+        font-size: 1.2rem;
+    }
 
-.discount-amount {
-  color: #28a745;
-  font-weight: 600;
-}
+    .discount-amount {
+        color: #28a745;
+        font-weight: 600;
+    }
 
-.input-group {
-  display: flex;
-  align-items: center;
-}
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
 
-.payment-options {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+    .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
 
-.btn {
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
-}
+    .btn {
+        transition: background-color 0.3s, color 0.3s, transform 0.3s;
+    }
 
-.btn:hover {
-  transform: translateY(-2px);
-}
+    .btn:hover {
+        transform: translateY(-2px);
+    }
 
-.btn-primary:hover {
-  background-color: #0056b3;
-}
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
 
-.btn-success:hover {
-  background-color: #218838;
-}
+    .btn-success:hover {
+        background-color: #218838;
+    }
 
-.btn-secondary:hover {
-  background-color: #6c757d;
-}
+    .btn-secondary:hover {
+        background-color: #6c757d;
+    }
 
-.loading-spinner {
-  margin-left: 10px;
-  font-size: 1rem;
-}
+    .loading-spinner {
+        margin-left: 10px;
+        font-size: 1rem;
+    }
 </style>
 
 
@@ -506,50 +527,50 @@
         formData.append('payment_method', method);
 
         fetch("/process_payment/", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const paymentMessage = document.getElementById('payment-message');
-            paymentMessage.innerText = data.message;
-            paymentMessage.classList.add('animate__animated', 'animate__fadeInUp', 'text-center', 'mt-4');
-
-            if (data.success) {
-                // Update cart count in UI (assuming you have a cart counter element)
-                const cartCounter = document.getElementById('cart-counter');
-                if (cartCounter) {
-                    cartCounter.textContent = '0';
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
                 }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const paymentMessage = document.getElementById('payment-message');
+                paymentMessage.innerText = data.message;
+                paymentMessage.classList.add('animate__animated', 'animate__fadeInUp', 'text-center', 'mt-4');
 
-                // Add a success notification
-                const notification = document.createElement('div');
-                notification.className = 'alert alert-success animate__animated animate__fadeInDown';
-                notification.textContent = data.message;
-                document.body.appendChild(notification);
+                if (data.success) {
+                    // Update cart count in UI (assuming you have a cart counter element)
+                    const cartCounter = document.getElementById('cart-counter');
+                    if (cartCounter) {
+                        cartCounter.textContent = '0';
+                    }
 
-                // Remove notification after 2 seconds
-                setTimeout(() => {
-                    notification.classList.add('animate__fadeOutUp');
+                    // Add a success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'alert alert-success animate__animated animate__fadeInDown';
+                    notification.textContent = data.message;
+                    document.body.appendChild(notification);
+
+                    // Remove notification after 2 seconds
                     setTimeout(() => {
-                        notification.remove();
-                    }, 1000);
-                }, 2000);
+                        notification.classList.add('animate__fadeOutUp');
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 1000);
+                    }, 2000);
 
-                // Redirect to home page after 3 seconds
-                setTimeout(() => {
-                    window.location.href = data.redirect;
-                }, 3000);
-            }
-        })
-        .catch(error => {
-            const paymentMessage = document.getElementById('payment-message');
-            paymentMessage.innerText = 'An error occurred. Please try again.';
-            paymentMessage.classList.add('animate__animated', 'animate__fadeInUp', 'text-center', 'mt-4');
-        });
+                    // Redirect to home page after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                const paymentMessage = document.getElementById('payment-message');
+                paymentMessage.innerText = 'An error occurred. Please try again.';
+                paymentMessage.classList.add('animate__animated', 'animate__fadeInUp', 'text-center', 'mt-4');
+            });
     }
 </script>
 
