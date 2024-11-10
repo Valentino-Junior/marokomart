@@ -6,6 +6,8 @@ from taggit.managers import TaggableManager
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils import timezone
 from django.core.validators import MinValueValidator
+import random
+import string
 
 STATUS_CHOICE = (
         ('processing', 'Processing'),
@@ -16,9 +18,7 @@ STATUS_CHOICE = (
 
 
 STATUS = (
-    ("draft", "Draft"),
     ("disabled", "Disabled"),
-    ("rejected", "Rejected"),
     ("in_review", "In Review"),
     ("published", "Published"),
 )
@@ -81,7 +81,7 @@ class Product(models.Model):
         max_length=100, default="0", null=True, blank=True)
 
     product_status = models.CharField(
-        choices=STATUS, max_length=10, default="in_review")
+        choices=STATUS, max_length=10, default="published")
 
     status = models.BooleanField(default=True)
     in_stock = models.BooleanField(default=True)
@@ -236,10 +236,35 @@ class Address(models.Model):
 
 
 class Coupon(models.Model):
-    code = models.CharField(max_length=1000)
+    code = models.CharField(max_length=1000, unique=True)
     discount = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateTimeField(null=True, blank=True)
+    usage_limit = models.IntegerField(default=1)  # How many times the coupon can be used
+    times_used = models.IntegerField(default=0)   # Track how many times it's been used
+    
+    def is_valid(self):
+        if not self.active:
+            return False, "This coupon is inactive"
+        if self.expiry_date and timezone.now() > self.expiry_date:
+            return False, "This coupon has expired"
+        if self.times_used >= self.usage_limit:
+            return False, "This coupon has reached its usage limit"
+        return True, "Valid coupon"
+
+    @staticmethod
+    def generate_code():
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            if not Coupon.objects.filter(code=code).exists():
+                return code
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = self.generate_code()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.code}"
+        return f"{self.code} ({self.discount}% off)"
     

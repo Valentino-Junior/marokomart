@@ -25,4 +25,9 @@ urlpatterns = [
     path('categories/create/', views.category_create, name='category_create'),
     path('categories/<int:pk>/update/', views.category_update, name='category_update'),
     path('categories/<int:pk>/delete/', views.category_delete, name='category_delete'),
+
+    path('coupons/', views.coupon_list, name='coupon_list'),
+    path('coupons/create/', views.coupon_create, name='coupon_create'),
+    path('coupons/<int:pk>/update/', views.coupon_update, name='coupon_update'),
+    path('coupons/<int:pk>/delete/', views.coupon_delete, name='coupon_delete'),
 ]

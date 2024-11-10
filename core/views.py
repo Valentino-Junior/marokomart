@@ -1,4 +1,4 @@
-
+from django.utils import timezone
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from requests import session
@@ -35,6 +35,7 @@ from django.contrib import messages
 
 from decimal import Decimal
 from django.views.decorators.http import require_http_methods
+
 
 
 def index(request):
@@ -632,52 +633,73 @@ def apply_coupon_view(request):
             
             try:
                 order = CartOrder.objects.get(oid=order_id, user=request.user)
+                original_price = order.price + order.saved  # Calculate original price by adding back any saved amount
             except CartOrder.DoesNotExist:
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Order not found'
                 })
             
-            coupon = Coupon.objects.filter(code=code, active=True).first()
-            
-            if coupon:
-                if coupon in order.coupons.all():
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': 'Coupon already applied'
-                    })
-                
-                # Convert discount to Decimal for accurate calculation
-                discount = Decimal(str(coupon.discount))
-                
-                # Ensure discount doesn't exceed order total
-                if discount > order.price:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': 'Discount amount exceeds order total'
-                    })
-                
-                # Calculate new price by subtracting the fixed discount
-                new_price = order.price - discount
-                
-                # Update order
-                order.coupons.add(coupon)
-                order.price = new_price
-                order.saved += discount
-                order.save()
-                
-                return JsonResponse({
-                    'status': 'success',
-                    'message': f'Coupon applied! Ksh{discount} has been deducted',
-                    'new_price': float(new_price),
-                    'discount': float(discount),
-                    'saved': float(order.saved)
-                })
-            else:
+            try:
+                coupon = Coupon.objects.get(code=code)
+            except Coupon.DoesNotExist:
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Invalid coupon code'
                 })
+
+            # Validation checks
+            if not coupon.active:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'This coupon is no longer active'
+                })
+
+            if coupon.expiry_date and timezone.now() > coupon.expiry_date:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'This coupon has expired'
+                })
+
+            if coupon.times_used >= coupon.usage_limit:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'This coupon has reached its usage limit'
+                })
+
+            if coupon in order.coupons.all():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Coupon already applied to this order'
+                })
+            
+            # Calculate percentage discount based on original price
+            discount_percentage = Decimal(str(coupon.discount))
+            discount_amount = (original_price * discount_percentage) / Decimal('100')
+            discount_amount = discount_amount.quantize(Decimal('0.01'))
+            
+            # Calculate new price
+            new_price = original_price - discount_amount
+            
+            # Update order
+            order.coupons.add(coupon)
+            order.price = new_price
+            order.saved = discount_amount
+            order.save()
+
+            # Increment coupon usage counter
+            coupon.times_used += 1
+            coupon.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Coupon applied! {coupon.discount}% off - Ksh{discount_amount:.2f} has been deducted',
+                'subtotal': float(original_price),
+                'new_price': float(new_price),
+                'discount': float(discount_amount),
+                'saved': float(order.saved),
+                'discount_percentage': float(coupon.discount)
+            })
                 
         except Exception as e:
             return JsonResponse({

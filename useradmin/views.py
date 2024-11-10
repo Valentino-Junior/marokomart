@@ -7,7 +7,7 @@ from django.contrib.auth.hashers import check_password
 
 from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages
 from userauths.models import Profile, User
-from useradmin.forms import AddProductForm, EditProductForm, CategoryForm
+from useradmin.forms import AddProductForm, EditProductForm, CategoryForm, CouponForm, Coupon
 from useradmin.decorators import admin_required
 from django.http import JsonResponse
 
@@ -299,6 +299,63 @@ def category_delete(request, pk):
         return JsonResponse({
             'success': True,
             'message': 'Category deleted successfully'
+        })
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    })
+
+
+
+def coupon_list(request):
+    coupons = Coupon.objects.all().order_by('-created_at')
+    return render(request, 'useradmin/coupon_management.html', {'coupons': coupons})
+
+def coupon_create(request):
+    if request.method == 'POST':
+        form = CouponForm(request.POST)
+        if form.is_valid():
+            coupon = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Coupon created successfully',
+                'coupon': {
+                    'id': coupon.id,
+                    'code': coupon.code,
+                    'discount': coupon.discount,
+                    'active': coupon.active,
+                    'expiry_date': coupon.expiry_date.strftime('%Y-%m-%d %H:%M') if coupon.expiry_date else None,
+                    'usage_limit': coupon.usage_limit,
+                    'times_used': coupon.times_used
+                }
+            })
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        })
+
+def coupon_update(request, pk):
+    coupon = get_object_or_404(Coupon, pk=pk)
+    if request.method == 'POST':
+        form = CouponForm(request.POST, instance=coupon)
+        if form.is_valid():
+            coupon = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Coupon updated successfully'
+            })
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        })
+
+def coupon_delete(request, pk):
+    coupon = get_object_or_404(Coupon, pk=pk)
+    if request.method == 'POST':
+        coupon.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Coupon deleted successfully'
         })
     return JsonResponse({
         'success': False,

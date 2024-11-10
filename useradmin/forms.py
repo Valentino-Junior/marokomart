@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from core.models import Product, ProductImages, Category
+from core.models import Product, ProductImages, Category, Coupon
 
 
 class CategoryForm(forms.ModelForm):
@@ -21,6 +21,32 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['title', 'image']
+
+
+class CouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        fields = ['discount', 'active', 'expiry_date', 'usage_limit']
+        widgets = {
+            'discount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Discount percentage (1-100)',
+                'min': '1',
+                'max': '100'
+            }),
+            'active': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'expiry_date': forms.DateTimeInput(attrs={
+                'class': 'form-control',
+                'type': 'datetime-local'
+            }),
+            'usage_limit': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Number of times this coupon can be used',
+                'min': '1'
+            })
+        }
 
 
 
