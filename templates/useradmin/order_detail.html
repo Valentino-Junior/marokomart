@@ -108,9 +108,9 @@
                                                 <div class="info">{{o.item}}</div>
                                             </a>
                                         </td>
-                                        <td>${{ o.price }}</td>
+                                        <td>Ksh{{ o.price }}</td>
                                         <td>{{ o.qty }}</td>
-                                        <td class="text-end">${{o.total}}</td>
+                                        <td class="text-end">Ksh{{o.total}}</td>
                                     </tr>
                                 {% endfor %}
                                     
@@ -118,21 +118,18 @@
                                 <tr>
                                     <td colspan="4">
                                         <article class="float-end">
-                                            <dl class="dlist">
-                                                <dt>Tax:</dt>
-                                                <dd>$0</dd>
-                                            </dl>
+                                            
                                             <dl class="dlist">
                                                 <dt>Shipping cost:</dt>
-                                                <dd>$0</dd>
+                                                <dd>Ksh0</dd>
                                             </dl>
                                             <dl class="dlist">
                                                 <dt>Discount:</dt>
-                                                <dd>${{ order.saved }}</dd>
+                                                <dd>Ksh{{ order.saved }}</dd>
                                             </dl>
                                             <dl class="dlist">
                                                 <dt>Grand total:</dt>
-                                                <dd><b class="h5">${{order.price}}</b></dd>
+                                                <dd><b class="h5">Ksh{{order.price}}</b></dd>
                                             </dl>
                                             <dl class="dlist">
                                                 <dt class="text-muted">Status:</dt>

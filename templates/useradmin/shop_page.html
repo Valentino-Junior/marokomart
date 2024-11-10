@@ -31,7 +31,7 @@
                         <p class="mb-0 text-muted">Total sales:</p>
                         <h5 class="text-success">{{ total_sales.qty|default:"No Sales Yet" }}</h5>
                         <p class="mb-0 text-muted">Revenue:</p>
-                        <h5 class="text-success mb-0">${{revenue.price|default:"0.00"}}</h5>
+                        <h5 class="text-success mb-0">Ksh{{revenue.price|default:"0.00"}}</h5>
                     </article>
                 </div>
                 <!--  col.// -->
@@ -65,7 +65,7 @@
                             <a href="#" class="img-wrap"> <img src="{{ p.image.url }}" style="width: 100%; height: 200px; object-fit: cover;" alt="{{p.title}}" /> </a>
                             <div class="info-wrap">
                                 <a href="#" class="title">{{p.title}}</a>
-                                <div class="price mt-1">${{p.price}}</div>
+                                <div class="price mt-1">Ksh{{p.price}}</div>
                             </div>
                         </div>
                     </div>
