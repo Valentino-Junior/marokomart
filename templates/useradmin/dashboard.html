@@ -69,6 +69,74 @@
         </div>
     </div>
 
+
+    <!-- Low Stock Alerts Section -->
+    {% if stock_alerts.low_stock_count > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-white">
+                            <i class="material-icons align-middle"></i>
+                            Low Stock Alerts
+                        </h5>
+                        <span class="badge bg-danger">{{ stock_alerts.low_stock_count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stock_alerts.products %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}"
+                                                width="40" height="40" class="rounded me-2">
+                                            <span>{{ item.product.title }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge bg-{% if item.current_stock == 0 %}danger{% else %}warning{% endif %}">
+                                            {{ item.current_stock }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.threshold }}</td>
+                                    <td>
+                                        <span
+                                            class="badge bg-{% if item.status == 'Out of Stock' %}danger{% else %}warning{% endif %}">
+                                            {{ item.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'useradmin:dashboard-edit-products' item.product.pid %}"
+                                            class="btn btn-sm btn-primary">
+                                            Update Stock
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
     <div class="card mb-4">
         <header class="card-header">
             <h4 class="card-title">Latest orders</h4>

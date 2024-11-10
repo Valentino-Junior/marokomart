@@ -69,7 +69,7 @@ class Product(models.Model):
     title = models.CharField(max_length=100, default="Fresh Pear")
     image = models.ImageField(
         upload_to=user_directory_path, default="product.jpg")
-    # description = models.TextField(null=True, blank=True, default="This is the product")
+    
     description = CKEditor5Field(config_name='extends', null=True, blank=True)
 
     price = models.DecimalField(
@@ -77,8 +77,8 @@ class Product(models.Model):
     old_price = models.DecimalField(
         max_digits=12, decimal_places=2, default="0.00", validators=[MinValueValidator(0)])
 
-    stock_count = models.CharField(
-        max_length=100, default="0", null=True, blank=True)
+    stock_count = models.CharField(max_length=100, default="0", null=True, blank=True)
+    low_stock_threshold = models.IntegerField(default=5) 
 
     product_status = models.CharField(
         choices=STATUS, max_length=10, default="published")
@@ -104,6 +104,35 @@ class Product(models.Model):
     def get_precentage(self):
         new_price = (self.price / self.old_price) * 100
         return new_price
+    
+
+    def check_low_stock(self):
+        """Check if product is low in stock"""
+        try:
+            current_stock = int(self.stock_count)
+            return current_stock <= self.low_stock_threshold
+        except ValueError:
+            return False
+        
+
+    def save(self, *args, **kwargs):
+        # Check if stock count changed and create alert if needed
+        if self.pk:
+            old_product = Product.objects.get(pk=self.pk)
+            if self.stock_count != old_product.stock_count:
+                try:
+                    current_stock = int(self.stock_count)
+                    if current_stock <= self.low_stock_threshold:
+                        LowStockAlert.objects.create(
+                            product=self,
+                            current_stock=current_stock,
+                            threshold=self.low_stock_threshold
+                        )
+                except ValueError:
+                    pass
+        super().save(*args, **kwargs)
+
+
 
 
 class ProductImages(models.Model):
@@ -115,6 +144,21 @@ class ProductImages(models.Model):
 
     class Meta:
         verbose_name_plural = "Product Images"
+
+
+
+class LowStockAlert(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    current_stock = models.IntegerField()
+    threshold = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_viewed = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Low Stock Alert: {self.product.title} ({self.current_stock} remaining)"
 
 
 
@@ -152,6 +196,7 @@ class ShippingAddress(models.Model):
 class CartOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
+    cart_data = models.JSONField(null=True, blank=True)  # Add this field
 
     price = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
     saved = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
@@ -169,6 +214,23 @@ class CartOrder(models.Model):
     class Meta:
         verbose_name_plural = "Cart Order"
         ordering = ["-order_date"]
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_order = CartOrder.objects.get(pk=self.pk)
+            # If payment status changed to True (for cash payments)
+            if not old_order.paid_status and self.paid_status and self.cart_data:
+                # Update stock using stored cart data
+                for product_id, quantity in self.cart_data.items():
+                    try:
+                        product = Product.objects.get(pid=product_id)
+                        if product.stock_count.isdigit():
+                            new_stock = int(product.stock_count) - int(quantity)
+                            product.stock_count = str(max(0, new_stock))
+                            product.save()
+                    except Product.DoesNotExist:
+                        continue
+        super().save(*args, **kwargs)
 
 
 class CartOrderProducts(models.Model):

@@ -1,13 +1,15 @@
 from django.contrib import admin
-from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress
+from .models import Product, LowStockAlert
+from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress, LowStockAlert
+
 
 class ProductImagesAdmin(admin.TabularInline):
     model = ProductImages
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImagesAdmin]
-    list_editable = ['title', 'price', 'product_status']
-    list_display = ['user', 'title', 'product_image', 'price', 'category', 'product_status', 'pid']
+    list_editable = ['title', 'price', 'product_status', 'low_stock_threshold']
+    list_display = ['user', 'title', 'product_image', 'price', 'category', 'product_status', 'pid', 'stock_count', 'low_stock_threshold']
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['title', 'category_image']
@@ -41,6 +43,17 @@ class ShippingAddressAdmin(admin.ModelAdmin):
 
 
 
+class LowStockAlertAdmin(admin.ModelAdmin):
+    list_display = ['product', 'current_stock', 'threshold', 'created_at', 'is_viewed']
+    list_filter = ['is_viewed', 'created_at']
+    search_fields = ['product__title']
+    readonly_fields = ['product', 'current_stock', 'threshold', 'created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+
+admin.site.register(LowStockAlert, LowStockAlertAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(CartOrder, CartOrderAdmin)

@@ -788,7 +788,20 @@ def clear_cart(request):
 
 
 
-# Modified payment processing view
+def update_product_stock(request, order):
+    """Helper function to update product stock"""
+    cart = request.session.get('cart', {})
+    
+    for product_id, quantity in cart.items():
+        try:
+            product = Product.objects.get(pid=product_id)
+            if product.stock_count.isdigit():
+                new_stock = int(product.stock_count) - int(quantity)
+                product.stock_count = str(max(0, new_stock))
+                product.save()
+        except Product.DoesNotExist:
+            continue
+
 @login_required
 def process_payment(request):
     if request.method == 'POST':
@@ -797,12 +810,17 @@ def process_payment(request):
 
         try:
             order = get_object_or_404(CartOrder, oid=oid, user=request.user)
+            cart = request.session.get('cart', {})
 
             if payment_method == 'stripe':
-                # Implement actual Stripe API payment processing here
+                # Store cart data before clearing session
+                order.cart_data = cart
                 order.paid_status = True
                 order.save()
-               
+
+                # Update stock immediately
+                update_product_stock(request, order)
+                
                 # Clear session cart
                 clear_cart(request)
                 
@@ -814,9 +832,13 @@ def process_payment(request):
                 })
 
             elif payment_method == 'mpesa':
-                # Implement M-Pesa API payment processing here
+                # Store cart data before clearing session
+                order.cart_data = cart
                 order.paid_status = True
                 order.save()
+
+                # Update stock immediately
+                update_product_stock(request, order)
                 
                 # Clear session cart
                 clear_cart(request)
@@ -829,7 +851,8 @@ def process_payment(request):
                 })
 
             elif payment_method == 'cash':
-                # Handle Cash on Delivery
+                # Store cart data for later use
+                order.cart_data = cart
                 order.paid_status = False
                 order.save()
                 
@@ -843,14 +866,10 @@ def process_payment(request):
                     'cart_count': 0
                 })
 
-            else:
-                return JsonResponse({'success': False, 'message': 'Invalid payment method'})
-
         except CartOrder.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'Order not found'})
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
-
 
 
 @login_required

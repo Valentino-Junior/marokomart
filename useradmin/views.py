@@ -17,6 +17,8 @@ from django.shortcuts import render, get_object_or_404
 
 from decimal import Decimal
 from collections import defaultdict
+
+
 @admin_required
 def dashboard(request):
     # Get all orders
@@ -41,8 +43,23 @@ def dashboard(request):
             if order.order_date.month == current_month:
                 monthly_revenue += order.price
     
-    # Get other data
+    # Get products data and check for low stock
     all_products = Product.objects.all()
+    low_stock_products = []
+    for product in all_products:
+        try:
+            current_stock = int(product.stock_count)
+            if current_stock <= product.low_stock_threshold:
+                low_stock_products.append({
+                    'product': product,
+                    'current_stock': current_stock,
+                    'threshold': product.low_stock_threshold,
+                    'status': 'Out of Stock' if current_stock == 0 else 'Low Stock'
+                })
+        except (ValueError, TypeError):
+            continue
+
+    # Get other data
     all_categories = Category.objects.all()
     new_customers = User.objects.all().order_by("-id")[:6]
     latest_orders = all_orders.order_by('-order_date')[:10]
@@ -62,6 +79,14 @@ def dashboard(request):
             "paid_count": paid_orders_count,
             "pending_count": total_orders - paid_orders_count,
             "payment_rate": round(payment_rate, 1)
+        },
+        "stock_alerts": {
+            "low_stock_count": len(low_stock_products),
+            "products": low_stock_products,
+        },
+        "inventory": {
+            "total_products": all_products.count(),
+            "total_categories": all_categories.count(),
         },
         "all_products": all_products,
         "all_categories": all_categories,
