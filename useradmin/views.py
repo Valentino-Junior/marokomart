@@ -15,28 +15,58 @@ import datetime
 import os
 from django.shortcuts import render, get_object_or_404
 
-
+from decimal import Decimal
+from collections import defaultdict
 @admin_required
 def dashboard(request):
-    revenue = CartOrder.objects.aggregate(price=Sum("price"))
-    total_orders_count = CartOrder.objects.all()
+    # Get all orders
+    all_orders = CartOrder.objects.all()
+    
+    # Initialize revenue and order counts
+    total_revenue = Decimal('0.00')
+    monthly_revenue = Decimal('0.00')
+    paid_orders_count = 0
+    total_orders = len(all_orders)
+    
+    # Get current month
+    current_month = datetime.datetime.now().month
+    
+    # Calculate revenues from paid orders
+    for order in all_orders:
+        if order.paid_status:
+            paid_orders_count += 1
+            total_revenue += order.price
+            
+            # Add to monthly revenue if order is from current month
+            if order.order_date.month == current_month:
+                monthly_revenue += order.price
+    
+    # Get other data
     all_products = Product.objects.all()
     all_categories = Category.objects.all()
     new_customers = User.objects.all().order_by("-id")[:6]
-    latest_orders = CartOrder.objects.all()
-
-    this_month = datetime.datetime.now().month
-    monthly_revenue = CartOrder.objects.filter(order_date__month=this_month).aggregate(price=Sum("price"))
-
+    latest_orders = all_orders.order_by('-order_date')[:10]
+    
+    # Calculate payment rate
+    payment_rate = (paid_orders_count / total_orders * 100) if total_orders > 0 else 0
     
     context = {
-        "monthly_revenue": monthly_revenue,
-        "revenue": revenue,
+        "revenue": {
+            "price": "{:,.2f}".format(total_revenue)
+        },
+        "monthly_revenue": {
+            "price": "{:,.2f}".format(monthly_revenue)
+        },
+        "orders_summary": {
+            "total_count": total_orders,
+            "paid_count": paid_orders_count,
+            "pending_count": total_orders - paid_orders_count,
+            "payment_rate": round(payment_rate, 1)
+        },
         "all_products": all_products,
         "all_categories": all_categories,
         "new_customers": new_customers,
         "latest_orders": latest_orders,
-        "total_orders_count": total_orders_count,
     }
     return render(request, "useradmin/dashboard.html", context)
 

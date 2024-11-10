@@ -2,7 +2,7 @@
 {% load static %}
 {% load humanize %}
 {% block content %}
-  
+
 <section class="content-main">
     <div class="content-header">
         <div>
@@ -10,17 +10,20 @@
             <p>Whole data about your business here</p>
         </div>
         <div>
-            <a href="{% url 'useradmin:dashboard-add-products' %}" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Create Product</a>
+            <a href="{% url 'useradmin:dashboard-add-products' %}" class="btn btn-primary"><i
+                    class="text-muted material-icons md-post_add"></i>Create Product</a>
         </div>
     </div>
     <div class="row">
         <div class="col-lg-3">
             <div class="card card-body mb-4">
                 <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-primary-light"><i class="text-primary material-icons md-monetization_on"></i></span>
+                    <span class="icon icon-sm rounded-circle bg-primary-light">
+                        <i class="text-primary material-icons md-monetization_on"></i>
+                    </span>
                     <div class="text">
                         <h6 class="mb-1 card-title">Revenue</h6>
-                        <span>${{ revenue.price|floatformat:2|intcomma }}</span>
+                        <span>Ksh{{ revenue.price }}</span>
                     </div>
                 </article>
             </div>
@@ -28,10 +31,12 @@
         <div class="col-lg-3">
             <div class="card card-body mb-4">
                 <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-success-light"><i class="text-success material-icons md-local_shipping"></i></span>
+                    <span class="icon icon-sm rounded-circle bg-success-light">
+                        <i class="text-success material-icons md-local_shipping"></i>
+                    </span>
                     <div class="text">
                         <h6 class="mb-1 card-title">Orders</h6>
-                        <span>{{total_orders_count.count}}</span>
+                        <span>{{orders_summary.paid_count}}</span>
                     </div>
                 </article>
             </div>
@@ -39,7 +44,9 @@
         <div class="col-lg-3">
             <div class="card card-body mb-4">
                 <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-warning-light"><i class="text-warning material-icons md-qr_code"></i></span>
+                    <span class="icon icon-sm rounded-circle bg-warning-light">
+                        <i class="text-warning material-icons md-qr_code"></i>
+                    </span>
                     <div class="text">
                         <h6 class="mb-1 card-title">Products</h6>
                         <span>{{all_products.count}}</span>
@@ -50,16 +57,18 @@
         <div class="col-lg-3">
             <div class="card card-body mb-4">
                 <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-info-light"><i class="text-info material-icons md-shopping_basket"></i></span>
+                    <span class="icon icon-sm rounded-circle bg-info-light">
+                        <i class="text-info material-icons md-shopping_basket"></i>
+                    </span>
                     <div class="text">
                         <h6 class="mb-1 card-title">Monthly Earning</h6>
-                        <span>{{ monthly_revenue.price|floatformat:2|intcomma }}</span>
+                        <span>Ksh{{ monthly_revenue.price }}</span>
                     </div>
                 </article>
             </div>
         </div>
     </div>
-    
+
     <div class="card mb-4">
         <header class="card-header">
             <h4 class="card-title">Latest orders</h4>
@@ -70,7 +79,7 @@
                     <table class="table align-middle table-nowrap mb-0">
                         <thead class="table-light">
                             <tr>
-                                
+
                                 <th class="align-middle" scope="col">Order ID</th>
                                 <th class="align-middle" scope="col">Name</th>
                                 <th class="align-middle" scope="col">Email</th>
@@ -89,7 +98,7 @@
                                 <td>{{l.email}}</td>
                                 <td>{{l.phone}}</td>
                                 <td>{{l.order_date}}</td>
-                                <td>${{l.price}}</td>
+                                <td>Ksh{{l.price}}</td>
                                 <td>
                                     {% if l.paid_status == True %}
                                     <span class="badge badge-pill badge-soft-success">Paid</span>
@@ -98,7 +107,8 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'useradmin:order_detail' l.id %}" class="btn btn-xs"> View details</a>
+                                    <a href="{% url 'useradmin:order_detail' l.id %}" class="btn btn-xs"> View
+                                        details</a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -111,4 +121,3 @@
 </section>
 
 {% endblock content %}
-        
