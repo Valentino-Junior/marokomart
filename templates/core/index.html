@@ -2,6 +2,372 @@
 {% load static %}
 {% block content %}
 
+<style>
+    /* Styling for slider content */
+.slider-content h1.display-2 {
+    color: #ffffff; /* White base color */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Strong shadow for contrast */
+    font-weight: 800; /* Extra bold */
+    font-size: 48px;
+    line-height: 1.2;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+/* Add a subtle highlight effect to heading */
+.slider-content h1.display-2 br {
+    display: block;
+    content: "";
+    margin-top: 10px;
+}
+
+/* Paragraph styling */
+.slider-content p {
+    color: #ffffff; /* White for visibility */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6); /* Shadow for readability */
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    margin-bottom: 25px;
+}
+
+/* Optional: Add a semi-transparent overlay to make text more readable */
+.single-hero-slider {
+    position: relative;
+}
+
+.single-hero-slider::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        rgba(0, 0, 0, 0.3),
+        rgba(0, 0, 0, 0.4)
+    );
+    pointer-events: none;
+}
+
+/* Ensure slider content stays above the overlay */
+.slider-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Form styling to match */
+.form-subcriber input {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding: 15px 20px;
+    border-radius: 4px 0 0 4px;
+    width: 300px;
+    font-size: 16px;
+}
+
+.form-subcriber .btn {
+    background-color: #00A86B; /* Matching your green */
+    color: #ffffff;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 0 4px 4px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.form-subcriber .btn:hover {
+    background-color: #00C07B; /* Lighter green on hover */
+    transform: translateY(-2px);
+}
+</style>
+
+<style>
+    /* Toast Container Styles */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1060;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Toast Notification Styles */
+    .toast {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        max-width: 400px;
+        transform: translateX(120%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 10px;
+    }
+
+    .toast.show {
+        transform: translateX(0);
+    }
+
+    .toast.success {
+        border-left: 4px solid #4CAF50;
+    }
+
+    .toast.error {
+        border-left: 4px solid #f44336;
+    }
+
+    .toast.info {
+        border-left: 4px solid #2196F3;
+    }
+
+    .toast-icon {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+    }
+
+    .toast.success .toast-icon {
+        color: #4CAF50;
+    }
+
+    .toast.error .toast-icon {
+        color: #f44336;
+    }
+
+    .toast.info .toast-icon {
+        color: #2196F3;
+    }
+
+    .toast-content {
+        flex-grow: 1;
+    }
+
+    .toast-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #333;
+    }
+
+    .toast-message {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 4px;
+        font-size: 18px;
+        line-height: 1;
+        transition: color 0.2s ease;
+    }
+
+    .toast-close:hover {
+        color: #666;
+    }
+
+    /* Button States */
+    .button-loading {
+        position: relative;
+        color: transparent !important;
+    }
+
+    .button-loading::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin: -8px 0 0 -8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: button-loading-spinner 0.8s linear infinite;
+    }
+
+    @keyframes button-loading-spinner {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Out of Stock Button */
+    .out-of-stock {
+        background-color: #f5f5f5 !important;
+        color: #999 !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    /* Wishlist Icon Animation */
+    .add-to-wishlist i {
+        transition: all 0.3s ease;
+    }
+
+    .add-to-wishlist:hover i {
+        transform: scale(1.2);
+    }
+
+    .text-danger {
+        color: #ff6b6b !important;
+    }
+</style>
+
+
+<style>
+    /* Banner section styling */
+.banner-img {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    height: 300px; /* Fixed height for all banners */
+    margin-bottom: 30px;
+}
+
+/* Image styling for consistent size */
+.banner-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures image covers the area without distortion */
+    transition: transform 0.3s ease;
+}
+
+/* Overlay for better text visibility */
+.banner-img::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.4),
+        rgba(0, 0, 0, 0.2)
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Banner text container */
+.banner-text {
+    position: absolute;
+    bottom: 30px; /* Fixed position from bottom */
+    left: 30px;
+    z-index: 2;
+    text-align: left;
+    width: calc(100% - 60px); /* Account for left/right padding */
+}
+
+/* Banner heading styling */
+.banner-text h4 {
+    color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+/* Button styling */
+.banner-text .btn-xs {
+    background-color: #00A86B;
+    color: #ffffff;
+    padding: 12px 25px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+/* Button hover effect */
+.banner-text .btn-xs:hover {
+    background-color: #00C07B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Arrow icon styling */
+.banner-text .btn-xs i {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+/* Arrow hover animation */
+.banner-text .btn-xs:hover i {
+    transform: translateX(3px);
+}
+
+/* Row spacing */
+.row {
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+/* Column padding */
+.col-lg-4, .col-md-6 {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .banner-img {
+        height: 250px; /* Slightly smaller height on medium screens */
+    }
+    
+    .banner-text h4 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner-img {
+        height: 200px; /* Even smaller height on mobile */
+    }
+    
+    .banner-text {
+        bottom: 20px;
+        left: 20px;
+        width: calc(100% - 40px);
+    }
+    
+    .banner-text h4 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .banner-text .btn-xs {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+</style>
+
+
+
 
 <main class="main">
     <div class="container mb-30">
@@ -13,7 +379,7 @@
                     <div class="home-slide-cover mt-30">
                         <div class="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
                             <div class="single-hero-slider single-animation-wrap"
-                                style="background-image: url({% static 'assets/imgs/slider/slider-1.png' %})">
+                                style="background-image: url({% static 'assets/imgs/slider/david-straight-VZY6o3Q0EEI-unsplash.jpg' %})">
                                 <div class="slider-content">
                                     <h1 class="display-2 mb-40">
                                         Discover Amazing<br /> Spirit Deals
@@ -26,7 +392,7 @@
                                 </div>
                             </div>
                             <div class="single-hero-slider single-animation-wrap"
-                                style="background-image: url({% static 'assets/imgs/slider/slider-2.png' %})">
+                                style="background-image: url({% static 'assets/imgs/slider/sal-media-oIxo9I98Rcs-unsplash.jpg' %})">
                                 <div class="slider-content">
                                     <h1 class="display-2 mb-40">
                                         Premium Wines<br /> Special Discounts
@@ -45,175 +411,80 @@
 
                 <!--start Deals-->
 
-                <section class="section-padding pb-5">
-                    <div class="section-title">
-                        <h3 class="">Best Deals of the day</h3>
-                        <a class="show-all" href="shop-grid-right.html">
-                            All Deals
-                            <i class="fi-rs-angle-right"></i>
-                        </a>
-                    </div>
+                <div class="section-title">
+                    <h3 class="">Best Deals of the day</h3>
+                    <a class="show-all" href="shop-grid-right.html">
+                        All Deals
+                        <i class="fi-rs-angle-right"></i>
+                    </a>
+                </div>
+
+
+                <div class="container mb-30 mt-30">
                     <div class="row">
-                        <div class="col-xl-3 col-lg-4 col-md-6">
-                            <div class="product-cart-wrap style-2">
-                                <div class="product-img-action-wrap">
-                                    <div class="product-img">
-                                        <a href="shop-product-right.html">
-                                            <img src="{% static 'assets/imgs/banner/banner-5.png' %}" alt="" />
-                                        </a>
-                                    </div>
+                        <div class="col-lg-12">
+                            <!-- Sort and Filter Section -->
+                            <div class="shop-product-fillter">
+                                <div class="totall-product">
+                                    <p>We found <strong class="text-brand product-count">{{ products.count }}</strong>
+                                        items
+                                        for you!</p>
                                 </div>
-                                <div class="product-content-wrap">
-                                    <div class="deals-countdown-wrap">
-                                        <div class="deals-countdown" data-countdown="2025/03/25 00:00:00"></div>
-                                    </div>
-                                    <div class="deals-content">
-                                        <h2><a href="shop-product-right.html">Glenfiddich 18 Year Single Malt Scotch</a>
-                                        </h2>
-                                        <div class="product-rate-cover">
-                                            <div class="product-rate d-inline-block">
-                                                <div class="product-rating" style="width: 90%"></div>
+
+                                <div class="sort-by-product-area">
+                                    <!-- Sort By Dropdown -->
+                                    <div class="sort-by-cover">
+                                        <div class="sort-by-product-wrap">
+                                            <div class="sort-by">
+                                                <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
                                             </div>
-                                            <span class="font-small ml-5 text-muted"> (4.0)</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-small text-muted">By <a
-                                                    href="vendor-details-1.html">Speyside Distillery</a></span>
-                                        </div>
-                                        <div class="product-card-bottom">
-                                            <div class="product-price">
-                                                <span>$89.95</span>
-                                                <span class="old-price">$99.95</span>
-                                            </div>
-                                            <div class="add-cart">
-                                                <a class="add" href="shop-cart.html"><i
-                                                        class="fi-rs-shopping-cart mr-5"></i>Add </a>
+                                            <div class="sort-by-dropdown-wrap">
+                                                <span id="current-sort-text">
+                                                    {% if current_sort == 'price_low_high' %}
+                                                    Price: Low to High
+                                                    {% elif current_sort == 'price_high_low' %}
+                                                    Price: High to Low
+                                                    {% else %}
+                                                    Featured
+                                                    {% endif %}
+                                                    <i class="fi-rs-angle-small-down"></i>
+                                                </span>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-lg-4 col-md-6">
-                            <div class="product-cart-wrap style-2">
-                                <div class="product-img-action-wrap">
-                                    <div class="product-img">
-                                        <a href="shop-product-right.html">
-                                            <img src="{% static 'assets/imgs/banner/banner-6.png' %}" alt="" />
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="product-content-wrap">
-                                    <div class="deals-countdown-wrap">
-                                        <div class="deals-countdown" data-countdown="2026/04/25 00:00:00"></div>
-                                    </div>
-                                    <div class="deals-content">
-                                        <h2><a href="shop-product-right.html">Don Julio 1942 Añejo Tequila</a></h2>
-                                        <div class="product-rate-cover">
-                                            <div class="product-rate d-inline-block">
-                                                <div class="product-rating" style="width: 90%"></div>
-                                            </div>
-                                            <span class="font-small ml-5 text-muted"> (4.0)</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-small text-muted">By <a
-                                                    href="vendor-details-1.html">Jalisco Spirits</a></span>
-                                        </div>
-                                        <div class="product-card-bottom">
-                                            <div class="product-price">
-                                                <span>$159.95</span>
-                                                <span class="old-price">$179.95</span>
-                                            </div>
-                                            <div class="add-cart">
-                                                <a class="add" href="shop-cart.html"><i
-                                                        class="fi-rs-shopping-cart mr-5"></i>Add </a>
-                                            </div>
+                                        <div class="sort-by-dropdown">
+                                            <ul>
+                                                <li>
+                                                    <a href="#" data-sort="price_low_high"
+                                                        class="sort-option {% if current_sort == 'price_low_high' %}active{% endif %}">
+                                                        Price: Low to High
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#" data-sort="price_high_low"
+                                                        class="sort-option {% if current_sort == 'price_high_low' %}active{% endif %}">
+                                                        Price: High to Low
+                                                    </a>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-xl-3 col-lg-4 col-md-6 d-none d-lg-block">
-                            <div class="product-cart-wrap style-2">
-                                <div class="product-img-action-wrap">
-                                    <div class="product-img">
-                                        <a href="shop-product-right.html">
-                                            <img src="{% static 'assets/imgs/banner/banner-7.png' %}" alt="" />
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="product-content-wrap">
-                                    <div class="deals-countdown-wrap">
-                                        <div class="deals-countdown" data-countdown="2027/03/25 00:00:00"></div>
-                                    </div>
-                                    <div class="deals-content">
-                                        <h2><a href="shop-product-right.html">Veuve Clicquot Yellow Label Champagne</a>
-                                        </h2>
-                                        <div class="product-rate-cover">
-                                            <div class="product-rate d-inline-block">
-                                                <div class="product-rating" style="width: 80%"></div>
-                                            </div>
-                                            <span class="font-small ml-5 text-muted"> (3.0)</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-small text-muted">By <a
-                                                    href="vendor-details-1.html">Champagne House</a></span>
-                                        </div>
-                                        <div class="product-card-bottom">
-                                            <div class="product-price">
-                                                <span>$49.95</span>
-                                                <span class="old-price">$59.95</span>
-                                            </div>
-                                            <div class="add-cart">
-                                                <a class="add" href="shop-cart.html"><i
-                                                        class="fi-rs-shopping-cart mr-5"></i>Add </a>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                            <!-- Loading Spinner -->
+                            <div id="loading-spinner" class="text-center my-4" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-xl-3 col-lg-4 col-md-6 d-none d-xl-block">
-                            <div class="product-cart-wrap style-2">
-                                <div class="product-img-action-wrap">
-                                    <div class="product-img">
-                                        <a href="shop-product-right.html">
-                                            <img src="{% static 'assets/imgs/banner/banner-8.png' %}" alt="" />
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="product-content-wrap">
-                                    <div class="deals-countdown-wrap">
-                                        <div class="deals-countdown" data-countdown="2025/02/25 00:00:00"></div>
-                                    </div>
-                                    <div class="deals-content">
-                                        <h2><a href="shop-product-right.html">Grey Goose Original Vodka</a></h2>
-                                        <div class="product-rate-cover">
-                                            <div class="product-rate d-inline-block">
-                                                <div class="product-rating" style="width: 80%"></div>
-                                            </div>
-                                            <span class="font-small ml-5 text-muted"> (3.0)</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-small text-muted">By <a
-                                                    href="vendor-details-1.html">French Spirits</a></span>
-                                        </div>
-                                        <div class="product-card-bottom">
-                                            <div class="product-price">
-                                                <span>$32.95</span>
-                                                <span class="old-price">$39.95</span>
-                                            </div>
-                                            <div class="add-cart">
-                                                <a class="add" href="shop-cart.html"><i
-                                                        class="fi-rs-shopping-cart mr-5"></i>Add </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+
+                            <!-- Product Grid Container -->
+                            <div id="product-grid-container">
+                                {% include 'core/includes/best_deal.html' %}
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
                 <!--End Deals-->
 
 
@@ -221,31 +492,32 @@
                     <div class="row">
                         <div class="col-lg-4 col-md-6">
                             <div class="banner-img">
-                                <img src="{% static 'assets/imgs/banner/banner-1.png' %}"
+                                <img src="{% static 'assets/imgs/banner/liquor2.jpeg' %}"
                                     alt="Premium Spirits Collection" />
                                 <div class="banner-text">
                                     <h4>Premium Spirits<br />Curated with<br />Excellence</h4>
-                                    <a href="shop-grid-right.html" class="btn btn-xs">Shop Now <i
+                                    <a href="/products/" class="btn btn-xs">Shop Now <i
                                             class="fi-rs-arrow-small-right"></i></a>
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-6">
                             <div class="banner-img">
-                                <img src="{% static 'assets/imgs/banner/banner-2.png' %}" alt="Fine Wine Selection" />
+                                <img src="{% static 'assets/imgs/banner/wine1.jpeg' %}"
+                                    alt="Fine Wine Selection" />
                                 <div class="banner-text">
                                     <h4>Discover Our<br />Fine Wine Collection</h4>
-                                    <a href="shop-grid-right.html" class="btn btn-xs">Shop Now <i
+                                    <a href="/products/" class="btn btn-xs">Shop Now <i
                                             class="fi-rs-arrow-small-right"></i></a>
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-4 d-md-none d-lg-flex">
                             <div class="banner-img mb-sm-0">
-                                <img src="{% static 'assets/imgs/banner/banner-3.png' %}" alt="Craft Beer Selection" />
+                                <img src="{% static 'assets/imgs/banner/liquor1.jpeg' %}" alt="Craft Beer Selection" />
                                 <div class="banner-text">
                                     <h4>Craft Beer &<br />Local Brews</h4>
-                                    <a href="shop-grid-right.html" class="btn btn-xs">Shop Now <i
+                                    <a href="/products/" class="btn btn-xs">Shop Now <i
                                             class="fi-rs-arrow-small-right"></i></a>
                                 </div>
                             </div>
@@ -265,7 +537,8 @@
                         {% for c in categories %}
                         <li>
                             <a href="{% url 'core:category-product-list' c.cid %}"> <img src="{{ c.image.url }}" alt=""
-                                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 10px;" />{{c.title}}</a><span class="count">{{c.product_count}}</span>
+                                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 10px;" />{{c.title}}</a><span
+                                class="count">{{c.product_count}}</span>
                         </li>
                         {% endfor %}
 
@@ -279,208 +552,118 @@
         </div>
     </div>
 
-
-    <!--End category slider-->
-    <section class="section-padding mb-30">
-        <div class="container">
-            <!-- Main Row with Top Selling and Top Rated Sections -->
-            <div class="row justify-content-center"> <!-- Added justify-content-center for centering -->
-                <!-- Top Selling Premium Spirits Section -->
-                <div class="col-xl-4 col-lg-4 col-md-6 mb-sm-5 mb-md-0">
-                    <h4 class="section-title style-1 mb-30 animated animated text-center">Top Selling Premium Spirits</h4>
-                    <div class="product-list-small animated animated">
-                        <!-- Signature Single Malt -->
-                        <article class="row align-items-center hover-up text-center">
-                            <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html">
-                                    <img src="{% static 'assets/imgs/shop/thumbnail-1.jpg' %}" alt="Premium Whiskey" />
-                                </a>
-                            </figure>
-                            <div class="col-md-8 mb-0">
-                                <h6>
-                                    <a href="shop-product-right.html">Macallan 18 Year Single Malt</a>
-                                </h6>
-                                <div class="product-rate-cover">
-                                    <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 95%"></div>
-                                    </div>
-                                    <span class="font-small ml-5 text-muted"> (4.8)</span>
-                                </div>
-                                <div class="product-price">
-                                    <span>$299.99</span>
-                                    <span class="old-price">$329.99</span>
-                                </div>
-                            </div>
-                        </article>
-                        <!-- Premium Vodka -->
-                        <article class="row align-items-center hover-up text-center">
-                            <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html">
-                                    <img src="{% static 'assets/imgs/shop/thumbnail-2.jpg' %}" alt="Premium Vodka" />
-                                </a>
-                            </figure>
-                            <div class="col-md-8 mb-0">
-                                <h6>
-                                    <a href="shop-product-right.html">Belvedere Pure Vodka 1.75L</a>
-                                </h6>
-                                <div class="product-rate-cover">
-                                    <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 90%"></div>
-                                    </div>
-                                    <span class="font-small ml-5 text-muted"> (4.5)</span>
-                                </div>
-                                <div class="product-price">
-                                    <span>$54.99</span>
-                                    <span class="old-price">$59.99</span>
-                                </div>
-                            </div>
-                        </article>
-                        <!-- Luxury Tequila -->
-                        <article class="row align-items-center hover-up text-center">
-                            <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html">
-                                    <img src="{% static 'assets/imgs/shop/thumbnail-3.jpg' %}" alt="Premium Tequila" />
-                                </a>
-                            </figure>
-                            <div class="col-md-8 mb-0">
-                                <h6>
-                                    <a href="shop-product-right.html">Clase Azul Reposado Tequila</a>
-                                </h6>
-                                <div class="product-rate-cover">
-                                    <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 92%"></div>
-                                    </div>
-                                    <span class="font-small ml-5 text-muted"> (4.7)</span>
-                                </div>
-                                <div class="product-price">
-                                    <span>$179.99</span>
-                                    <span class="old-price">$199.99</span>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-    
-                <!-- Top Rated Craft Spirits Section -->
-                <div class="col-xl-4 col-lg-4 col-md-6 mb-sm-5 mb-md-0">
-                    <h4 class="section-title style-1 mb-30 animated animated text-center">Top Rated Craft Spirits</h4>
-                    <div class="product-list-small animated animated">
-                        <!-- Craft Gin -->
-                        <article class="row align-items-center hover-up text-center">
-                            <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html">
-                                    <img src="{% static 'assets/imgs/shop/thumbnail-10.jpg' %}" alt="Craft Gin" />
-                                </a>
-                            </figure>
-                            <div class="col-md-8 mb-0">
-                                <h6>
-                                    <a href="shop-product-right.html">Hendrick's Lunar Gin Limited Release</a>
-                                </h6>
-                                <div class="product-rate-cover">
-                                    <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 98%"></div>
-                                    </div>
-                                    <span class="font-small ml-5 text-muted"> (4.9)</span>
-                                </div>
-                                <div class="product-price">
-                                    <span>$89.99</span>
-                                    <span class="old-price">$99.99</span>
-                                </div>
-                            </div>
-                        </article>
-                        <!-- Small Batch Bourbon -->
-                        <article class="row align-items-center hover-up text-center">
-                            <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html">
-                                    <img src="{% static 'assets/imgs/shop/thumbnail-11.jpg' %}" alt="Craft Bourbon" />
-                                </a>
-                            </figure>
-                            <div class="col-md-8 mb-0">
-                                <h6>
-                                    <a href="shop-product-right.html">Buffalo Trace Single Barrel Select</a>
-                                </h6>
-                                <div class="product-rate-cover">
-                                    <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 94%"></div>
-                                    </div>
-                                    <span class="font-small ml-5 text-muted"> (4.7)</span>
-                                </div>
-                                <div class="product-price">
-                                    <span>$69.99</span>
-                                    <span class="old-price">$79.99</span>
-                                </div>
-                            </div>
-                        </article>
-                        <!-- Artisanal Mezcal -->
-                        <article class="row align-items-center hover-up text-center">
-                            <figure class="col-md-4 mb-0">
-                                <a href="shop-product-right.html">
-                                    <img src="{% static 'assets/imgs/shop/thumbnail-12.jpg' %}" alt="Craft Mezcal" />
-                                </a>
-                            </figure>
-                            <div class="col-md-8 mb-0">
-                                <h6>
-                                    <a href="shop-product-right.html">Del Maguey Vida Mezcal</a>
-                                </h6>
-                                <div class="product-rate-cover">
-                                    <div class="product-rate d-inline-block">
-                                        <div class="product-rating" style="width: 96%"></div>
-                                    </div>
-                                    <span class="font-small ml-5 text-muted"> (4.8)</span>
-                                </div>
-                                <div class="product-price">
-                                    <span>$49.99</span>
-                                    <span class="old-price">$54.99</span>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </div>
-        </div>
-    
-        <!-- Custom CSS for hover effects and styling -->
-        <style>
-            /* Enhanced hover effect for product cards */
-            .hover-up:hover {
-                transform: translateY(-5px);
-                transition: all 0.3s ease;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            }
-    
-            /* Styling for section titles */
-            .section-title {
-                position: relative;
-                padding-bottom: 15px;
-            }
-    
-            .section-title:after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 60px;
-                height: 2px;
-                background-color: #9b0b0b; /* Dark red for luxury feel */
-            }
-    
-            /* Product price styling */
-            .product-price span {
-                color: #9b0b0b;
-                font-weight: bold;
-            }
-    
-            /* Rating stars color */
-            .product-rating {
-                background-color: #c4a47c; /* Gold color for luxury feel */
-            }
-        </style>
-    </section>
-    <!--End 4 columns-->
-
-
 </main>
+
+
+<script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add click handlers for sort options
+        document.querySelectorAll('.sort-option').forEach(function (option) {
+            option.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Update current sort text
+                document.getElementById('current-sort-text').textContent = this.textContent
+                    .trim();
+
+                // Add loading state
+                document.getElementById('filtered-product').style.opacity = '0.5';
+
+                // Navigate to the new URL with sort parameter
+                window.location.href = this.href;
+            });
+        });
+
+        // Initialize tooltips if you're using Bootstrap
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+    });
+</script>
+
+
+
+
+<script>
+    $(document).ready(function () {
+        // Update cart
+        $(document).on("click", ".update-product", function () {
+            let product_id = $(this).data('product');
+            let qty = $('.product-qty-' + product_id).val();
+
+            if (qty < 1) {
+                qty = 1;
+                $('.product-qty-' + product_id).val(1);
+            }
+
+            $.ajax({
+                url: '/update-cart/',
+                data: {
+                    'id': product_id,
+                    'qty': qty
+                },
+                dataType: 'json',
+                beforeSend: function () {
+                    // Add loading state
+                    $(".cart-table").addClass('loading');
+                },
+                success: function (response) {
+                    $("#cart-list").html(response.data);
+                    // Update cart count in header
+                    if ($('.cart-count').length > 0) {
+                        $('.cart-count').text(response.totalcartitems);
+                    }
+                },
+                error: function (error) {
+                    console.log('Error:', error);
+                    alert('Error updating cart');
+                },
+                complete: function () {
+                    // Remove loading state
+                    $(".cart-table").removeClass('loading');
+                }
+            });
+        });
+
+        // Delete from cart
+        $(document).on("click", ".delete-product", function () {
+            let product_id = $(this).data('product');
+
+            if (confirm('Are you sure you want to remove this item?')) {
+                $.ajax({
+                    url: '/delete-from-cart/',
+                    data: {
+                        'id': product_id,
+                    },
+                    dataType: 'json',
+                    beforeSend: function () {
+                        // Add loading state
+                        $(".cart-table").addClass('loading');
+                    },
+                    success: function (response) {
+                        $("#cart-list").html(response.data);
+                        // Update cart count in header
+                        if ($('.cart-count').length > 0) {
+                            $('.cart-count').text(response.totalcartitems);
+                        }
+                    },
+                    error: function (error) {
+                        console.log('Error:', error);
+                        alert('Error removing item from cart');
+                    },
+                    complete: function () {
+                        // Remove loading state
+                        $(".cart-table").removeClass('loading');
+                    }
+                });
+            }
+        });
+    });
+</script>
 
 
 
