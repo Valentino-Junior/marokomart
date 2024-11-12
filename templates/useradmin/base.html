@@ -16,7 +16,64 @@
         <!-- Template CSS -->
         <link href="{% static 'assets2/css/main.css' %}" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+        
+        <style>
+            .navbar-aside {
+                transition: transform 0.3s ease-in-out;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 250px;
+                z-index: 1000;
+                background: #fff;
+            }
+            
+            .navbar-aside.collapsed {
+                transform: translateX(-100%);
+            }
+            
+            .main-wrap {
+                transition: margin-left 0.3s ease-in-out;
+                margin-left: 250px;
+            }
+            
+            .main-wrap.expanded {
+                margin-left: 0;
+            }
+            
+            .screen-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.3s, visibility 0.3s;
+            }
+            
+            .screen-overlay.show {
+                visibility: visible;
+                opacity: 1;
+            }
 
+            @media (max-width: 768px) {
+                .main-wrap {
+                    margin-left: 0;
+                }
+                
+                .navbar-aside {
+                    transform: translateX(-100%);
+                }
+                
+                .navbar-aside.active {
+                    transform: translateX(0);
+                }
+            }
+        </style>
     </head>
 
     <body>
@@ -27,7 +84,9 @@
                     <img src="https://clipground.com/images/ecommerce-logo-png-11.png" class="logo" alt="E-commerce Dashboard" />
                 </a>
                 <div>
-                    <button class="btn btn-icon btn-aside-minimize"><i class="text-muted material-icons md-menu_open"></i></button>
+                    <button class="btn btn-icon btn-aside-minimize" id="toggleSidebar">
+                        <i class="text-muted material-icons md-menu_open"></i>
+                    </button>
                 </div>
             </div>
             <nav>
@@ -41,7 +100,6 @@
                     <li class="menu-item {% if '/useradmin/products/' in request.path %}active{% endif %}">
                         <a class="menu-link" href="{% url 'useradmin:dashboard-products' %}">
                             <i class="icon material-icons md-shopping_bag"></i>
-
                             <span class="text">Products</span>
                         </a>
                     </li>
@@ -57,20 +115,18 @@
                             <span class="text">Shop Page</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:category_list' %}">
                             <i class="icon material-icons md-add_box"></i>
                             <span class="text">Categories</span>
                         </a>
                     </li>
-
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:coupon_list' %}">
                             <i class="icon material-icons md-card_giftcard"></i>
                             <span class="text">Coupon</span>
                         </a>
                     </li>
-
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:reviews' %}">
                             <i class="icon material-icons md-comment"></i>
@@ -89,10 +145,9 @@
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:change_password' %}">
                             <i class="icon material-icons md-lock"></i>
-                            <span class="text"> Change Password </span>
+                            <span class="text">Change Password</span>
                         </a>
                     </li>
-
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'userauths:sign-out' %}">
                             <i class="icon material-icons md-arrow_forward"></i>
@@ -104,29 +159,28 @@
                 <br />
             </nav>
         </aside>
+
         <main class="main-wrap">
             <header class="main-header navbar">
                 <div class="col-search">
-                    
                 </div>
                 <div class="col-nav">
-                    <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
+                    <button class="btn btn-icon btn-mobile me-auto" id="mobileToggle">
+                        <i class="material-icons md-apps"></i>
+                    </button>
                     <ul class="nav">
-                       
                         <li class="nav-item">
-                            <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
+                            <a href="#" class="requestfullscreen nav-link btn-icon">
+                                <i class="material-icons md-cast"></i>
+                            </a>
                         </li>
-                        
                         <li class="dropdown nav-item">
                             <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> 
-                                
                                 {% if request.user.profile.image %}
                                 <img class="img-xs rounded-circle" src="{{request.user.profile.image.url}}" alt="User" />
                                 {% else %}
                                 <img class="img-xs rounded-circle" src="https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2281862025.jpg" alt="User" />
-
                                 {% endif %}
-                                    
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
                                 <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
@@ -143,30 +197,23 @@
             </header>
 
             {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{message.tags}}">
-                            <strong>{{ message }}</strong>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <script>
-                    setTimeout (() => {
-                        $(".alert").alert("close");
-                    }, 3000)
-                </script>
+                {% for message in messages %}
+                    <div class="alert alert-{{message.tags}}">
+                        <strong>{{ message }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
             {% block content %} 
-            
             {% endblock content %}
 
-            <!-- content-main end// -->
             <footer class="main-footer font-xs">
                 <div class="row pb-30 pt-15">
                     <div class="col-sm-6">
                         <script>
                             document.write(new Date().getFullYear());
                         </script>
-                        &copy; Wakil liquor store .
+                        &copy; Wakil liquor store.
                     </div>
                     <div class="col-sm-6">
                         <div class="text-sm-end">All rights reserved</div>
@@ -174,15 +221,97 @@
                 </div>
             </footer>
         </main>
+
         <script src="{% static 'assets2/js/vendors/jquery-3.6.0.min.js' %}"></script>
         <script src="{% static 'assets2/js/vendors/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'assets2/js/vendors/select2.min.js' %}"></script>
         <script src="{% static 'assets2/js/vendors/perfect-scrollbar.js' %}"></script>
         <script src="{% static 'assets2/js/vendors/jquery.fullscreen.min.js' %}"></script>
         <script src="{% static 'assets2/js/vendors/chart.js' %}"></script>
-        <!-- Main Script -->
         <script src="{% static 'assets2/js/main.js?v=1.1' %}" type="text/javascript"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <!-- <script src="{% static 'assets2/js/custom-chart.js' %}" type="text/javascript"></script> -->
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('offcanvas_aside');
+                const mainWrap = document.querySelector('.main-wrap');
+                const overlay = document.querySelector('.screen-overlay');
+                const toggleBtn = document.getElementById('toggleSidebar');
+                const mobileToggleBtn = document.getElementById('mobileToggle');
+                let isSidebarOpen = true;
+
+                function toggleSidebar() {
+                    isSidebarOpen = !isSidebarOpen;
+                    
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.toggle('active');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                        mainWrap.classList.toggle('expanded');
+                    }
+                    
+                    overlay.classList.toggle('show');
+                    
+                    // Update toggle button icon
+                    // const icon = toggleBtn.querySelector('i');
+                    // icon.textContent = isSidebarOpen ? 'menu_open' : 'menu';
+                }
+
+                // Desktop toggle button
+                toggleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleSidebar();
+                });
+
+                // Mobile toggle button
+                mobileToggleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleSidebar();
+                });
+
+                // Close sidebar when clicking overlay
+                overlay.addEventListener('click', function() {
+                    if (!isSidebarOpen || window.innerWidth <= 768) {
+                        toggleSidebar();
+                    }
+                });
+
+                // Close sidebar on ESC key press
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && (!isSidebarOpen || window.innerWidth <= 768)) {
+                        toggleSidebar();
+                    }
+                });
+
+                // Handle window resize
+                let timeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function() {
+                        if (window.innerWidth > 768) {
+                            sidebar.classList.remove('active');
+                            if (!isSidebarOpen) {
+                                sidebar.classList.add('collapsed');
+                                mainWrap.classList.add('expanded');
+                            }
+                        } else {
+                            sidebar.classList.remove('collapsed');
+                            mainWrap.classList.remove('expanded');
+                            if (!isSidebarOpen) {
+                                sidebar.classList.add('active');
+                            }
+                        }
+                    }, 100);
+                });
+
+                // Handle alert messages
+                setTimeout(function() {
+                    const alerts = document.getElementsByClassName('alert');
+                    for (let alert of alerts) {
+                        alert.style.display = 'none';
+                    }
+                }, 3000);
+            });
+        </script>
     </body>
 </html>
