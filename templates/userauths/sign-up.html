@@ -2,120 +2,436 @@
 {% load static %}
 {% block content %}
 
-    <main class="main pages">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="index.html" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                    <span></span> Pages <span></span> My Account
-                </div>
+
+<!-- start signup -->
+<style>
+    .login_wrap {
+        max-width: 450px;
+        margin: 0 auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+
+    .login_wrap:hover {
+        transform: translateY(-5px);
+    }
+
+    .heading_s1 {
+        text-align: center;
+    }
+
+    .password-field {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+        border-color: #3BB77E;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
+        outline: none;
+    }
+
+    .password-strength {
+        height: 4px;
+        background: #ddd;
+        border-radius: 2px;
+        margin-top: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        background: #3BB77E;
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .password-validation-message {
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+
+    .password-validation-message.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .password-validation-message.error {
+        color: #dc3545;
+    }
+
+    .password-validation-message.success {
+        color: #3BB77E;
+    }
+
+    .password-validation-message i {
+        font-size: 14px;
+    }
+
+    .forgot-password {
+        color: #3BB77E;
+        text-decoration: none;
+        position: relative;
+        transition: color 0.3s ease;
+        display: inline-block;
+    }
+
+    .forgot-password:hover {
+        color: #2a8c5e;
+    }
+
+    .forgot-password::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: -2px;
+        left: 0;
+        background-color: #3BB77E;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .forgot-password:hover::after {
+        transform: scaleX(1);
+    }
+
+    .btn-fill-out {
+        background: #3BB77E;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        width: 100%;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-fill-out:hover {
+        background: #2a8c5e;
+        transform: translateY(-2px);
+    }
+
+    .btn-fill-out::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    .btn-fill-out:active::after {
+        width: 300px;
+        height: 300px;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    .alert-danger {
+        background-color: #ffe9e9;
+        border: 1px solid #ffcdd2;
+        color: #dc3545;
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    .shake {
+        animation: shake 0.5s ease-in-out;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3BB77E;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<!-- end signup -->
+
+
+<main class="main pages">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> Pages <span></span> My Account
             </div>
         </div>
-        <div class="page-content pt-150 pb-150">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-8 col-lg-10 col-md-12 m-auto">
-                        <div class="row">
-                            <div class="col-lg-6 col-md-8">
-                                <div class="login_wrap widget-taber-content background-white">
-                                    <div class="padding_eight_all bg-white">
+    </div>
+    <div class="page-content pt-150 pb-150">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-8 col-lg-10 col-md-12">
+                    <div class="login_wrap">
+                        <div class="padding_eight_all bg-white">
+                            <div class="heading_s1">
+                                <h1 class="mb-5">Create an Account</h1>
+                                <p class="mb-30">Already have an account? <a
+                                        href="{% url 'userauths:sign-in' %}">Login</a></p>
+                            </div>
 
-                                        {% if form.errors %}
-                                        <div class="alert alert-danger">
-                                            <strong>{{form.errors}}</strong>
-                                        </div>
-                                        {% endif %}
+                            {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>{{form.errors}}</strong>
+                            </div>
+                            {% endif %}
 
-
-                                        <div class="heading_s1">
-                                            <h1 class="mb-5">Create an Account</h1>
-                                            <p class="mb-30">Already have an account? <a href="{% url 'userauths:sign-in' %}">Login</a></p>
-                                        </div>
-                                        <form method="post" method="POST">
-                                            {% csrf_token %}
-                                            <div class="form-group">
-                                                {{form.username}}
-                                            </div>
-                                            <div class="form-group">
-                                                {{form.email}}
-                                            </div>
-                                            <div class="form-group">
-                                                {{form.password1}}
-                                            </div>
-                                            <div class="form-group">
-                                                {{form.password2}}
-                                            </div>
-
-                                            <!-- <div class="form-group">
-                                                <input type="text" required="" name="username" placeholder="Username" />
-                                            </div>
-                                            <div class="form-group">
-                                                <input type="text" required="" name="email" placeholder="Email" />
-                                            </div>
-                                            <div class="form-group">
-                                                <input required="" type="password" name="password" placeholder="Password" />
-                                            </div>
-                                            <div class="form-group">
-                                                <input required="" type="password" name="password" placeholder="Confirm password" />
-                                            </div>
-                                            <div class="login_footer form-group">
-                                                <div class="chek-form">
-                                                    <input type="text" required="" name="email" placeholder="Security code *" />
-                                                </div>
-                                                <span class="security-code">
-                                                    <b class="text-new">8</b>
-                                                    <b class="text-hot">6</b>
-                                                    <b class="text-sale">7</b>
-                                                    <b class="text-best">5</b>
-                                                </span>
-                                            </div> -->
-                                            <!-- <div class="payment_option mb-50">
-                                                <div class="custome-radio">
-                                                    <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios3" checked="" />
-                                                    <label class="form-check-label" for="exampleRadios3" data-bs-toggle="collapse" data-target="#bankTranfer" aria-controls="bankTranfer">I am a customer</label>
-                                                </div>
-                                                <div class="custome-radio">
-                                                    <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios4" checked="" />
-                                                    <label class="form-check-label" for="exampleRadios4" data-bs-toggle="collapse" data-target="#checkPayment" aria-controls="checkPayment">I am a vendor</label>
-                                                </div>
-                                            </div>
-                                            <div class="login_footer form-group mb-50">
-                                                <div class="chek-form">
-                                                    <div class="custome-checkbox">
-                                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox12" value="" />
-                                                        <label class="form-check-label" for="exampleCheckbox12"><span>I agree to terms &amp; Policy.</span></label>
-                                                    </div>
-                                                </div>
-                                                <a href="page-privacy-policy.html"><i class="fi-rs-book-alt mr-5 text-muted"></i>Lean more</a>
-                                            </div> -->
-                                            <div class="form-group mb-30">
-                                                <button type="submit" class="btn btn-fill-out btn-block hover-up font-weight-bold" name="login">Submit &amp; Register</button>
-                                            </div>
-                                            <p class="font-xs text-muted"><strong>Note:</strong>Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our privacy policy</p>
-                                        </form>
+                            <form method="post" id="registerForm">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    {{form.username}}
+                                </div>
+                                <div class="form-group">
+                                    {{form.email}}
+                                </div>
+                                <div class="form-group password-field">
+                                    {{form.password1}}
+                                    <i class="password-toggle fi-rs-eye" onclick="togglePassword('password1')"></i>
+                                    <div class="password-strength">
+                                        <div class="password-strength-bar"></div>
+                                    </div>
+                                    <div class="password-validation-message">
+                                        <i class="fi-rs-check"></i>
+                                        <span></span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-6 pr-30 d-none d-lg-block">
-                                <div class="card-login mt-115">
-                                    <a href="#" class="social-login facebook-login">
-                                        <img src="{% static 'assets/imgs/theme/icons/logo-facebook.svg' %}" alt="" />
-                                        <span>Continue with Facebook</span>
-                                    </a>
-                                    <a href="#" class="social-login google-login">
-                                        <img src="{% static 'assets/imgs/theme/icons/logo-google.svg' %}" alt="" />
-                                        <span>Continue with Google</span>
-                                    </a>
-                                    <a href="#" class="social-login apple-login">
-                                        <img src="{% static 'assets/imgs/theme/icons/logo-apple.svg' %}" alt="" />
-                                        <span>Continue with Apple</span>
-                                    </a>
+                                <div class="form-group password-field">
+                                    {{form.password2}}
+                                    <i class="password-toggle fi-rs-eye" onclick="togglePassword('password2')"></i>
+                                    <div class="password-validation-message">
+                                        <i class="fi-rs-check"></i>
+                                        <span></span>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="form-group text-end mb-4">
+                                    <a href="/" class="forgot-password">Forgot Password?</a>
+                                </div>
+
+                                <div class="form-group mb-30">
+                                    <button type="submit" class="btn btn-fill-out btn-block hover-up font-weight-bold"
+                                        id="submitBtn">
+                                        <span>Submit & Register</span>
+                                    </button>
+                                </div>
+                                <p class="font-xs text-muted"><strong>Note:</strong>Your personal data will be used to
+                                    support your experience throughout this website, to manage access to your account,
+                                    and for other purposes described in our privacy policy</p>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
+
+
+<!-- start signup -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const password1 = document.querySelector('#id_password1');
+        const password2 = document.querySelector('#id_password2');
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function validatePasswords() {
+            const pass1Value = password1.value;
+            const pass2Value = password2.value;
+            const message2 = password2.parentElement.querySelector('.password-validation-message');
+
+            // Password strength validation
+            const strengthBar = document.querySelector('.password-strength-bar');
+            const strengthScore = calculatePasswordStrength(pass1Value);
+
+            strengthBar.style.width = `${strengthScore}%`;
+            if (strengthScore < 40) {
+                strengthBar.style.backgroundColor = '#dc3545';
+            } else if (strengthScore < 70) {
+                strengthBar.style.backgroundColor = '#ffc107';
+            } else {
+                strengthBar.style.backgroundColor = '#3BB77E';
+            }
+
+            // Password match validation
+            if (pass2Value.length > 0) {
+                message2.classList.add('show');
+                if (pass1Value === pass2Value) {
+                    message2.classList.remove('error');
+                    message2.classList.add('success');
+                    message2.querySelector('i').className = 'fi-rs-check';
+                    message2.querySelector('span').textContent = 'Passwords match!';
+                    submitBtn.disabled = false;
+                } else {
+                    message2.classList.remove('success');
+                    message2.classList.add('error');
+                    message2.querySelector('i').className = 'fi-rs-cross';
+                    message2.querySelector('span').textContent = 'Passwords do not match!';
+                    submitBtn.disabled = true;
+                    password2.parentElement.classList.add('shake');
+                    setTimeout(() => {
+                        password2.parentElement.classList.remove('shake');
+                    }, 500);
+                }
+            } else {
+                message2.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        }
+
+        function calculatePasswordStrength(password) {
+            let score = 0;
+
+            // Length check
+            if (password.length >= 8) score += 20;
+            if (password.length >= 12) score += 10;
+
+            // Complexity checks
+            if (/[A-Z]/.test(password)) score += 20;
+            if (/[a-z]/.test(password)) score += 20;
+            if (/[0-9]/.test(password)) score += 20;
+            if (/[^A-Za-z0-9]/.test(password)) score += 10;
+
+            return Math.min(score, 100);
+        }
+
+        function togglePassword(fieldId) {
+            const passwordField = document.querySelector(`#id_${fieldId}`);
+            const toggleIcon = passwordField.parentElement.querySelector('.password-toggle');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fi-rs-eye');
+                toggleIcon.classList.add('fi-rs-eye-crossed');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fi-rs-eye-crossed');
+                toggleIcon.classList.add('fi-rs-eye');
+            }
+        }
+
+        password1.addEventListener('input', validatePasswords);
+        password2.addEventListener('input', validatePasswords);
+
+        form.addEventListener('submit', function (e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('span');
+            const originalText = btnText.textContent;
+
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<div class="loading-spinner"></div>Processing...';
+
+            // Simulate form submission (remove this setTimeout in production)
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                btnText.textContent = originalText;
+            }, 2000);
+        });
+    });
+
+    // Make the toggle password function global for the onclick attribute
+    function togglePassword(fieldId) {
+        const passwordField = document.querySelector(`#id_${fieldId}`);
+        const toggleIcon = passwordField.parentElement.querySelector('.password-toggle');
+
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fi-rs-eye');
+            toggleIcon.classList.add('fi-rs-eye-crossed');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fi-rs-eye-crossed');
+            toggleIcon.classList.add('fi-rs-eye');
+        }
+    }
+</script>
+<!-- end signup -->
+
+
 {% endblock content %}
