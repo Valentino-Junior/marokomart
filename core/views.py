@@ -7,6 +7,9 @@ from taggit.models import Tag
 from core.models import Coupon, Product, Category, CartOrder, CartOrderProducts, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress
 from userauths.models import ContactUs, Profile
 from core.forms import ProductReviewForm
+from userauths.forms import ProfileForm
+
+
 from django.template.loader import render_to_string
 from django.contrib import messages
 
@@ -897,44 +900,82 @@ def process_payment(request):
 
 @login_required
 def customer_dashboard(request):
+    # Get or create user profile
+    user_profile, created = Profile.objects.get_or_create(user=request.user)
+
+    # Handle profile form submission
+    if request.method == "POST":
+        if 'profile_update' in request.POST:
+            # Handle profile update
+            form = ProfileForm(request.POST, request.FILES, instance=user_profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Profile Updated Successfully.")
+                return redirect("core:dashboard")
+        else:
+            # Handle address creation
+            address = request.POST.get("address")
+            mobile = request.POST.get("mobile")
+            if address and mobile:
+                Address.objects.create(
+                    user=request.user,
+                    address=address,
+                    mobile=mobile,
+                )
+                messages.success(request, "Address Added Successfully.")
+                return redirect("core:dashboard")
+            else:
+                messages.error(request, "Please fill all fields.")
+
+    # Get orders data
     orders_list = CartOrder.objects.filter(user=request.user).order_by("-id")
     address = Address.objects.filter(user=request.user)
 
+    # Enhanced monthly order statistics with better organization
+    current_year = timezone.now().year
+    monthly_orders = CartOrder.objects.filter(
+        user=request.user,
+        order_date__year=current_year
+    ).annotate(
+        month=ExtractMonth("order_date")
+    ).values("month").annotate(
+        count=Count("id")
+    ).order_by("month")
 
-    orders = CartOrder.objects.annotate(month=ExtractMonth("order_date")).values("month").annotate(count=Count("id")).values("month", "count")
-    month = []
-    total_orders = []
-
-    for i in orders:
-        month.append(calendar.month_name[i["month"]])
-        total_orders.append(i["count"])
-
-    if request.method == "POST":
-        address = request.POST.get("address")
-        mobile = request.POST.get("mobile")
-
-        new_address = Address.objects.create(
-            user=request.user,
-            address=address,
-            mobile=mobile,
-        )
-        messages.success(request, "Address Added Successfully.")
-        return redirect("core:dashboard")
-    else:
-        print("Error")
+    # Initialize all months with zero counts for complete yearly data
+    month_data = {i: 0 for i in range(1, 13)}
     
-    user_profile = Profile.objects.get(user=request.user)
-    print("user profile is: #########################",  user_profile)
+    # Update with actual counts
+    for order in monthly_orders:
+        month_data[order['month']] = order['count']
+
+    # Prepare chart data
+    month = [calendar.month_name[i] for i in range(1, 13)]  # All months
+    total_orders = list(month_data.values())
+
+    # Get additional statistics for the dashboard
+    stats = {
+        'total_orders': orders_list.count(),
+        'this_month': orders_list.filter(order_date__month=timezone.now().month).count(),
+        'last_order_date': orders_list.first().order_date if orders_list.exists() else None,
+    }
+
+    # Initialize profile form
+    profile_form = ProfileForm(instance=user_profile)
 
     context = {
         "user_profile": user_profile,
-        "orders": orders,
+        "profile_form": profile_form,
+        "orders": monthly_orders,
         "orders_list": orders_list,
         "address": address,
         "month": month,
         "total_orders": total_orders,
+        "stats": stats,
     }
     return render(request, 'core/dashboard.html', context)
+
+
 
 def order_detail(request, id):
     order = CartOrder.objects.get(user=request.user, id=id)

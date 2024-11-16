@@ -20,14 +20,13 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to="image", null=True, blank=True)
     full_name = models.CharField(max_length=200, null=True, blank=True)
-    # date_of_birth = models.DateField()
     bio = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=200, null=True, blank=True) 
     address = models.CharField(max_length=200, null=True, blank=True) 
     country = models.CharField(max_length=200, null=True, blank=True) 
     
     def __str__(self):
-        return f"{self.user.username} - {self.full_name} - {self.bio}"
+        return f"{self.full_name} - {self.bio}"
 
 
 class ContactUs(models.Model):

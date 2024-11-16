@@ -1,273 +1,538 @@
 {% extends 'partials/base.html' %}
 {% load static %}
 {% block content %}
-    <main class="main pages">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                     <span></span> My Account
-                </div>
+
+<!-- start profile -->
+<style>
+    .profile-content {
+        padding: 20px;
+    }
+
+    .profile-image-container {
+        position: relative;
+        width: 150px;
+        margin: 0 auto 20px;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #3BB77E;
+    }
+
+    .edit-icon {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #3BB77E;
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .edit-icon:hover {
+        background: #2a8c5e;
+        transform: scale(1.1);
+    }
+
+    .profile-details {
+        margin-top: 20px;
+    }
+
+    .info-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .info-item label {
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #666;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #3BB77E;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
+    }
+
+    .form-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .current-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 10px 0;
+        display: block;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success {
+        background: #3BB77E;
+        color: white;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: #2a8c5e;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+</style>
+<!-- end proile -->
+
+
+<!-- start dashboard line, bar and pie chart -->
+<style>
+    .chart-section .card {
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    
+    .chart-section .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        padding: 15px;
+    }
+    
+    .chart-selector {
+        padding: 5px 10px;
+        border: 1px solid #3BB77E;
+        border-radius: 5px;
+        font-size: 13px;
+        color: #3BB77E;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-selector:hover {
+        background: #3BB77E;
+    }
+    
+    .chart-selector:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    </style>
+<!-- end dashboard line, bar and pie chart -->
+
+
+<main class="main pages">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> My Account
             </div>
         </div>
-        <div class="page-content pt-150 pb-150">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-10 m-auto">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="dashboard-menu">
-                                    <ul class="nav flex-column" role="tablist">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false"><i class="fi-rs-user mr-10"></i>Profile</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="false"><i class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="false"><i class="fi-rs-shopping-bag mr-10"></i>Orders</a>
-                                        </li>
-                                        <!-- <li class="nav-item">
+    </div>
+    <div class="page-content pt-150 pb-150">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 m-auto">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="dashboard-menu">
+                                <ul class="nav flex-column" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile"
+                                            role="tab" aria-controls="profile" aria-selected="false"><i
+                                                class="fi-rs-user mr-10"></i>Profile</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard"
+                                            role="tab" aria-controls="dashboard" aria-selected="false"><i
+                                                class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders"
+                                            role="tab" aria-controls="orders" aria-selected="false"><i
+                                                class="fi-rs-shopping-bag mr-10"></i>Orders</a>
+                                    </li>
+                                    <!-- <li class="nav-item">
                                             <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="#track-orders" role="tab" aria-controls="track-orders" aria-selected="false"><i class="fi-rs-shopping-cart-check mr-10"></i>Track Your Order</a>
                                         </li> -->
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="true"><i class="fi-rs-marker mr-10"></i>My Address</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="account-detail-tab" data-bs-toggle="tab" href="#account-detail" role="tab" aria-controls="account-detail" aria-selected="true"><i class="fi-rs-user mr-10"></i>Account details</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="page-login.html"><i class="fi-rs-sign-out mr-10"></i>Logout</a>
-                                        </li>
-                                    </ul>
-                                </div>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address"
+                                            role="tab" aria-controls="address" aria-selected="true"><i
+                                                class="fi-rs-marker mr-10"></i>My Address</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="account-detail-tab" data-bs-toggle="tab"
+                                            href="#account-detail" role="tab" aria-controls="account-detail"
+                                            aria-selected="true"><i class="fi-rs-user mr-10"></i>Account details</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'userauths:sign-out' %}"><i
+                                                class="fi-rs-sign-out mr-10"></i>Logout</a>
+                                    </li>
+                                </ul>
                             </div>
-                            <div class="col-md-9">
-                                <div class="tab-content account dashboard-content pl-50">
-                                    <div class="tab-pane fade active show" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                        <div class="card">
-                                            <div class="card-header border-bottom">
-                                                <h3 class="mb-0">My Profile</h3>
-                                            </div>
-                                            <div class="card-body mb-2" style="display: flex; align-items: center; gap: 10px;">
-                                                <div>
-                                                    {% if user_profile.image %}
-                                                    <span><img src="{{ user_profile.image.url }}" style="width: 150px; object-fit: cover; border-radius:50%; height:150px;" alt=""></span>
-                                                    {% else %}
-                                                    <span><img src="https://t4.ftcdn.net/jpg/00/64/67/63/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg" style="width: 150px; object-fit: cover; border-radius:50%; height:150px;" alt=""></span>
+                        </div>
 
-                                                    {% endif %}
-                                                </div>
+                        <div class="col-md-9">
+                            <div class="tab-content account dashboard-content pl-50">
 
-                                                <div>
-                                                    <span><input class="mb-2" type="text" value="Name - {{ user_profile.full_name }}"></span>
-                                                    <span><input class="mb-2" type="text" value="Bio - {{ user_profile.bio }}"></span>
-                                                    <span><input class="mb-2" type="text" value="Phone - {{ user_profile.phone }}"></span>
-                                                    {% if user_profile.verified == True %}
-                                                    <div class="p-4 border rounded">
-                                                        <span>Verified</span> <span> <i class="fas fa-check-circle"></i> </span>
-                                                    </div>
-                                                    {% else %}
-                                                    <div class="p-4 border rounded">
-                                                        <span>Not verified </span> <span> <i class="fas fa-x"></i> </span>
-                                                    </div>
-                                                    {% endif %}
-                                                    <div class="p-4 border rounded">
-                                                       <a href="{% url 'userauths:profile-update' %}" class="btn btn-succees">Edit Profile</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-
+                                <!-- start profile -->
+                                <div class="tab-pane fade active show" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                    <div class="card">
+                                        <div class="card-header border-bottom">
+                                            <h3 class="mb-0">My Profile</h3>
                                         </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h3 class="mb-0">Hello {{request.user|title}}!</h3>
-                                            </div>
-                                            <div class="card-body">
-                                                <p>
-                                                    From your account dashboard. you can easily check &amp; view your <a href="#">recent orders</a>,<br />
-                                                    manage your <a href="#">shipping and billing addresses</a> and <a href="#">edit your password and account details.</a>
-                                                </p>
-                                            </div>
-                                            <!-- <div class="mt-4">
-                                                <p>{{ month }}</p>
-                                                <p>{{ total_orders }}</p>
-                                            </div> -->
-                                            <div style="height: 800px; width: 800px; object-fit: cover;">
-                                                <canvas id="myChart"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h3 class="mb-0">Your Orders</h3>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="table-responsive">
-                                                    <table class="table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Order</th>
-                                                                <th>Date</th>
-                                                                <th>Status</th>
-                                                                <th>Paid Status</th>
-                                                                <th>Total</th>
-                                                                <th>Actions</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for o in orders_list %}
-                                                            <tr>
-                                                                <td>INVOICE_NO-{{o.id}}</td>
-
-                                                                <td>{{o.order_date}}</td>
-                                                                <td>{{o.product_status|title}}</td>
-                                                                {% if o.paid_status == True %}
-                                                                <td class="text-success"><b>✓</b></td>
-                                                                {% else %}
-                                                                <td class="text-danger"><b><span>X</span></b></td>
-
-                                                                {% endif %}
-                                                                <td>${{o.price}}</td>
-                                                                <td><a href="{% url 'core:order-detail' o.id %}" class="btn-small d-block">View</a></td>
-                                                            </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="track-orders" role="tabpanel" aria-labelledby="track-orders-tab">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h3 class="mb-0">Orders tracking</h3>
-                                            </div>
-                                            <div class="card-body contact-from-area">
-                                                <p>To track your order please enter your OrderID in the box below and press "Track" button. This was given to you on your receipt and in the confirmation email you should have received.</p>
-                                                <div class="row">
-                                                    <div class="col-lg-8">
-                                                        <form class="contact-form-style mt-30 mb-50" action="#" method="post">
-                                                            <div class="input-style mb-20">
-                                                                <label>Order ID</label>
-                                                                <input name="order-id" placeholder="Found in your order confirmation email" type="text" />
-                                                            </div>
-                                                            <div class="input-style mb-20">
-                                                                <label>Billing email</label>
-                                                                <input name="billing-email" placeholder="Email you used during checkout" type="email" />
-                                                            </div>
-                                                            <button class="submit submit-auto-width" type="submit">Track</button>
-                                                        </form>
+                                        <div class="card-body">
+                                            <div class="profile-content">
+                                                <!-- Profile Display Section -->
+                                                <div class="profile-info" id="profileDisplay">
+                                                    <div class="profile-image-container">
+                                                        {% if user_profile.image %}
+                                                            <img src="{{ user_profile.image.url }}" class="profile-image" alt="Profile Image">
+                                                        {% else %}
+                                                            <img src="https://t4.ftcdn.net/jpg/00/64/67/63/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg" 
+                                                                 class="profile-image" alt="Default Profile">
+                                                        {% endif %}
+                                                        <button type="button" class="edit-icon" onclick="toggleEditMode()">
+                                                            <i class="fi-rs-edit"></i>
+                                                        </button>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
-                                        <div class="row">
-                                                <div>
-                                                    <form class="mb-4" method="POST" > {% csrf_token %}
-                                                        <div class="card-hdeader">
-                                                            <h5>Add Address</h5>
+                                
+                                                    <div class="profile-details">
+                                                        <div class="info-item">
+                                                            <label>Full Name:</label>
+                                                            <span>{{ user_profile.full_name|default:"Not set" }}</span>
                                                         </div>
-                                                        <div class="row">
-                                                            <div class="form-group col-md-6">
-                                                                <input placeholder="Address" required="" class="form-control" name="address" type="text" />
-                                                            </div>
-                                                            <div class="form-group col-md-6">
-                                                                <input placeholder="Phone" required="" class="form-control" name="mobile" />
-                                                            </div>
-                                                            <div class="col-md-12">
-                                                                <button type="submit" class="btn btn-fill-out submit font-weight-bold" name="submit" value="Submit">Save Address</button>
-                                                            </div>
+                                                        <div class="info-item">
+                                                            <label>Bio:</label>
+                                                            <span>{{ user_profile.bio|default:"Not set" }}</span>
+                                                        </div>
+                                                        <div class="info-item">
+                                                            <label>Phone:</label>
+                                                            <span>{{ user_profile.phone|default:"Not set" }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                
+                                                <!-- Profile Edit Form -->
+                                                <div class="profile-edit" id="profileEdit" style="display: none;">
+                                                    <form method="POST" enctype="multipart/form-data">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="profile_update" value="1">
+                                                        
+                                                        <div class="form-group">
+                                                            <label>Profile Image</label>
+                                                            {{ profile_form.image }}
+                                                            {% if user_profile.image %}
+                                                                <img src="{{ user_profile.image.url }}" class="current-image" alt="Current Profile Image">
+                                                            {% endif %}
+                                                        </div>
+                                
+                                                        <div class="form-group">
+                                                            <label>Full Name</label>
+                                                            {{ profile_form.full_name }}
+                                                        </div>
+                                
+                                                        <div class="form-group">
+                                                            <label>Bio</label>
+                                                            {{ profile_form.bio }}
+                                                        </div>
+                                
+                                                        <div class="form-group">
+                                                            <label>Phone</label>
+                                                            {{ profile_form.phone }}
+                                                        </div>
+                                
+                                                        <div class="form-buttons">
+                                                            <button type="submit" class="btn btn-success">Save Changes</button>
+                                                            <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
                                                         </div>
                                                     </form>
                                                 </div>
-                                                <hr>
-                                                <br>
-                                                {% for a in address %}
-                                            <div class="col-lg-6">
-                                                <div class="card mb-3 mb-lg-0">
-
-                                                    <div class="card-header">
-                                                        <h4 class="mb-0">Address {{ forloop.counter }}</h4>
-                                                    </div>
-
-
-
-
-                                                    <div class="card-body border rounded ">
-                                                        <address>
-                                                            <p>{{ a.address }}</p>
-                                                            <p>{{ a.mobile }}</p>
-                                                            <!-- <p>{{ a.id }}</p> -->
-                                                            <!-- <p>{{ a.status }}</p> -->
-
-                                                        </address>
-                                                        <br>
-                                                        {% if a.status %}
-                                                            <i data-address-id="{{ a.id }}" class="fa fa-check-circle text-success check{{ a.id }} check"></i>
-                                                            <button data-address-id="{{ a.id }}"  style="display: none;" class="btn make-default-address button{{ a.id }} action_btn">Make Default</button>
-
-                                                        {% else %}
-                                                            <i data-address-id="{{ a.id }}" style="display: none;" class="fa fa-check-circle text-success check check{{ a.id }}"></i>
-                                                            <button data-address-id="{{ a.id }}"   class="btn make-default-address button{{ a.id }} action_btn">Make Default</button>
-                                                        {% endif %}
-
-                                                    </div>
-
-                                                </div>
                                             </div>
-                                            {% endfor %}
-
                                         </div>
                                     </div>
-                                    <div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
+                                </div>
+                                <!-- end profile -->
+
+
+                                <!-- start dashboard line, bar and pie chart -->
+
+                                <div class="tab-pane fade" id="dashboard" role="tabpanel"
+                                    aria-labelledby="dashboard-tab">
+                                    <div class="chart-section" style="margin-top: 20px;">
                                         <div class="card">
-                                            <div class="card-header">
-                                                <h5>Account Details</h5>
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">Order Statistics</h5>
+                                                <select id="chartType" class="chart-selector">
+                                                    <option value="bar">Bar Chart</option>
+                                                    <option value="line">Line Chart</option>
+                                                    <option value="pie">Pie Chart</option>
+                                                </select>
                                             </div>
                                             <div class="card-body">
-                                                <p>Already have an account? <a href="page-login.html">Log in instead!</a></p>
-                                                <form method="post" name="enq">
-                                                    <div class="row">
-                                                        <div class="form-group col-md-6">
-                                                            <label>First Name <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="name" type="text" />
-                                                        </div>
-                                                        <div class="form-group col-md-6">
-                                                            <label>Last Name <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="phone" />
-                                                        </div>
-                                                        <div class="form-group col-md-12">
-                                                            <label>Display Name <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="dname" type="text" />
-                                                        </div>
-                                                        <div class="form-group col-md-12">
-                                                            <label>Email Address <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="email" type="email" />
-                                                        </div>
-                                                        <div class="form-group col-md-12">
-                                                            <label>Current Password <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="password" type="password" />
-                                                        </div>
-                                                        <div class="form-group col-md-12">
-                                                            <label>New Password <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="npassword" type="password" />
-                                                        </div>
-                                                        <div class="form-group col-md-12">
-                                                            <label>Confirm Password <span class="required">*</span></label>
-                                                            <input required="" class="form-control" name="cpassword" type="password" />
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold" name="submit" value="Submit">Save Change</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
+                                                <div class="chart-container">
+                                                    <canvas id="myChart"></canvas>
+                                                </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end dashboard line, bar and pie chart -->
+
+
+                                
+                                <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="mb-0">Your Orders</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Order</th>
+                                                            <th>Date</th>
+                                                            <th>Status</th>
+                                                            <th>Paid Status</th>
+                                                            <th>Total</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for o in orders_list %}
+                                                        <tr>
+                                                            <td>INVOICE_NO-{{o.id}}</td>
+
+                                                            <td>{{o.order_date}}</td>
+                                                            <td>{{o.product_status|title}}</td>
+                                                            {% if o.paid_status == True %}
+                                                            <td class="text-success"><b>✓</b></td>
+                                                            {% else %}
+                                                            <td class="text-danger"><b><span>X</span></b></td>
+
+                                                            {% endif %}
+                                                            <td>Ksh{{o.price}}</td>
+                                                            <td><a href="{% url 'core:order-detail' o.id %}"
+                                                                    class="btn-small d-block">View</a></td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="tab-pane fade" id="track-orders" role="tabpanel"
+                                    aria-labelledby="track-orders-tab">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="mb-0">Orders tracking</h3>
+                                        </div>
+                                        <div class="card-body contact-from-area">
+                                            <p>To track your order please enter your OrderID in the box below and press
+                                                "Track" button. This was given to you on your receipt and in the
+                                                confirmation email you should have received.</p>
+                                            <div class="row">
+                                                <div class="col-lg-8">
+                                                    <form class="contact-form-style mt-30 mb-50" action="#"
+                                                        method="post">
+                                                        <div class="input-style mb-20">
+                                                            <label>Order ID</label>
+                                                            <input name="order-id"
+                                                                placeholder="Found in your order confirmation email"
+                                                                type="text" />
+                                                        </div>
+                                                        <div class="input-style mb-20">
+                                                            <label>Billing email</label>
+                                                            <input name="billing-email"
+                                                                placeholder="Email you used during checkout"
+                                                                type="email" />
+                                                        </div>
+                                                        <button class="submit submit-auto-width"
+                                                            type="submit">Track</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
+                                    <div class="row">
+                                        <div>
+                                            <form class="mb-4" method="POST"> {% csrf_token %}
+                                                <div class="card-hdeader">
+                                                    <h5>Add Address</h5>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="form-group col-md-6">
+                                                        <input placeholder="Address" required="" class="form-control"
+                                                            name="address" type="text" />
+                                                    </div>
+                                                    <div class="form-group col-md-6">
+                                                        <input placeholder="Phone" required="" class="form-control"
+                                                            name="mobile" />
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <button type="submit"
+                                                            class="btn btn-fill-out submit font-weight-bold"
+                                                            name="submit" value="Submit">Save Address</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <hr>
+                                        <br>
+                                        {% for a in address %}
+                                        <div class="col-lg-6">
+                                            <div class="card mb-3 mb-lg-0">
+
+                                                <div class="card-header">
+                                                    <h4 class="mb-0">Address {{ forloop.counter }}</h4>
+                                                </div>
+
+
+
+
+                                                <div class="card-body border rounded ">
+                                                    <address>
+                                                        <p>{{ a.address }}</p>
+                                                        <p>{{ a.mobile }}</p>
+                                                        <!-- <p>{{ a.id }}</p> -->
+                                                        <!-- <p>{{ a.status }}</p> -->
+
+                                                    </address>
+                                                    <br>
+                                                    {% if a.status %}
+                                                    <i data-address-id="{{ a.id }}"
+                                                        class="fa fa-check-circle text-success check{{ a.id }} check"></i>
+                                                    <button data-address-id="{{ a.id }}" style="display: none;"
+                                                        class="btn make-default-address button{{ a.id }} action_btn">Make
+                                                        Default</button>
+
+                                                    {% else %}
+                                                    <i data-address-id="{{ a.id }}" style="display: none;"
+                                                        class="fa fa-check-circle text-success check check{{ a.id }}"></i>
+                                                    <button data-address-id="{{ a.id }}"
+                                                        class="btn make-default-address button{{ a.id }} action_btn">Make
+                                                        Default</button>
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="account-detail" role="tabpanel"
+                                    aria-labelledby="account-detail-tab">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Account Details</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p>Already have an account? <a href="{% url 'userauths:sign-in' %}">Log in
+                                                    instead!</a></p>
+                                            <form method="post" name="enq">
+                                                <div class="row">
+                                                    <div class="form-group col-md-6">
+                                                        <label>First Name <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="name"
+                                                            type="text" />
+                                                    </div>
+                                                    <div class="form-group col-md-6">
+                                                        <label>Last Name <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="phone" />
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label>Display Name <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="dname"
+                                                            type="text" />
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label>Email Address <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="email"
+                                                            type="email" />
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label>Current Password <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="password"
+                                                            type="password" />
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label>New Password <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="npassword"
+                                                            type="password" />
+                                                    </div>
+                                                    <div class="form-group col-md-12">
+                                                        <label>Confirm Password <span class="required">*</span></label>
+                                                        <input required="" class="form-control" name="cpassword"
+                                                            type="password" />
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <button type="submit"
+                                                            class="btn btn-fill-out submit font-weight-bold"
+                                                            name="submit" value="Submit">Save Change</button>
+                                                    </div>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -277,38 +542,194 @@
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
 
 
+<!-- start dashboard line, bar and pie chart -->
+    
     <script>
-        const labels = {{ month|safe }}
-
-        const data = {
-          labels: labels,
-          datasets: [{
-            label: 'Orders',
-            backgroundColor: 'rgb(59, 183, 126)',
-            borderColor: 'rgb(59, 183, 126)',
-            data: {{ total_orders|safe }}
-          }],
-
-        };
-
-
-
+    let myChart = null;
+    
+    function createChart(type = 'bar') {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const labels = {{ month|safe }};
+        const orderData = {{ total_orders|safe }};
+    
+        // Define a consistent color palette
+        const colors = [
+            'rgba(59, 183, 126, 0.8)',  // Green
+            'rgba(54, 162, 235, 0.8)',  // Blue
+            'rgba(255, 206, 86, 0.8)',  // Yellow
+            'rgba(75, 192, 192, 0.8)',  // Teal
+            'rgba(153, 102, 255, 0.8)', // Purple
+            'rgba(255, 159, 64, 0.8)',  // Orange
+            'rgba(255, 99, 132, 0.8)',  // Red
+            'rgba(111, 205, 205, 0.8)', // Light Blue
+            'rgba(155, 89, 182, 0.8)',  // Purple
+            'rgba(46, 204, 113, 0.8)',  // Green
+            'rgba(241, 196, 15, 0.8)',  // Yellow
+            'rgba(231, 76, 60, 0.8)'    // Red
+        ];
+    
+        if (myChart) {
+            myChart.destroy();
+        }
+    
         const config = {
-          type: 'bar',
-          data: data,
-          options: {
-            tooltips: {enabled: false},
-            hover: {mode: null},
-          }
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Orders',
+                    data: orderData,
+                    backgroundColor: type === 'pie' ? colors : 
+                                   type === 'line' ? 'rgba(59, 183, 126, 0.2)' : 
+                                   'rgba(59, 183, 126, 0.8)',
+                    borderColor: type === 'pie' ? colors.map(color => color.replace('0.8', '1')) : 
+                               'rgb(59, 183, 126)',
+                    borderWidth: type === 'pie' ? 1 : 2,
+                    fill: type === 'line',
+                    tension: type === 'line' ? 0.4 : 0,
+                    pointBackgroundColor: type === 'line' ? 'rgb(59, 183, 126)' : null,
+                    pointBorderColor: type === 'line' ? '#fff' : null,
+                    pointRadius: type === 'line' ? 4 : 0,
+                    pointHoverRadius: type === 'line' ? 6 : 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: type === 'pie',
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 8,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 12 },
+                        displayColors: type === 'pie',
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (type === 'pie') {
+                                    let value = context.raw;
+                                    let sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = Math.round((value / sum) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                } else {
+                                    let value = context.raw;
+                                    return `Orders: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: type !== 'pie' ? {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 11 },
+                            callback: value => Math.round(value)
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 11 }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                } : {}
+            }
         };
+    
+        // Adjust layout for pie chart
+        if (type === 'pie') {
+            config.options.layout = {
+                padding: {
+                    top: 10,
+                    bottom: 30
+                }
+            };
+        }
+    
+        myChart = new Chart(ctx, config);
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        createChart('bar');
+        
+        document.getElementById('chartType').addEventListener('change', function(e) {
+            createChart(e.target.value);
+        });
+    
+        // Add window resize handler
+        window.addEventListener('resize', function() {
+            if (myChart) {
+                myChart.resize();
+            }
+        });
+    });
+    </script>
+<!-- end dashboard line, bar and pie chart -->
 
-        const myChart = new Chart(
-            document.getElementById('myChart'),
-            config
-        );
-      </script>
+
+
+<!-- start profile -->
+<script>
+    function toggleEditMode() {
+        const displaySection = document.getElementById('profileDisplay');
+        const editSection = document.getElementById('profileEdit');
+        
+        if (displaySection.style.display !== 'none') {
+            displaySection.style.display = 'none';
+            editSection.style.display = 'block';
+        } else {
+            displaySection.style.display = 'block';
+            editSection.style.display = 'none';
+        }
+    }
+    
+    // Preview image before upload
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.querySelector('input[type="file"]');
+        if (imageInput) {
+            imageInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    const preview = document.querySelector('.current-image');
+                    
+                    reader.onload = function(e) {
+                        if (preview) {
+                            preview.src = e.target.result;
+                        } else {
+                            const newPreview = document.createElement('img');
+                            newPreview.src = e.target.result;
+                            newPreview.classList.add('current-image');
+                            imageInput.parentElement.appendChild(newPreview);
+                        }
+                    }
+                    
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
+    });
+    </script>
+<!-- end profile -->
+
 {% endblock content %}

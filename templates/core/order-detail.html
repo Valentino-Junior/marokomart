@@ -57,7 +57,7 @@
                                                     <table class="table">
                                                         <thead>
                                                             <tr>
-                                                                <th>Order INV</th>
+                                                                
                                                                 <th>Image</th>
                                                                 <th>Title</th>
                                                                 <th>Price</th>
@@ -68,15 +68,15 @@
                                                         <tbody>
                                                             {% for o in order_items %}
                                                             <tr>
-                                                                <td>INV-{{o.id}}</td>
+                                                            
                                                                 <td>
                                                                     <p><img src="{{ o.image }}" style="width: 60px; height: 60px; object-fit: cover;" alt=""></p>
                                                                 </td>
 
                                                                 <td>{{o.item}}</td>
-                                                                <td>{{o.price}}</td>
+                                                                <td>Ksh{{o.price}}</td>
                                                                 
-                                                                <td>${{o.qty}}</td>
+                                                                <td>{{o.qty}}</td>
                                                                 <td>{{ o.total }}</td>
                                                             </tr>
                                                             {% endfor %}
