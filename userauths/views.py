@@ -4,6 +4,18 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.conf import settings
 from userauths.models import Profile, User
+from django.http import JsonResponse
+from django.urls import reverse
+from django.core.mail import EmailMultiAlternatives
+
+
+from django.core.mail import send_mail, BadHeaderError
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+
+
 
 
 # User = settings.AUTH_USER_MODEL
@@ -89,3 +101,127 @@ def profile_update(request):
     }
 
     return render(request, "userauths/profile-edit.html", context)
+
+
+
+
+def password_reset_request(request):
+    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        email = request.POST.get("email", "").strip()
+        
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please enter your email address.'
+            })
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Generate the reset token and URL
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build the absolute URL for password reset
+            domain = request.get_host()
+            protocol = 'https' if request.is_secure() else 'http'
+            reset_url = f"{protocol}://{domain}{reverse('userauths:password-reset-confirm', kwargs={'uidb64': uid, 'token': token})}"
+            
+            # Context for email template
+            context = {
+                "user": user,
+                "reset_url": reset_url,
+                "domain": domain,
+            }
+            
+            # Render email content
+            email_content = render_to_string(
+                "userauths/emails/password_reset_email.html", 
+                context
+            )
+            
+            try:
+                # Send email
+                send_mail(
+                    subject="Password Reset Request",
+                    message="",  # Empty as we're sending HTML email
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=email_content,
+                    fail_silently=False,
+                )
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Password reset instructions have been sent to your email.'
+                })
+                
+            except Exception as e:
+                print(f"Email sending failed: {str(e)}")  # For debugging
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Failed to send reset email. Please try again later.'
+                })
+                
+        except User.DoesNotExist:
+            # For security reasons, don't reveal if email exists or not
+            return JsonResponse({
+                'success': True,
+                'message': 'If an account exists with this email, you will receive password reset instructions.'
+            })
+    
+    return render(request, "userauths/password_reset.html")
+
+
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if user is not None and default_token_generator.check_token(user, token):
+            password1 = request.POST.get("password1")
+            password2 = request.POST.get("password2")
+            
+            if not password1 or not password2:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please enter both passwords.'
+                })
+                
+            if password1 != password2:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Passwords do not match.'
+                })
+                
+            if len(password1) < 8:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Password must be at least 8 characters long.'
+                })
+                
+            user.set_password(password1)
+            user.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your password has been reset successfully.',
+                'redirect_url': reverse('userauths:sign-in')
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Password reset link is invalid or has expired.'
+            })
+            
+    if user is not None and default_token_generator.check_token(user, token):
+        return render(request, "userauths/password_reset_confirm.html")
+    else:
+        return JsonResponse({
+            'success': False,
+            'message': 'Password reset link is invalid or has expired.'
+        })
