@@ -95,6 +95,7 @@ def dashboard(request):
     }
     return render(request, "useradmin/dashboard.html", context)
 
+
 @admin_required
 def products(request):
     all_products = Product.objects.all()
