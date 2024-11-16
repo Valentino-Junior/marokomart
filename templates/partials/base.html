@@ -283,19 +283,37 @@
 
     <!-- start special offer and new arrivals -->
     <style>
-        .header-top {
+        .promo-header-banner {
             background-color: #27AE60;
             padding: 10px 0;
         }
-
-        .header-info ul {
+    
+        .promo-header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+    
+        .promo-header-row {
+            display: flex;
+            align-items: center;
+        }
+    
+        .promo-header-col-side {
+            width: 25%;
+        }
+    
+        .promo-header-col-center {
+            width: 50%;
+        }
+    
+        .promo-info-list {
             margin: 0;
             padding: 0;
             list-style: none;
         }
-
-        /* Enhanced Hot Deals styling */
-        .hot-deals {
+    
+        .promo-hot-deal-item {
             display: inline-flex;
             align-items: center;
             gap: 12px;
@@ -304,9 +322,8 @@
             border-radius: 25px;
             position: relative;
         }
-
-        /* Icon container with enhanced visibility */
-        .hot-deals .icon-container {
+    
+        .promo-icon-wrapper {
             position: relative;
             width: 28px;
             height: 28px;
@@ -317,18 +334,17 @@
             border-radius: 50%;
             padding: 5px;
         }
-
-        .hot-deals img {
+    
+        .promo-icon-wrapper img {
             width: 20px;
             height: 20px;
             position: relative;
             z-index: 2;
             filter: drop-shadow(0 0 4px #FFD700) brightness(1.5);
-            animation: enhancedFire 1.5s infinite alternate;
+            animation: promoIconPulse 1.5s infinite alternate;
         }
-
-        /* Enhanced golden glow effect */
-        .hot-deals .icon-container::before {
+    
+        .promo-icon-wrapper::before {
             content: '';
             position: absolute;
             top: -2px;
@@ -338,22 +354,56 @@
             background: linear-gradient(45deg, #ff5a00, #ff5a00);
             border-radius: 50%;
             z-index: 1;
-            animation: pulsingGlow 1.5s infinite alternate;
+            animation: promoGlowPulse 1.5s infinite alternate;
         }
-
-        .hot-deals a {
+    
+        .promo-link {
             color: #ffffff;
             text-decoration: none;
             font-weight: bold;
             padding: 5px 15px;
             background: linear-gradient(45deg, #FFD700, #FFA500);
             border-radius: 20px;
-            animation: shine 2s infinite;
             position: relative;
             z-index: 2;
+            transition: all 0.3s ease;
         }
-
-        @keyframes enhancedFire {
+    
+        .promo-link:hover {
+            background: linear-gradient(45deg, #1a1a1a, #333333);
+            color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            transform: translateY(-1px);
+        }
+    
+        .promo-news-ticker {
+            color: white;
+            overflow: hidden;
+            height: 24px;
+        }
+    
+        .promo-news-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            position: relative;
+            animation: promoNewsScroll 12s linear infinite;
+            animation-play-state: running;
+        }
+    
+        .promo-news-ticker:hover .promo-news-list {
+            animation-play-state: paused;
+        }
+    
+        .promo-news-item {
+            height: 24px;
+            line-height: 24px;
+            margin: 0;
+            padding: 0;
+            white-space: nowrap;
+        }
+    
+        @keyframes promoIconPulse {
             0% {
                 filter: drop-shadow(0 0 4px #FFD700) brightness(1.5);
                 transform: scale(1);
@@ -367,8 +417,8 @@
                 transform: scale(1);
             }
         }
-
-        @keyframes pulsingGlow {
+    
+        @keyframes promoGlowPulse {
             0% {
                 opacity: 0.6;
                 transform: scale(1);
@@ -382,57 +432,16 @@
                 transform: scale(1.2);
             }
         }
-
-        /* News flash styling */
-        #news-flash {
-            color: white;
-            overflow: hidden;
-            height: 24px;
-        }
-
-        #news-flash ul {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            position: relative;
-            animation: smoothScroll 12s linear infinite;
-            animation-play-state: running;
-        }
-
-        #news-flash:hover ul {
-            animation-play-state: paused;
-        }
-
-        #news-flash ul li {
-            height: 24px;
-            line-height: 24px;
-            margin: 0;
-            padding: 0;
-            white-space: nowrap;
-        }
-
-        @keyframes smoothScroll {
+    
+        @keyframes promoNewsScroll {
             0% { transform: translateY(0); }
             100% { transform: translateY(-72px); }
         }
-
-        /* Container styles */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        .row {
-            display: flex;
-            align-items: center;
-        }
-
-        .col-xl-3 { width: 25%; }
-        .col-xl-6 { width: 50%; }
-
-        @media (min-width: 992px) {
-            .d-lg-block { display: block !important; }
+    
+        @media (max-width: 991px) {
+            .promo-header-banner {
+                display: none;
+            }
         }
     </style>
     <!-- end special offer and new arrivals -->
@@ -593,41 +602,42 @@
         </div>
 
 
-        <div class="header-top header-top-ptb-1 d-none d-lg-block">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="header-info">
-                            <ul>
-                                <li class="hot-deals">
-                                    <div class="icon-container">
+    <!-- start special offer and new arrivals -->
+        <div class="promo-header-banner">
+            <div class="promo-header-container">
+                <div class="promo-header-row">
+                    <div class="promo-header-col-side">
+                        <div class="promo-info">
+                            <ul class="promo-info-list">
+                                <li class="promo-hot-deal-item">
+                                    <div class="promo-icon-wrapper">
                                         <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="special offers" />
                                     </div>
-                                    <a href="{% url 'core:hot_deals' %}">Special Offers</a>
+                                    <a href="{% url 'core:hot_deals' %}" class="promo-link">Special Offers</a>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                    <div class="col-xl-6 col-lg-4">
+                    <div class="promo-header-col-center">
                         <div class="text-center">
-                            <div id="news-flash">
-                                <ul>
-                                    <li>VIP Home Delivery Service - Experience Luxury at Your Doorstep</li>
-                                    <li>Discover Our Elite Collection - Handpicked Premium Selections</li>
-                                    <li>Wine Enthusiasts: Save 35% on Premium Vintage Bottles</li>
-                                    <li>VIP Home Delivery Service - Experience Luxury at Your Doorstep</li>
+                            <div class="promo-news-ticker">
+                                <ul class="promo-news-list">
+                                    <li class="promo-news-item">VIP Home Delivery Service - Experience Luxury at Your Doorstep</li>
+                                    <li class="promo-news-item">Discover Our Elite Collection - Handpicked Premium Selections</li>
+                                    <li class="promo-news-item">Wine Enthusiasts: Save 35% on Premium Vintage Bottles</li>
+                                    <li class="promo-news-item">VIP Home Delivery Service - Experience Luxury at Your Doorstep</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="header-info header-info-right">
-                            <ul>
-                                <li class="hot-deals">
-                                    <div class="icon-container">
+                    <div class="promo-header-col-side">
+                        <div class="promo-info">
+                            <ul class="promo-info-list">
+                                <li class="promo-hot-deal-item">
+                                    <div class="promo-icon-wrapper">
                                         <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="New arrivals" />
                                     </div>
-                                    <a href="{% url 'core:new_arrivals' %}">New Arrivals</a>
+                                    <a href="{% url 'core:new_arrivals' %}" class="promo-link">New Arrivals</a>
                                 </li>
                             </ul>
                         </div>
@@ -635,6 +645,8 @@
                 </div>
             </div>
         </div>
+    <!-- end special offer and new arrivals -->
+
 
 
         <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
