@@ -913,23 +913,34 @@ def customer_dashboard(request):
                 messages.success(request, "Profile Updated Successfully.")
                 return redirect("core:dashboard")
         else:
-            # Handle address creation
+            # Handle shipping address creation
+            full_name = request.POST.get("full_name")
+            phone = request.POST.get("phone")
+            email = request.POST.get("email") or request.user.email
             address = request.POST.get("address")
-            mobile = request.POST.get("mobile")
-            if address and mobile:
-                Address.objects.create(
+            city = request.POST.get("city")
+
+            if all([full_name, phone, address, city]):
+                # Create new shipping address
+                ShippingAddress.objects.create(
                     user=request.user,
+                    full_name=full_name,
+                    phone=phone,
+                    email=email,
                     address=address,
-                    mobile=mobile,
+                    city=city,
+                    is_default=not ShippingAddress.objects.filter(user=request.user).exists()  # Make default if first address
                 )
-                messages.success(request, "Address Added Successfully.")
+                messages.success(request, "Shipping Address Added Successfully.")
                 return redirect("core:dashboard")
             else:
-                messages.error(request, "Please fill all fields.")
+                messages.error(request, "Please fill all required fields.")
 
     # Get orders data
     orders_list = CartOrder.objects.filter(user=request.user).order_by("-id")
-    address = Address.objects.filter(user=request.user)
+    
+    # Get shipping addresses
+    shipping_addresses = ShippingAddress.objects.filter(user=request.user).order_by('-is_default', '-date_added')
 
     # Enhanced monthly order statistics with better organization
     current_year = timezone.now().year
@@ -958,24 +969,102 @@ def customer_dashboard(request):
         'total_orders': orders_list.count(),
         'this_month': orders_list.filter(order_date__month=timezone.now().month).count(),
         'last_order_date': orders_list.first().order_date if orders_list.exists() else None,
+        'shipping_addresses': {
+            'total': shipping_addresses.count(),
+            'has_default': shipping_addresses.filter(is_default=True).exists(),
+            'default': shipping_addresses.filter(is_default=True).first()
+        }
     }
 
     # Initialize profile form
     profile_form = ProfileForm(instance=user_profile)
 
     context = {
+        # User and Profile
         "user_profile": user_profile,
         "profile_form": profile_form,
+        
+        # Orders
         "orders": monthly_orders,
         "orders_list": orders_list,
-        "address": address,
+        
+        # Shipping Addresses
+        "shipping_addresses": shipping_addresses,
+        
+        # Chart Data
         "month": month,
         "total_orders": total_orders,
+        
+        # Statistics
         "stats": stats,
     }
     return render(request, 'core/dashboard.html', context)
 
 
+
+@login_required
+def make_address_default(request, address_id):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            address = ShippingAddress.objects.get(id=address_id, user=request.user)
+            
+            # Set the current address as default
+            ShippingAddress.objects.filter(user=request.user).update(is_default=False)
+            address.is_default = True
+            address.save()
+
+            # Get the updated list of shipping addresses
+            shipping_addresses = ShippingAddress.objects.filter(user=request.user).order_by('-is_default', '-date_added')
+            addresses_data = [
+                {
+                    'id': addr.id,
+                    'full_name': addr.full_name,
+                    'address': addr.address,
+                    'city': addr.city,
+                    'is_default': addr.is_default
+                } for addr in shipping_addresses
+            ]
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Address set as default successfully.',
+                'addresses': addresses_data
+            })
+        except ShippingAddress.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Address not found.'
+            })
+    return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
+
+
+@login_required
+def delete_address(request, address_id):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            address = ShippingAddress.objects.get(id=address_id, user=request.user)
+            was_default = address.is_default
+            address.delete()
+            
+            # If the deleted address was default, make another address default
+            if was_default:
+                newest_address = ShippingAddress.objects.filter(user=request.user).order_by('-date_added').first()
+                if newest_address:
+                    newest_address.is_default = True
+                    newest_address.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Address deleted successfully.'
+            })
+        except ShippingAddress.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Address not found.'
+            })
+    return JsonResponse({'success': False, 'message': 'Invalid request.'})
+    
+    
 
 def order_detail(request, id):
     order = CartOrder.objects.get(user=request.user, id=id)
@@ -988,11 +1077,7 @@ def order_detail(request, id):
     return render(request, 'core/order-detail.html', context)
 
 
-def make_address_default(request):
-    id = request.GET['id']
-    Address.objects.update(status=False)
-    Address.objects.filter(id=id).update(status=True)
-    return JsonResponse({"boolean": True})
+
 
 
 @login_required

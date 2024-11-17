@@ -172,6 +172,77 @@
 <!-- end dashboard line, bar and pie chart -->
 
 
+<!-- start address -->
+<style>
+    .address-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+    
+    .address-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .address-card.border-success {
+        border-width: 2px;
+    }
+    
+    .address-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .badge {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    
+    .btn-fill-out {
+        background: #3BB77E;
+        color: white;
+        padding: 10px 25px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-fill-out:hover {
+        background: #2a8c5e;
+        transform: translateY(-2px);
+    }
+    
+    .shipping-form input,
+    .shipping-form textarea {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 8px 12px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .shipping-form input:focus,
+    .shipping-form textarea:focus {
+        border-color: #3BB77E;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
+        outline: none;
+    }
+    
+    .delete-address {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .address-card:hover .delete-address {
+        opacity: 1;
+    }
+    </style>
+<!-- end address -->
+
+    
+
+
 <main class="main pages">
     <div class="page-header breadcrumb-wrap">
         <div class="container">
@@ -378,7 +449,7 @@
                                 </div>
 
 
-                                <div class="tab-pane fade" id="track-orders" role="tabpanel"
+                                <!-- <div class="tab-pane fade" id="track-orders" role="tabpanel"
                                     aria-labelledby="track-orders-tab">
                                     <div class="card">
                                         <div class="card-header">
@@ -411,76 +482,96 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
+
+
+                                <!-- start address -->
+
                                 <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
                                     <div class="row">
-                                        <div>
-                                            <form class="mb-4" method="POST"> {% csrf_token %}
-                                                <div class="card-hdeader">
-                                                    <h5>Add Address</h5>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="form-group col-md-6">
-                                                        <input placeholder="Address" required="" class="form-control"
-                                                            name="address" type="text" />
-                                                    </div>
-                                                    <div class="form-group col-md-6">
-                                                        <input placeholder="Phone" required="" class="form-control"
-                                                            name="mobile" />
-                                                    </div>
-                                                    <div class="col-md-12">
-                                                        <button type="submit"
-                                                            class="btn btn-fill-out submit font-weight-bold"
-                                                            name="submit" value="Submit">Save Address</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <hr>
-                                        <br>
-                                        {% for a in address %}
-                                        <div class="col-lg-6">
-                                            <div class="card mb-3 mb-lg-0">
-
+                                        <div class="col-12 mb-4">
+                                            <div class="card">
                                                 <div class="card-header">
-                                                    <h4 class="mb-0">Address {{ forloop.counter }}</h4>
+                                                    <h5 class="mb-0">Add Shipping Address</h5>
                                                 </div>
-
-
-
-
-                                                <div class="card-body border rounded ">
-                                                    <address>
-                                                        <p>{{ a.address }}</p>
-                                                        <p>{{ a.mobile }}</p>
-                                                        <!-- <p>{{ a.id }}</p> -->
-                                                        <!-- <p>{{ a.status }}</p> -->
-
-                                                    </address>
-                                                    <br>
-                                                    {% if a.status %}
-                                                    <i data-address-id="{{ a.id }}"
-                                                        class="fa fa-check-circle text-success check{{ a.id }} check"></i>
-                                                    <button data-address-id="{{ a.id }}" style="display: none;"
-                                                        class="btn make-default-address button{{ a.id }} action_btn">Make
-                                                        Default</button>
-
-                                                    {% else %}
-                                                    <i data-address-id="{{ a.id }}" style="display: none;"
-                                                        class="fa fa-check-circle text-success check check{{ a.id }}"></i>
-                                                    <button data-address-id="{{ a.id }}"
-                                                        class="btn make-default-address button{{ a.id }} action_btn">Make
-                                                        Default</button>
-                                                    {% endif %}
-
+                                                <div class="card-body">
+                                                    <form method="POST" class="shipping-form">
+                                                        {% csrf_token %}
+                                                        <div class="row">
+                                                            <div class="form-group col-md-6">
+                                                                <input type="text" class="form-control" name="full_name" 
+                                                                       placeholder="Full Name" required />
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <input type="text" class="form-control" name="phone" 
+                                                                       placeholder="Phone Number" required />
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <input type="email" class="form-control" name="email" 
+                                                                       value="{{ request.user.email }}" readonly />
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <input type="text" class="form-control" name="city" 
+                                                                       placeholder="City" required />
+                                                            </div>
+                                                            <div class="form-group col-md-12">
+                                                                <textarea class="form-control" name="address" 
+                                                                          placeholder="Full Address" required rows="3"></textarea>
+                                                            </div>
+                                                            <div class="col-md-12">
+                                                                <button type="submit" class="btn btn-fill-out submit font-weight-bold">
+                                                                    Save Address
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
                                                 </div>
-
                                             </div>
                                         </div>
-                                        {% endfor %}
-
+                                
+                                        {% for address in shipping_addresses %}
+                                    <div class="col-lg-6 mb-4" data-address-id="{{ address.id }}">
+                                        <div class="card address-card {% if address.is_default %}border-success{% endif %}">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">
+                                                    Address {{ forloop.counter }}
+                                                    {% if address.is_default %}
+                                                    <span class="badge bg-success ms-2">Default</span>
+                                                    {% endif %}
+                                                </h5>
+                                                <div class="address-actions">
+                                                    <button class="btn btn-sm btn-outline-danger delete-address" 
+                                                            data-address-id="{{ address.id }}">
+                                                        <i class="fi-rs-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="address-info">
+                                                    <p class="mb-1"><strong>{{ address.full_name }}</strong></p>
+                                                    <p class="mb-1">{{ address.address }}</p>
+                                                    <p class="mb-1">{{ address.city }}</p>
+                                                    <p class="mb-1">Phone: {{ address.phone }}</p>
+                                                    <p class="mb-1">Email: {{ address.email }}</p>
+                                                </div>
+                                                {% if not address.is_default %}
+                                                <button class="btn btn-sm btn-outline-success make-default-address mt-3" 
+                                                        data-address-id="{{ address.id }}">
+                                                    Make Default
+                                                </button>
+                                                
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
                                     </div>
                                 </div>
+                                
+                                <!-- end address -->
+                                
+
+
                                 <div class="tab-pane fade" id="account-detail" role="tabpanel"
                                     aria-labelledby="account-detail-tab">
                                     <div class="card">
@@ -536,6 +627,9 @@
                                         </div>
                                     </div>
                                 </div>
+
+
+                                
                             </div>
                         </div>
                     </div>
@@ -731,5 +825,114 @@
     });
     </script>
 <!-- end profile -->
+
+
+                        <!-- start address -->
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                // Make address default
+                                document.querySelectorAll('.make-default-address').forEach(button => {
+                                    button.addEventListener('click', function() {
+                                        const addressId = this.dataset.addressId;
+                                        
+                                        if (confirm('Do you want to set this address as the default?')) {
+                                            fetch(`/make-address-default/${addressId}/`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                }
+                                            })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.status === 'success') {
+                                                    // Update the address cards in the DOM
+                                                    const addressCards = document.querySelectorAll('.address-card');
+                                                    addressCards.forEach(card => {
+                                                        const cardAddressId = card.dataset.addressId;
+                                                        const addressData = data.addresses.find(addr => addr.id === parseInt(cardAddressId));
+                                                        
+                                                        if (addressData) {
+                                                            card.classList.toggle('border-success', addressData.is_default);
+                                                            card.querySelector('.make-default-address').style.display = addressData.is_default ? 'none' : 'inline-block';
+                                                            card.querySelector('.address-info p:first-child').textContent = addressData.full_name;
+                                                            card.querySelector('.address-info p:nth-child(2)').textContent = addressData.address;
+                                                            card.querySelector('.address-info p:nth-child(3)').textContent = addressData.city;
+                                                            
+                                                            if (addressData.is_default) {
+                                                                card.querySelector('.make-default-address').style.display = 'none';
+                                                                card.querySelector('.card-body').innerHTML += '<span class="text-success font-weight-bold">Default Address</span>';
+                                                            } else {
+                                                                card.querySelector('.make-default-address').style.display = 'inline-block';
+                                                                card.querySelector('.card-body .text-success').remove();
+                                                            }
+                                                        }
+                                                    });
+                                                    
+                                                    // Refresh the page
+                                                    window.location.reload();
+                                                } else {
+                                                    alert(data.message);
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error('Error:', error);
+                                                alert('An error occurred. Please try again.');
+                                            });
+                                        }
+                                    });
+                                })
+                                // Delete address
+                                document.querySelectorAll('.delete-address').forEach(button => {
+                                    button.addEventListener('click', function() {
+                                        if (confirm('Are you sure you want to delete this address?')) {
+                                            const addressId = this.dataset.addressId;
+                                            
+                                            fetch(`/delete-address/${addressId}/`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                }
+                                            })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    window.location.reload();
+                                                } else {
+                                                    alert(data.message);
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error('Error:', error);
+                                                alert('An error occurred. Please try again.');
+                                            });
+                                        }
+                                    });
+                                });
+                            
+                                // Form validation
+                                document.querySelector('.shipping-form').addEventListener('submit', function(e) {
+                                    const required = this.querySelectorAll('[required]');
+                                    let valid = true;
+                            
+                                    required.forEach(field => {
+                                        if (!field.value.trim()) {
+                                            valid = false;
+                                            field.classList.add('is-invalid');
+                                        } else {
+                                            field.classList.remove('is-invalid');
+                                        }
+                                    });
+                            
+                                    if (!valid) {
+                                        e.preventDefault();
+                                        alert('Please fill all required fields.');
+                                    }
+                                });
+                            });
+                            </script>
+                        <!-- start address -->
+
 
 {% endblock content %}
