@@ -286,13 +286,33 @@ def ajax_add_review(request, pid):
 
 
 def search_view(request):
-    query = request.GET.get("q")
+    query = request.GET.get("q", "")
+    category_id = request.GET.get("category", "")
 
-    products = Product.objects.filter(title__icontains=query).order_by("-date")
+    products = Product.objects.all()
+
+    # Filter by search query if provided
+    if query:
+        products = products.filter(title__icontains=query)
+
+    # Filter by category if selected
+    if category_id:
+        products = products.filter(category__cid=category_id)
+
+    # Get all categories for the dropdown
+    categories = Category.objects.all()
+
+    # Get the selected category for display
+    selected_category = None
+    if category_id:
+        selected_category = Category.objects.filter(cid=category_id).first()
 
     context = {
-        "products": products,
+        "products": products.order_by("-date"),
         "query": query,
+        "categories": categories,
+        "selected_category": selected_category,
+        "current_category": category_id,
     }
     return render(request, "core/search.html", context)
 

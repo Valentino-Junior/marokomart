@@ -920,6 +920,196 @@
 
 
 
+     <!-- start search web -->
+     <style>
+        .wakil-search-container {
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .wakil-search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border-radius: 30px;
+            overflow: hidden;
+            padding: 3px;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .wakil-search-wrapper:focus-within {
+            border-color: #3BB77E;
+            box-shadow: 0 8px 20px rgba(59, 183, 126, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .wakil-search-input {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 12px 20px;
+            font-size: 15px;
+            color: #333;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .wakil-search-input::placeholder {
+            color: #aaa;
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .wakil-search-input:focus::placeholder {
+            opacity: 0.5;
+            transform: translateX(5px);
+        }
+        
+        .wakil-search-btn {
+            background: #3BB77E;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wakil-search-btn:hover {
+            background: #2a8c5e;
+            transform: translateX(2px);
+        }
+        
+        .wakil-search-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        
+        .wakil-search-btn:active::before {
+            width: 200px;
+            height: 200px;
+            opacity: 0;
+        }
+        
+        .wakil-search-btn span {
+            position: relative;
+            z-index: 1;
+            font-size: 20px;
+        }
+        
+        /* Animated background */
+        .search-animation-bg {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(59, 183, 126, 0.1),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+            pointer-events: none;
+        }
+        
+        /* Animations */
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        /* Loading state */
+        .wakil-search-wrapper.loading .search-animation-bg {
+            animation-duration: 1s;
+        }
+        
+        .wakil-search-wrapper.loading .wakil-search-btn {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        /* Focus animations */
+        .wakil-search-wrapper:focus-within .wakil-search-btn {
+            transform: scale(1.05);
+        }
+        
+        .wakil-search-wrapper:focus-within .search-animation-bg {
+            animation-duration: 1.5s;
+        }
+        
+        /* Hover effects */
+        .wakil-search-wrapper:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .wakil-search-container {
+                padding: 5px;
+            }
+        
+            .wakil-search-input {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        
+            .wakil-search-btn {
+                padding: 10px 15px;
+            }
+        
+            .wakil-search-btn span {
+                font-size: 18px;
+            }
+        }
+        
+        /* Optional: Add these styles for dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .wakil-search-wrapper {
+                background: #2d2d2d;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            }
+        
+            .wakil-search-input {
+                color: #fff;
+            }
+        
+            .wakil-search-input::placeholder {
+                color: #888;
+            }
+        
+            .wakil-search-wrapper:focus-within {
+                box-shadow: 0 8px 20px rgba(59, 183, 126, 0.2);
+            }
+        }
+        </style>
+        <!-- end search web -->
+
 
 </head>
 
@@ -996,28 +1186,33 @@
                     <div class="logo logo-width-1">
                         <a href="/"><img src="https://clipground.com/images/ecommerce-logo-png-11.png" alt="logo" /></a>
                     </div>
+
                     <div class="header-right">
-                        <div class="search-style-2">
-                            <form action="{% url 'core:search' %}" method="GET">
-                                <select class="select-active">
-                                    <option>All Categories</option>
 
-                                    <ul>
-                                        {% for c in categories %}
 
-                                        <option>
-                                            <a href="{% url 'core:category-product-list' c.cid %}">{{c.title}}</a>
-                                        </option>
-                                        {% endfor %}
-
-                                    </ul>
-                                </select>
-                                <input type="text" placeholder="Search for items..." name="q" />
-                                <button class="material-symbols-outlined" type="submit"><span
-                                        class="material-symbols-outlined">search</span></button>
-
+                        <!-- start search web -->
+                        <div class="wakil-search-container">
+                            <form action="{% url 'core:search' %}" method="GET" class="wakil-search-form">
+                                <div class="wakil-search-wrapper">
+                                    <input 
+                                        type="text" 
+                                        class="wakil-search-input" 
+                                        placeholder="Search for drinks..." 
+                                        name="q" 
+                                        autocomplete="off"
+                                    />
+                                    <button type="submit" class="wakil-search-btn">
+                                        <span class="material-symbols-outlined">search</span>
+                                    </button>
+                                    
+                                    <!-- Animated background elements -->
+                                    <div class="search-animation-bg"></div>
+                                </div>
                             </form>
                         </div>
+                        <!-- end search web -->
+
+                      
                         <div class="header-action-right">
                             <div class="header-action-2">
                                 <div class="header-action-icon-2">
@@ -1655,6 +1850,57 @@
             });
             </script>
             <!-- end mobile search -->
+
+
+            <!-- start search web -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const searchForm = document.querySelector('.wakil-search-form');
+                    const searchWrapper = document.querySelector('.wakil-search-wrapper');
+                    const searchInput = document.querySelector('.wakil-search-input');
+                    const searchBtn = document.querySelector('.wakil-search-btn');
+                
+                    // Add loading state and animation on form submit
+                    searchForm.addEventListener('submit', function(e) {
+                        if (!searchInput.value.trim()) {
+                            e.preventDefault();
+                            searchWrapper.classList.add('shake');
+                            setTimeout(() => searchWrapper.classList.remove('shake'), 650);
+                            return;
+                        }
+                
+                        searchWrapper.classList.add('loading');
+                        searchBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span>';
+                    });
+                
+                    // Add focus animation
+                    searchInput.addEventListener('focus', function() {
+                        searchWrapper.classList.add('focused');
+                    });
+                
+                    searchInput.addEventListener('blur', function() {
+                        searchWrapper.classList.remove('focused');
+                    });
+                
+                    // Add hover animation for button
+                    searchBtn.addEventListener('mouseenter', function() {
+                        this.style.transform = 'scale(1.05)';
+                    });
+                
+                    searchBtn.addEventListener('mouseleave', function() {
+                        this.style.transform = 'scale(1)';
+                    });
+                
+                    // Optional: Add escape key handler to clear input
+                    searchInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            this.value = '';
+                            this.blur();
+                        }
+                    });
+                });
+                </script>
+                <!-- end search web -->
 
 </body>
 
