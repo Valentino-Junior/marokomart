@@ -130,6 +130,110 @@
 <!-- end proile -->
 
 
+<!-- start change password -->
+<style>
+    .password-field {
+        position: relative;
+    }
+    
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+        padding: 5px;
+    }
+    
+    .toggle-password:hover {
+        color: #333;
+    }
+    
+    .btn-fill-out {
+        background: #3BB77E;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-fill-out:hover {
+        background: #2a8c5e;
+        transform: translateY(-2px);
+    }
+    
+    .btn-fill-out:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .password-strength-meter .progress-bar {
+        transition: width 0.3s ease;
+        background-color: #dc3545;
+    }
+    
+    .password-strength-meter .progress-bar.medium {
+        background-color: #ffc107;
+    }
+    
+    .password-strength-meter .progress-bar.strong {
+        background-color: #28a745;
+    }
+    
+    .form-control {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #3BB77E;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
+        outline: none;
+    }
+    
+    /* Toast Styles */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .toast-notification.success {
+        background-color: #3BB77E;
+    }
+    
+    .toast-notification.error {
+        background-color: #dc3545;
+    }
+    
+    .toast-notification.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    .toast-notification i {
+        margin-right: 10px;
+        font-size: 16px;
+    }
+    </style>
+
+<!-- end change password -->
+
+
 <!-- start dashboard line, bar and pie chart -->
 <style>
     .chart-section .card {
@@ -252,7 +356,7 @@
             </div>
         </div>
     </div>
-    <div class="page-content pt-150 pb-150">
+    <div class="page-content pt-40 pb-150">
         <div class="container">
             <div class="row">
                 <div class="col-lg-10 m-auto">
@@ -286,7 +390,7 @@
                                     <li class="nav-item">
                                         <a class="nav-link" id="account-detail-tab" data-bs-toggle="tab"
                                             href="#account-detail" role="tab" aria-controls="account-detail"
-                                            aria-selected="true"><i class="fi-rs-user mr-10"></i>Account details</a>
+                                            aria-selected="true"><i class="fi-rs-user mr-10"></i>Change Password</a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="{% url 'userauths:sign-out' %}"><i
@@ -571,65 +675,58 @@
                                 <!-- end address -->
                                 
 
-
-                                <div class="tab-pane fade" id="account-detail" role="tabpanel"
-                                    aria-labelledby="account-detail-tab">
+                                 <!-- start change password -->
+                                 <div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h5>Account Details</h5>
+                                            <h5>Change Password</h5>
                                         </div>
                                         <div class="card-body">
-                                            <p>Already have an account? <a href="{% url 'userauths:sign-in' %}">Log in
-                                                    instead!</a></p>
-                                            <form method="post" name="enq">
+                                            <form id="passwordChangeForm">
+                                                {% csrf_token %}
                                                 <div class="row">
-                                                    <div class="form-group col-md-6">
-                                                        <label>First Name <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="name"
-                                                            type="text" />
-                                                    </div>
-                                                    <div class="form-group col-md-6">
-                                                        <label>Last Name <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="phone" />
-                                                    </div>
-                                                    <div class="form-group col-md-12">
-                                                        <label>Display Name <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="dname"
-                                                            type="text" />
-                                                    </div>
-                                                    <div class="form-group col-md-12">
-                                                        <label>Email Address <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="email"
-                                                            type="email" />
-                                                    </div>
                                                     <div class="form-group col-md-12">
                                                         <label>Current Password <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="password"
-                                                            type="password" />
+                                                        <div class="password-field">
+                                                            <input type="password" class="form-control" name="current_password" required>
+                                                            <span class="toggle-password"><i class="fi-rs-eye"></i></span>
+                                                        </div>
                                                     </div>
+                                                    
                                                     <div class="form-group col-md-12">
                                                         <label>New Password <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="npassword"
-                                                            type="password" />
+                                                        <div class="password-field">
+                                                            <input type="password" class="form-control" name="new_password" required>
+                                                            <span class="toggle-password"><i class="fi-rs-eye"></i></span>
+                                                        </div>
+                                                        <div class="password-strength-meter mt-2">
+                                                            <div class="progress" style="height: 5px;">
+                                                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                                            </div>
+                                                        </div>
                                                     </div>
+                                                    
                                                     <div class="form-group col-md-12">
-                                                        <label>Confirm Password <span class="required">*</span></label>
-                                                        <input required="" class="form-control" name="cpassword"
-                                                            type="password" />
+                                                        <label>Confirm New Password <span class="required">*</span></label>
+                                                        <div class="password-field">
+                                                            <input type="password" class="form-control" name="confirm_password" required>
+                                                            <span class="toggle-password"><i class="fi-rs-eye"></i></span>
+                                                        </div>
                                                     </div>
+                                                    
                                                     <div class="col-md-12">
-                                                        <button type="submit"
-                                                            class="btn btn-fill-out submit font-weight-bold"
-                                                            name="submit" value="Submit">Save Change</button>
+                                                        <button type="submit" class="btn btn-fill-out" id="changePasswordBtn">
+                                                            Save Changes
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
-                                </div>
+                                </div>                          
+                                 <!-- end change password -->
 
-
-                                
+                            
                             </div>
                         </div>
                     </div>
@@ -826,6 +923,154 @@
     </script>
 <!-- end profile -->
 
+
+    <!-- start change password -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('passwordChangeForm');
+            const submitBtn = document.getElementById('changePasswordBtn');
+        
+            // Create toast notification function
+            function showToast(type, message) {
+                // Remove existing toast if any
+                const existingToast = document.querySelector('.toast-notification');
+                if (existingToast) {
+                    existingToast.remove();
+                }
+        
+                // Create new toast
+                const toast = document.createElement('div');
+                toast.className = `toast-notification ${type}`;
+                
+                // Add icon based on type
+                const icon = type === 'success' ? 'fi-rs-check' : 'fi-rs-cross';
+                toast.innerHTML = `
+                    <i class="${icon}"></i>
+                    <span>${message}</span>
+                `;
+        
+                // Add toast to body
+                document.body.appendChild(toast);
+        
+                // Show toast
+                setTimeout(() => toast.classList.add('show'), 10);
+        
+                // Hide and remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        
+            // Password visibility toggle
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    const input = this.closest('.password-field').querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.className = 'fi-rs-eye-crossed';
+                    } else {
+                        input.type = 'password';
+                        icon.className = 'fi-rs-eye';
+                    }
+                });
+            });
+        
+            // Password strength meter
+            const newPasswordInput = form.querySelector('input[name="new_password"]');
+            const progressBar = form.querySelector('.progress-bar');
+        
+            newPasswordInput.addEventListener('input', function() {
+                const strength = checkPasswordStrength(this.value);
+                progressBar.style.width = strength.score + '%';
+                progressBar.className = 'progress-bar ' + strength.class;
+            });
+        
+            function checkPasswordStrength(password) {
+                let score = 0;
+                let strengthClass = '';
+        
+                if (password.length >= 8) score += 20;
+                if (password.length >= 12) score += 20;
+                if (/[A-Z]/.test(password)) score += 20;
+                if (/[0-9]/.test(password)) score += 20;
+                if (/[^A-Za-z0-9]/.test(password)) score += 20;
+        
+                if (score >= 80) strengthClass = 'strong';
+                else if (score >= 50) strengthClass = 'medium';
+        
+                return { score, class: strengthClass };
+            }
+        
+            
+           // Password matching validation with delay
+            let passwordMatchTimer;
+            const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
+            
+            confirmPasswordInput.addEventListener('input', function() {
+                // Clear any existing timer
+                clearTimeout(passwordMatchTimer);
+                
+                // Set a new timer
+                passwordMatchTimer = setTimeout(() => {
+                    // Only check if confirm password field has a value and is different
+                    if (this.value && this.value !== newPasswordInput.value) {
+                        showToast('error', 'Passwords do not match');
+                    }
+                }, 1000); // 1 second delay after stopping typing
+            });
+            
+            // Optional: Clear the timer when user starts typing again
+            confirmPasswordInput.addEventListener('keydown', function() {
+                clearTimeout(passwordMatchTimer);
+            });
+
+        
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate passwords match
+                if (newPasswordInput.value !== confirmPasswordInput.value) {
+                    showToast('error', 'Passwords do not match');
+                    return;
+                }
+        
+                submitBtn.disabled = true;
+                const formData = new FormData(this);
+        
+                fetch('{% url "userauths:change-password" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showToast(data.success ? 'success' : 'error', data.message);
+        
+                    if (data.success) {
+                        form.reset();
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    showToast('error', 'An error occurred. Please try again.');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                });
+            });
+        });
+    </script>
+        
+    <!-- end change password -->
+    
 
                         <!-- start address -->
                         <script>

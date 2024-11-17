@@ -14,6 +14,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
+from django.contrib.auth import update_session_auth_hash
+from django.views.decorators.http import require_http_methods
+from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
 
 
 
@@ -73,6 +77,62 @@ def login_view(request):
     
     return render(request, "userauths/sign-in.html")
 
+
+@login_required
+@require_http_methods(["POST"])
+def change_password(request):
+    try:
+        # Get form data
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Validate input
+        if not all([current_password, new_password, confirm_password]):
+            return JsonResponse({
+                'success': False,
+                'message': 'All fields are required.'
+            })
+
+        # Check if current password is correct
+        if not request.user.check_password(current_password):
+            return JsonResponse({
+                'success': False,
+                'message': 'Current password is incorrect.'
+            })
+
+        # Check if new passwords match
+        if new_password != confirm_password:
+            return JsonResponse({
+                'success': False,
+                'message': 'New passwords do not match.'
+            })
+
+        # Validate password strength
+        if len(new_password) < 8:
+            return JsonResponse({
+                'success': False,
+                'message': 'Password must be at least 8 characters long.'
+            })
+
+        # Set new password
+        request.user.set_password(new_password)
+        request.user.save()
+
+        # Keep user logged in
+        update_session_auth_hash(request, request.user)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Password changed successfully!'
+        })
+
+    except Exception as e:
+        print(f"Password change error: {str(e)}")  # For debugging
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred. Please try again.'
+        })
         
 
 def logout_view(request):
