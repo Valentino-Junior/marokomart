@@ -2,6 +2,265 @@
 {% load static %}
 {% block content %}
 
+<!-- start product items -->
+<style>
+    /* Order Products Button */
+    .order-products-section {
+        margin: 15px 0;
+    }
+
+    .products-toggle {
+        width: auto;
+        padding: 8px 16px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .products-toggle:hover {
+        background: #e9ecef;
+        color: #333;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .products-toggle i {
+        font-size: 0.9em;
+    }
+
+    /* Modal Styles */
+    .products-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .products-modal .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        margin: 20px auto;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        background: white;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .close-button:hover {
+        background: #f8f9fa;
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+    }
+
+    /* Product Grid and Cards */
+    .products-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr;
+    }
+
+    .product-card {
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        border: 1px solid #eee;
+    }
+
+    .product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .product-image {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .product-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .product-name {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .product-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .product-total {
+        font-weight: 600;
+        color: #3BB77E;
+        font-size: 0.9rem;
+    }
+
+    .no-products {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    /* Animations */
+    .animate__fadeInUp {
+        animation: fadeInUp 0.4s ease-out;
+    }
+
+    .animate__fadeIn {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Scrollbar Styles */
+    .modal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .products-modal {
+            padding: 10px;
+        }
+
+        .products-modal .modal-content {
+            width: 95%;
+            margin: 10px auto;
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .product-card {
+            padding: 10px;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+        }
+    }
+
+    /* Touch Device Optimizations */
+    @media (hover: none) {
+        .product-card:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    }
+</style>
+<!-- end product items -->
+
 
 <main class="main pages">
     <div class="page-header breadcrumb-wrap">
@@ -25,10 +284,54 @@
                 <div class="order-card-header">
                     <div class="header-top">
                         <h3>Order #{{ order.oid }}</h3>
-                        <button class="copy-button" data-order-id="{{ order.oid }}" onclick="copyOrderId(this)"
-                            title="Copy Order ID">
-                            <i class="fas fa-copy"></i>
-                        </button>
+                        <!-- Add this button inside the order-details div -->
+                        <div class="order-products-section">
+                            <button class="products-toggle" onclick="viewOrderProducts('{{ order.oid }}')">
+                                <i class="fas fa-box mr-2"></i>
+                                <span>View Order Items ({{ order.cartorderproducts_set.count }})</span>
+                            </button>
+                        </div>
+
+                        <!-- Add this modal at the end of your main div -->
+                        <div id="productsModal-{{ order.oid }}" class="products-modal">
+                            <div class="modal-content animate__animated animate__fadeInUp">
+                                <div class="modal-header">
+                                    <h3>Order #{{ order.oid }} Items</h3>
+                                    <button class="close-button" onclick="closeProductsModal('{{ order.oid }}')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <!-- start product items -->
+                                <div class="modal-body">
+                                    {% with order_products=order.cartorderproducts_set.all %}
+                                    {% if order_products %}
+                                    <div class="products-grid">
+                                        {% for product in order_products %}
+                                        <div class="product-card animate__animated animate__fadeIn">
+                                            <div class="product-image">
+                                                <img src="{{ product.image }}" alt="{{ product.item }}" loading="lazy">
+                                            </div>
+                                            <div class="product-info">
+                                                <h4 class="product-name">{{ product.item }}</h4>
+                                                <div class="product-details">
+                                                    <span class="product-price">Ksh {{ product.price }}</span>
+                                                    <span class="product-quantity">Qty: {{ product.qty }}</span>
+                                                </div>
+                                                <span class="product-total">Total: Ksh {{ product.total }}</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="no-products">No product details available</p>
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- start product items -->
+
                     </div>
                     <div class="header-status">
                         <span class="status-badge status-{{ order.product_status }}">
@@ -659,8 +962,46 @@
         .toast.error {
             background: #dc3545;
         }
-        }
     </style>
+
+
+    <!-- start product items -->
+    <script>
+        function viewOrderProducts(orderId) {
+            const modal = document.getElementById(`productsModal-${orderId}`);
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            modal.scrollTop = 0;
+        }
+
+        function closeProductsModal(orderId) {
+            const modal = document.getElementById(`productsModal-${orderId}`);
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            if (event.target.classList.contains('products-modal')) {
+                event.target.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                const modals = document.querySelectorAll('.products-modal');
+                modals.forEach(modal => {
+                    if (modal.style.display === 'block') {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+        });
+    </script>
+    <!-- end product items -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
