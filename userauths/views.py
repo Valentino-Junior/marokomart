@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.core.mail import EmailMultiAlternatives
 
-
+from threading import Thread
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
@@ -24,56 +24,94 @@ from django.utils.crypto import get_random_string
 
 # User = settings.AUTH_USER_MODEL
 
+
+class EmailThread(Thread):
+    def __init__(self, subject, body, from_email, recipient_list, html_content=None):
+        self.subject = subject
+        self.body = body
+        self.recipient_list = recipient_list
+        self.from_email = from_email
+        self.html_content = html_content
+        Thread.__init__(self)
+
+
+    def run(self):
+        try:
+            msg = EmailMultiAlternatives(
+                self.subject,
+                self.body,
+                self.from_email,
+                self.recipient_list
+            )
+            if self.html_content:
+                msg.attach_alternative(self.html_content, "text/html")
+            msg.send()
+        except Exception as e:
+            print(f"Email Thread Error: {str(e)}")
+
+
+def send_email_with_thread(subject, body, from_email, recipient_list, html_content=None):
+    EmailThread(
+        subject=subject,
+        body=body,
+        from_email=from_email,
+        recipient_list=recipient_list,
+        html_content=html_content
+    ).start()
+
+
+
 def register_view(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST or None)
         if form.is_valid():
-            # Create user but don't save yet
-            new_user = form.save(commit=False)
-            new_user.is_active = False  # Deactivate account until verification
-            new_user.email_verification_token = get_random_string(64)
-            new_user.save()
-
-            # Generate verification URL
-            verification_url = request.build_absolute_uri(
-                reverse('userauths:verify-email', kwargs={
-                    'user_id': new_user.id,
-                    'token': new_user.email_verification_token
-                })
-            )
-
-            # Prepare email content
-            context = {
-                'user': new_user,
-                'verification_url': verification_url,
-                'domain': request.get_host(),
-            }
-
-            # Render email template
-            email_html_content = render_to_string(
-                'userauths/emails/verification_email.html', 
-                context
-            )
-
-            # Send verification email
             try:
-                msg = EmailMultiAlternatives(
-                    subject="Verify Your Email Address",
-                    body="Please verify your email address by clicking the link in this email.",  # Basic fallback text
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[new_user.email]
+                # Create user but don't save yet
+                new_user = form.save(commit=False)
+                new_user.is_active = False  # Deactivate account until verification
+                new_user.email_verification_token = get_random_string(64)
+                new_user.save()
+
+                # Generate verification URL
+                verification_url = request.build_absolute_uri(
+                    reverse('userauths:verify-email', kwargs={
+                        'user_id': new_user.id,
+                        'token': new_user.email_verification_token
+                    })
                 )
-                msg.attach_alternative(email_html_content, "text/html")
-                msg.send()
+
+                # Prepare email content
+                context = {
+                    'user': new_user,
+                    'verification_url': verification_url,
+                    'domain': request.get_host(),
+                }
+
+                # Render email template
+                email_html_content = render_to_string(
+                    'userauths/emails/verification_email.html', 
+                    context
+                )
+
+                # Send verification email in a separate thread
+                send_email_with_thread(
+                    subject="Verify Your Email Address",
+                    body="Please verify your email address by clicking the link in this email.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[new_user.email],
+                    html_content=email_html_content
+                )
 
                 messages.success(
                     request, 
                     f"Hi {new_user.username}, please check your email to verify your account."
                 )
                 return redirect('userauths:verification-sent')
+                
             except Exception as e:
-                print(f"Email sending error: {str(e)}")  # For debugging
-                new_user.delete()  # Delete user if email sending fails
+                print(f"Registration error: {str(e)}")
+                if 'new_user' in locals():
+                    new_user.delete()
                 messages.error(
                     request, 
                     "Registration failed. Please try again later."
@@ -129,8 +167,8 @@ def login_view(request):
             authenticated_user = authenticate(request, email=email, password=password)
 
             if authenticated_user is not None:
-                # Check if email is verified
-                if authenticated_user.is_email_verified:
+                # Check if user is superuser or email is verified
+                if authenticated_user.is_superuser or authenticated_user.is_email_verified:
                     login(request, authenticated_user)
                     messages.success(request, "You are logged in.")
                     next_url = request.GET.get("next", 'core:index')
@@ -250,20 +288,19 @@ def password_reset_request(request):
             }
             
             # Render email content
-            email_content = render_to_string(
+            email_html_content = render_to_string(
                 "userauths/emails/password_reset_email.html", 
                 context
             )
             
             try:
-                # Send email
-                send_mail(
+                # Send password reset email in a separate thread
+                send_email_with_thread(
                     subject="Password Reset Request",
-                    message="",  # Empty as we're sending HTML email
+                    body="Please reset your password by clicking the link in this email.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
-                    html_message=email_content,
-                    fail_silently=False,
+                    html_content=email_html_content
                 )
                 
                 return JsonResponse({
@@ -272,7 +309,7 @@ def password_reset_request(request):
                 })
                 
             except Exception as e:
-                print(f"Email sending failed: {str(e)}")  # For debugging
+                print(f"Password reset email failed: {str(e)}")
                 return JsonResponse({
                     'success': False,
                     'message': 'Failed to send reset email. Please try again later.'
