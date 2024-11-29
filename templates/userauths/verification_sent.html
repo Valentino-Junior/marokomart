@@ -1,0 +1,25 @@
+{% extends 'partials/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="card-title mb-4">Verification Email Sent</h2>
+                    <p class="card-text">
+                        We've sent you an email with a verification link. 
+                        Please check your inbox and click the link to verify your email address.
+                    </p>
+                    <p class="card-text">
+                        If you don't see the email, please check your spam folder.
+                    </p>
+                    <a href="{% url 'userauths:sign-in' %}" class="btn btn-primary mt-3">
+                        Return to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -12,4 +12,7 @@ urlpatterns = [
     path('password-reset/', views.password_reset_request, name='password-reset'),
     path('password-reset-confirm/<uidb64>/<token>/', 
          views.password_reset_confirm, name='password-reset-confirm'),
+
+    path('verify-email/<int:user_id>/<str:token>/', views.verify_email, name='verify-email'),
+    path('verification-sent/', views.verification_sent, name='verification-sent'),
 ]

@@ -18,30 +18,69 @@ from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
-
+from django.utils.crypto import get_random_string
 
 
 
 # User = settings.AUTH_USER_MODEL
 
 def register_view(request):
-    
     if request.method == "POST":
         form = UserRegisterForm(request.POST or None)
         if form.is_valid():
-            new_user = form.save()
-            username = form.cleaned_data.get("username")
-            messages.success(request, f"Hey {username}, You account was created successfully.")
-            new_user = authenticate(username=form.cleaned_data['email'],
-                                    password=form.cleaned_data['password1']
-            )
-            login(request, new_user)
+            # Create user but don't save yet
+            new_user = form.save(commit=False)
+            new_user.is_active = False  # Deactivate account until verification
+            new_user.email_verification_token = get_random_string(64)
+            new_user.save()
 
-            next_url = request.GET.get("next", 'core:index')
-            return redirect(next_url)
+            # Generate verification URL
+            verification_url = request.build_absolute_uri(
+                reverse('userauths:verify-email', kwargs={
+                    'user_id': new_user.id,
+                    'token': new_user.email_verification_token
+                })
+            )
+
+            # Prepare email content
+            context = {
+                'user': new_user,
+                'verification_url': verification_url,
+                'domain': request.get_host(),
+            }
+
+            # Render email template
+            email_html_content = render_to_string(
+                'userauths/emails/verification_email.html', 
+                context
+            )
+
+            # Send verification email
+            try:
+                msg = EmailMultiAlternatives(
+                    subject="Verify Your Email Address",
+                    body="Please verify your email address by clicking the link in this email.",  # Basic fallback text
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[new_user.email]
+                )
+                msg.attach_alternative(email_html_content, "text/html")
+                msg.send()
+
+                messages.success(
+                    request, 
+                    f"Hi {new_user.username}, please check your email to verify your account."
+                )
+                return redirect('userauths:verification-sent')
+            except Exception as e:
+                print(f"Email sending error: {str(e)}")  # For debugging
+                new_user.delete()  # Delete user if email sending fails
+                messages.error(
+                    request, 
+                    "Registration failed. Please try again later."
+                )
+                return redirect('userauths:sign-up')
     else:
         form = UserRegisterForm()
-
 
     context = {
         'form': form,
@@ -49,31 +88,69 @@ def register_view(request):
     return render(request, "userauths/sign-up.html", context)
 
 
+
+def verify_email(request, user_id, token):
+    try:
+        user = User.objects.get(id=user_id, email_verification_token=token)
+        if not user.is_email_verified:
+            user.is_email_verified = True
+            user.is_active = True
+            user.email_verification_token = None  # Clear the token
+            user.save()
+            messages.success(request, "Your email has been verified. You can now login.")
+        else:
+            messages.info(request, "Your email was already verified.")
+        return redirect('userauths:sign-in')
+    except User.DoesNotExist:
+        messages.error(request, "Invalid verification link.")
+        return redirect('userauths:sign-up')
+    
+
+
+def verification_sent(request):
+    return render(request, 'userauths/verification_sent.html')
+
+
+
 def login_view(request):
     if request.user.is_authenticated:
-        messages.warning(request, f"Hey you are already Logged In.")
+        messages.warning(request, f"Hey you are already logged in.")
         return redirect("core:index")
     
     if request.method == "POST":
-        email = request.POST.get("email") # peanuts@gmail.com
-        password = request.POST.get("password") # getmepeanuts
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         try:
+            # First check if user exists
             user = User.objects.get(email=email)
-            user = authenticate(request, email=email, password=password)
+            
+            # Then attempt authentication
+            authenticated_user = authenticate(request, email=email, password=password)
 
-            if user is not None:
-                login(request, user)
-                messages.success(request, "You are logged in.")
-                next_url = request.GET.get("next", 'core:index')
-                return redirect(next_url)
+            if authenticated_user is not None:
+                # Check if email is verified
+                if authenticated_user.is_email_verified:
+                    login(request, authenticated_user)
+                    messages.success(request, "You are logged in.")
+                    next_url = request.GET.get("next", 'core:index')
+                    return redirect(next_url)
+                else:
+                    messages.warning(
+                        request, 
+                        "Please verify your email first. Check your inbox for the verification link."
+                    )
             else:
-                messages.warning(request, "User Does Not Exist, create an account.")
-    
-        except:
-            messages.warning(request, f"User with {email} does not exist")
+                messages.error(request, "Invalid password. Please try again.")
         
-
+        except User.DoesNotExist:
+            messages.warning(
+                request, 
+                "No account found with this email. Please create an account."
+            )
+        except Exception as e:
+            messages.error(request, "An error occurred. Please try again.")
+            print(f"Login error: {str(e)}")  # For debugging
     
     return render(request, "userauths/sign-in.html")
 
