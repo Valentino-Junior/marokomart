@@ -168,17 +168,25 @@ class ShippingAddress(models.Model):
     full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=100)
     email = models.EmailField()
-    address = models.CharField(max_length=200)
-    city = models.CharField(max_length=100)
+    region = models.CharField(
+        max_length=100,
+        help_text="Town or city name"
+    )
     is_default = models.BooleanField(default=False)
     date_added = models.DateTimeField(auto_now_add=True)
+    shipping_instructions = models.TextField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Special instructions for delivery (optional)"
+    )
 
     class Meta:
         verbose_name_plural = "Shipping Addresses"
         ordering = ['-is_default', '-date_added']
 
     def __str__(self):
-        return f"{self.full_name} - {self.city}"
+        return f"{self.full_name} - {self.region}"
 
     def save(self, *args, **kwargs):
         if self.is_default:

@@ -1039,8 +1039,10 @@ def make_address_default(request, address_id):
                 {
                     'id': addr.id,
                     'full_name': addr.full_name,
-                    'address': addr.address,
-                    'city': addr.city,
+                    'region': addr.region,
+                    'phone': addr.phone,
+                    'email': addr.email,
+                    'shipping_instructions': addr.shipping_instructions,
                     'is_default': addr.is_default
                 } for addr in shipping_addresses
             ]
@@ -1054,8 +1056,13 @@ def make_address_default(request, address_id):
             return JsonResponse({
                 'status': 'error',
                 'message': 'Address not found.'
-            })
-    return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request.'}, status=400)
 
 
 @login_required
@@ -1342,20 +1349,26 @@ def get_shipping_addresses(request):
 def save_shipping_address(request):
     """Save or update a shipping address via AJAX."""
     if request.method == "POST":
-        address_id = request.POST.get('address_id')
-        address_data = {
-            'user': request.user,
-            'full_name': request.POST.get('full_name'),
-            'phone': request.POST.get('phone'),
-            'email': request.POST.get('email'),
-            'address': request.POST.get('address'),
-            'city': request.POST.get('city'),
-            'is_default': request.POST.get('is_default') == 'true'
-        }
-
         try:
-            if address_data['is_default']:
-                ShippingAddress.objects.filter(user=request.user).update(is_default=False)
+            address_id = request.POST.get('address_id')
+            address_data = {
+                'user': request.user,
+                'full_name': request.POST.get('full_name'),
+                'phone': request.POST.get('phone'),
+                'email': request.POST.get('email'),
+                'region': request.POST.get('region'),
+                'shipping_instructions': request.POST.get('shipping_instructions'),
+                'is_default': request.POST.get('is_default') == 'true'
+            }
+
+            # Validate required fields
+            required_fields = ['full_name', 'phone', 'email', 'region']
+            for field in required_fields:
+                if not address_data.get(field):
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'{field.replace("_", " ").title()} is required.'
+                    }, status=400)
 
             if address_id:
                 # Update existing address
@@ -1368,12 +1381,21 @@ def save_shipping_address(request):
                 # Create new address
                 address = ShippingAddress.objects.create(**address_data)
 
-            return JsonResponse({'status': 'success', 'address_id': address.id})
+            return JsonResponse({
+                'status': 'success',
+                'address_id': address.id
+            })
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
 
-    return JsonResponse({'status': 'error'}, status=400)
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    }, status=400)
 
 
 # @login_required

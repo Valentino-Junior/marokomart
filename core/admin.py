@@ -39,7 +39,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 class ShippingAddressAdmin(admin.ModelAdmin):
     
-    list_display = ['user', 'full_name', 'phone', 'email', 'address', 'city', 'is_default', 'date_added']
+    list_display = ['user', 'full_name', 'phone', 'email', 'region', 'shipping_instructions', 'is_default', 'date_added']
 
 
 

@@ -615,12 +615,13 @@
                                                                        value="{{ request.user.email }}" readonly />
                                                             </div>
                                                             <div class="form-group col-md-6">
-                                                                <input type="text" class="form-control" name="city" 
-                                                                       placeholder="City" required />
+                                                                <input type="text" class="form-control" name="region" 
+                                                                       placeholder="Town or City" required />
                                                             </div>
                                                             <div class="form-group col-md-12">
-                                                                <textarea class="form-control" name="address" 
-                                                                          placeholder="Full Address" required rows="3"></textarea>
+                                                                <textarea class="form-control" name="shipping_instructions" 
+                                                                          placeholder="Delivery Instructions (Optional)" 
+                                                                          style="height: 100px;"></textarea>
                                                             </div>
                                                             <div class="col-md-12">
                                                                 <button type="submit" class="btn btn-fill-out submit font-weight-bold">
@@ -632,43 +633,48 @@
                                                 </div>
                                             </div>
                                         </div>
+
                                 
                                         {% for address in shipping_addresses %}
-                                    <div class="col-lg-6 mb-4" data-address-id="{{ address.id }}">
-                                        <div class="card address-card {% if address.is_default %}border-success{% endif %}">
-                                            <div class="card-header d-flex justify-content-between align-items-center">
-                                                <h5 class="mb-0">
-                                                    Address {{ forloop.counter }}
-                                                    {% if address.is_default %}
-                                                    <span class="badge bg-success ms-2">Default</span>
-                                                    {% endif %}
-                                                </h5>
-                                                <div class="address-actions">
-                                                    <button class="btn btn-sm btn-outline-danger delete-address" 
+                                        <div class="col-lg-6 mb-4" data-address-id="{{ address.id }}">
+                                            <div class="card address-card {% if address.is_default %}border-success{% endif %}">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">
+                                                        Address {{ forloop.counter }}
+                                                        {% if address.is_default %}
+                                                        <span class="badge bg-success ms-2">Default</span>
+                                                        {% endif %}
+                                                    </h5>
+                                                    <div class="address-actions">
+                                                        <button class="btn btn-sm btn-outline-danger delete-address" 
+                                                                data-address-id="{{ address.id }}">
+                                                            <i class="fi-rs-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="address-info">
+                                                        <p class="mb-1"><strong>Full name:</strong>{{ address.full_name }}</p>
+                                                        <p class="mb-1"><strong>Region:</strong> {{ address.region }}</p>
+                                                        <p class="mb-1"><strong>Phone:</strong> {{ address.phone }}</p>
+                                                        <p class="mb-1"><strong>Email:</strong> {{ address.email }}</p>
+                                                        {% if address.shipping_instructions %}
+                                                        <p class="mb-1">
+                                                            <strong>Delivery Instructions:</strong><br>
+                                                            {{ address.shipping_instructions }}
+                                                        </p>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% if not address.is_default %}
+                                                    <button class="btn btn-sm btn-outline-success make-default-address mt-3" 
                                                             data-address-id="{{ address.id }}">
-                                                        <i class="fi-rs-trash"></i>
+                                                        Make Default
                                                     </button>
+                                                    {% endif %}
                                                 </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="address-info">
-                                                    <p class="mb-1"><strong>{{ address.full_name }}</strong></p>
-                                                    <p class="mb-1">{{ address.address }}</p>
-                                                    <p class="mb-1">{{ address.city }}</p>
-                                                    <p class="mb-1">Phone: {{ address.phone }}</p>
-                                                    <p class="mb-1">Email: {{ address.email }}</p>
-                                                </div>
-                                                {% if not address.is_default %}
-                                                <button class="btn btn-sm btn-outline-success make-default-address mt-3" 
-                                                        data-address-id="{{ address.id }}">
-                                                    Make Default
-                                                </button>
-                                                
-                                                {% endif %}
                                             </div>
                                         </div>
-                                    </div>
-                                    {% endfor %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                                 
@@ -1073,110 +1079,119 @@
     
 
                         <!-- start address -->
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                // Make address default
-                                document.querySelectorAll('.make-default-address').forEach(button => {
-                                    button.addEventListener('click', function() {
-                                        const addressId = this.dataset.addressId;
-                                        
-                                        if (confirm('Do you want to set this address as the default?')) {
-                                            fetch(`/make-address-default/${addressId}/`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                                                    'X-Requested-With': 'XMLHttpRequest'
-                                                }
-                                            })
-                                            .then(response => response.json())
-                                            .then(data => {
-                                                if (data.status === 'success') {
-                                                    // Update the address cards in the DOM
-                                                    const addressCards = document.querySelectorAll('.address-card');
-                                                    addressCards.forEach(card => {
-                                                        const cardAddressId = card.dataset.addressId;
-                                                        const addressData = data.addresses.find(addr => addr.id === parseInt(cardAddressId));
-                                                        
-                                                        if (addressData) {
-                                                            card.classList.toggle('border-success', addressData.is_default);
-                                                            card.querySelector('.make-default-address').style.display = addressData.is_default ? 'none' : 'inline-block';
-                                                            card.querySelector('.address-info p:first-child').textContent = addressData.full_name;
-                                                            card.querySelector('.address-info p:nth-child(2)').textContent = addressData.address;
-                                                            card.querySelector('.address-info p:nth-child(3)').textContent = addressData.city;
-                                                            
-                                                            if (addressData.is_default) {
-                                                                card.querySelector('.make-default-address').style.display = 'none';
-                                                                card.querySelector('.card-body').innerHTML += '<span class="text-success font-weight-bold">Default Address</span>';
-                                                            } else {
-                                                                card.querySelector('.make-default-address').style.display = 'inline-block';
-                                                                card.querySelector('.card-body .text-success').remove();
-                                                            }
-                                                        }
-                                                    });
-                                                    
-                                                    // Refresh the page
-                                                    window.location.reload();
-                                                } else {
-                                                    alert(data.message);
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error:', error);
-                                                alert('An error occurred. Please try again.');
-                                            });
-                                        }
-                                    });
-                                })
-                                // Delete address
-                                document.querySelectorAll('.delete-address').forEach(button => {
-                                    button.addEventListener('click', function() {
-                                        if (confirm('Are you sure you want to delete this address?')) {
-                                            const addressId = this.dataset.addressId;
-                                            
-                                            fetch(`/delete-address/${addressId}/`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                                                    'X-Requested-With': 'XMLHttpRequest'
-                                                }
-                                            })
-                                            .then(response => response.json())
-                                            .then(data => {
-                                                if (data.success) {
-                                                    window.location.reload();
-                                                } else {
-                                                    alert(data.message);
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error:', error);
-                                                alert('An error occurred. Please try again.');
-                                            });
-                                        }
-                                    });
-                                });
-                            
-                                // Form validation
-                                document.querySelector('.shipping-form').addEventListener('submit', function(e) {
-                                    const required = this.querySelectorAll('[required]');
-                                    let valid = true;
-                            
-                                    required.forEach(field => {
-                                        if (!field.value.trim()) {
-                                            valid = false;
-                                            field.classList.add('is-invalid');
-                                        } else {
-                                            field.classList.remove('is-invalid');
-                                        }
-                                    });
-                            
-                                    if (!valid) {
-                                        e.preventDefault();
-                                        alert('Please fill all required fields.');
-                                    }
-                                });
-                            });
-                            </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Make address default
+    document.querySelectorAll('.make-default-address').forEach(button => {
+        button.addEventListener('click', function() {
+            const addressId = this.dataset.addressId;
+            
+            if (confirm('Do you want to set this address as the default?')) {
+                fetch(`/make-address-default/${addressId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to set default address');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+
+    // Delete address
+    document.querySelectorAll('.delete-address').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this address?')) {
+                const addressId = this.dataset.addressId;
+                
+                fetch(`/delete-address/${addressId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to delete address');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting. Please try again.');
+                });
+            }
+        });
+    });
+
+    // Form submission
+    const shippingForm = document.querySelector('.shipping-form');
+    if (shippingForm) {
+        shippingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get all form fields
+            const formData = new FormData(this);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Send the form data
+            fetch('/save-shipping-address/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Failed to save address');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'An error occurred. Please try again.');
+            });
+        });
+
+        // Real-time validation
+        const requiredFields = shippingForm.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                } else {
+                    this.classList.add('is-invalid');
+                }
+            });
+        });
+    }
+    });
+    
+    </script>
                         <!-- start address -->
 
 
