@@ -72,6 +72,7 @@ class AddProductForm(forms.ModelForm):
     price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Sale Price", "class":"form-control"}))
     old_price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Old Price", "class":"form-control"}))
     stock_count = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "How many are in stock?", "class":"form-control"}))
+    low_stock_threshold = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "What is your low stock threshold?", "class":"form-control"}))
     image = forms.ImageField(widget=forms.FileInput(attrs={"class":"form-control"}))
     # New multiple images field using custom field
     additional_images = MultipleFileField(
@@ -91,6 +92,7 @@ class AddProductForm(forms.ModelForm):
             'price',
             'old_price',
             'stock_count',
+            'low_stock_threshold',
             'category',
         ]
 
@@ -101,6 +103,7 @@ class EditProductForm(forms.ModelForm):
     price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Sale Price", "class":"form-control"}))
     old_price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Old Price", "class":"form-control"}))
     stock_count = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "How many are in stock?", "class":"form-control"}))
+    low_stock_threshold = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "What is your low stock threshold?", "class":"form-control"}))
     image = forms.ImageField(widget=forms.FileInput(attrs={"class":"form-control"}), required=False)
     additional_images = MultipleFileField(
         required=False,
@@ -119,5 +122,6 @@ class EditProductForm(forms.ModelForm):
             'price',
             'old_price',
             'stock_count',
+            'low_stock_threshold',
             'category',
         ]
