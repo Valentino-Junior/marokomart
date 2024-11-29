@@ -44,36 +44,81 @@
                 </div>
 
 
-
+                <!-- start shipping address -->
                 <div class="row mt-4">
-
-                    <h4 class="mb-30">Billing Details</h4>
-                    <div class="row">
-                        <div class="form-group col-lg-6">
-                            <label for="">First name</label>
-                            <input type="text" name="first_name" value="" placeholder="First name">
+                    <h4 class="mb-30">Shipping Address</h4>
+                    
+                    <div id="addressSelectionSection">
+                        
+                        <div class="mb-4">
+                            <div class="row">
+                                {% for address in shipping_addresses %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card address-card {% if address.is_default %}border-success{% endif %}" data-address-id="{{ address.id }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input address-select" type="radio" 
+                                                           name="address_selection" value="{{ address.id }}"
+                                                           {% if address.is_default %}checked{% endif %}>
+                                                </div>
+                                                {% if address.is_default %}
+                                                <span class="badge bg-success">Default</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="address-details">
+                                                <p class="mb-1"><strong>{{ address.full_name }}</strong></p>
+                                                <p class="mb-1">{{ address.region }}</p>
+                                                <p class="mb-1">Phone: {{ address.phone }}</p>
+                                                <p class="mb-1">Email: {{ address.email }}</p>
+                                                {% if address.shipping_instructions %}
+                                                <p class="mb-1"><small>Instructions: {{ address.shipping_instructions }}</small></p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-3" id="newAddressBtn">
+                                Add New Address
+                            </button>
                         </div>
-                        <div class="form-group col-lg-6">
-                            <label for="">Last name</label>
-                            <input type="text" name="last_name" placeholder="Last name (optional)" value="">
-                        </div>
-                        <div class="form-group col-lg-6">
-                            <label for="">Phone</label>
-                            <input type="text" name="phone" value="" placeholder="Phone*">
-                        </div>
-                        <div class="form-group col-lg-6">
-                            <label for="">Email address</label>
-                            <input type="text" name="email_address" value="" placeholder="Email address *">
-                        </div>
-
-                        <div class="form-group col-lg-6">
-                            <label for="">Delivery address</label>
-                            <input type="text" name="delivery_address" value="" placeholder="Delivery address *">
+                        
+                
+                        <!-- New address form - Hidden by default -->
+                        <div id="newAddressForm" style="display: none;">
+                            <form id="shippingAddressForm" class="needs-validation">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="form-group col-lg-6">
+                                        <input type="text" name="full_name" class="form-control" placeholder="Full Name *" required>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <input type="text" name="phone" class="form-control" placeholder="Phone *" required>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <input type="email" name="email" class="form-control" value="{{ request.user.email }}" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <input type="text" name="region" class="form-control" placeholder="Town or City *" required>
+                                    </div>
+                                    <div class="form-group col-lg-12">
+                                        <textarea name="shipping_instructions" class="form-control" 
+                                                  placeholder="Delivery Instructions (Optional)" style="height: 100px;"></textarea>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary">Save Address</button>
+                                        <button type="button" class="btn btn-outline-secondary" id="cancelNewAddress">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
+                <!-- end shipping address -->
 
-
+                
             </div>
 
 
@@ -593,6 +638,101 @@
         border: none;
     }
 </style>
+
+<!-- Start shipping address -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const newAddressBtn = document.getElementById('newAddressBtn');
+        const newAddressForm = document.getElementById('newAddressForm');
+        const cancelNewAddress = document.getElementById('cancelNewAddress');
+        const addressSelectionSection = document.getElementById('addressSelectionSection');
+        const shippingAddressForm = document.getElementById('shippingAddressForm');
+    
+        // Toggle new address form
+        if (newAddressBtn) {
+            newAddressBtn.addEventListener('click', function() {
+                newAddressForm.style.display = 'block';
+                newAddressBtn.style.display = 'none';
+            });
+        }
+    
+        if (cancelNewAddress) {
+            cancelNewAddress.addEventListener('click', function() {
+                newAddressForm.style.display = 'none';
+                newAddressBtn.style.display = 'block';
+                shippingAddressForm.reset();
+            });
+        }
+    
+        // Handle address selection and set as default
+        document.querySelectorAll('.address-select').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const addressId = this.value;
+                
+                // Set as default via AJAX
+                fetch(`/make-address-default/${addressId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update UI to reflect new default address
+                        document.querySelectorAll('.address-card').forEach(card => {
+                            card.classList.remove('border-success');
+                            const badge = card.querySelector('.badge');
+                            if (badge) badge.remove();
+                        });
+    
+                        const selectedCard = this.closest('.address-card');
+                        selectedCard.classList.add('border-success');
+                        const cardBody = selectedCard.querySelector('.card-body');
+                        const cardHeader = cardBody.querySelector('.d-flex');
+                        if (!cardHeader.querySelector('.badge')) {
+                            cardHeader.insertAdjacentHTML('beforeend', '<span class="badge bg-success">Default</span>');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    
+        // Handle new address form submission
+        if (shippingAddressForm) {
+            shippingAddressForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                formData.append('is_default', 'true'); // Always set new address as default
+    
+                fetch('/save-shipping-address/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload(); // Reload to show new address
+                    } else {
+                        alert(data.message || 'Error saving address');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        }
+    });
+    </script>
+<!-- end shipping address -->
+
 
 
 {% endblock content %}

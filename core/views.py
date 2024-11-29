@@ -815,9 +815,14 @@ def checkout(request, oid):
     try:
         order = get_object_or_404(CartOrder, oid=oid, user=request.user)
         order_items = CartOrderProducts.objects.filter(order=order)
+        
+        # Get all shipping addresses ordered by default first
+        shipping_addresses = ShippingAddress.objects.filter(user=request.user).order_by('-is_default', '-date_added')
+
         context = {
             "order": order,
             "order_items": order_items,
+            "shipping_addresses": shipping_addresses,
             "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
         }
         return render(request, "core/checkout.html", context)
@@ -847,6 +852,7 @@ def update_product_stock(request, order):
                 product.save()
         except Product.DoesNotExist:
             continue
+
 
 @login_required
 def process_payment(request):
