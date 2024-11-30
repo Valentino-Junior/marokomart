@@ -62,7 +62,7 @@ def dashboard(request):
     # Get other data
     all_categories = Category.objects.all()
     new_customers = User.objects.all().order_by("-id")[:6]
-    latest_orders = all_orders.order_by('-order_date')[:10]
+    latest_orders = all_orders.select_related('shipping_address').order_by('-order_date')[:10]
     
     # Calculate payment rate
     payment_rate = (paid_orders_count / total_orders * 100) if total_orders > 0 else 0

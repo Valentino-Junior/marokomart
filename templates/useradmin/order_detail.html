@@ -60,7 +60,7 @@
                                 Order Id: #{{order.oid}} <br>
                                 Order Status: {{order.product_status|title}} <br>
                                 Payment Status: {% if order.paid_status == True %} Paid {% else %} Not Paid {% endif %} <br>
-                                Payment Method: {{order.payment_method}}
+                                Payment Method: {{order.payment_method|title}}
                             </p>
                         </div>
                     </article>

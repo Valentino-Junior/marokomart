@@ -154,6 +154,7 @@
                                 <th class="align-middle" scope="col">Phone</th>
                                 <th class="align-middle" scope="col">Date</th>
                                 <th class="align-middle" scope="col">Total</th>
+                                <th class="align-middle" scope="col">Payment Method</th>
                                 <th class="align-middle" scope="col">Payment Status</th>
                                 <th class="align-middle" scope="col">View Details</th>
                             </tr>
@@ -162,11 +163,12 @@
                             {% for l in latest_orders %}
                             <tr>
                                 <td><a href="#" class="fw-bold">#{{l.oid}}</a></td>
-                                <td>{{l.full_name|title}}</td>
-                                <td>{{l.email}}</td>
-                                <td>{{l.phone}}</td>
+                                <td>{{l.shipping_address.full_name|title}}</td>
+                                <td>{{l.shipping_address.email}}</td>
+                                <td>{{l.shipping_address.phone}}</td>
                                 <td>{{l.order_date}}</td>
                                 <td>Ksh{{l.price}}</td>
+                                <td>{{l.payment_method|title}}</td>
                                 <td>
                                     {% if l.paid_status == True %}
                                     <span class="badge badge-pill badge-soft-success">Paid</span>
