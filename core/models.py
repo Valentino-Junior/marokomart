@@ -92,6 +92,27 @@ class Product(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(null=True, blank=True)
 
+
+    # New fields
+    is_special_offer = models.BooleanField(default=False)
+    special_offer_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    special_offer_ends = models.DateTimeField(null=True, blank=True)
+    
+    is_new_arrival = models.BooleanField(default=False)
+    new_arrival_ends = models.DateTimeField(null=True, blank=True)
+    
+    stock_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('in_stock', 'In Stock'),
+            ('new_stock', 'New Stock'),
+            ('low_stock', 'Low Stock'),
+            ('out_of_stock', 'Out of Stock'),
+        ],
+        default='in_stock'
+    )
+    
+
     class Meta:
         verbose_name_plural = "Products"
 
