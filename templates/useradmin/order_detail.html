@@ -3,6 +3,49 @@
 {% load humanize %}
 {% block content %}  
 
+<!-- start payment status styling -->
+<style>
+    .card-header {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+    }
+ 
+    .form-select {
+        min-width: 200px;
+        max-width: 200px;
+    }
+ 
+    .form-check-input {
+        cursor: pointer;
+        width: 3em;
+        height: 1.5em;
+    }
+ 
+    .status-text {
+        font-weight: 500;
+    }
+ 
+    .text-success {
+        color: #198754 !important;
+    }
+ 
+    .text-danger {
+        color: #dc3545 !important;
+    }
+ 
+    @media (max-width: 768px) {
+        .d-flex.justify-content-md-end {
+            justify-content: flex-start !important;
+        }
+        
+        .col-lg-6:last-child {
+            margin-top: 1rem;
+        }
+    }
+ </style>
+<!-- end payment status styling -->
+
+
 <section class="content-main">
     <div class="content-header">
         <div>
@@ -11,24 +54,60 @@
         </div>
     </div>
     <div class="card">
+
         <header class="card-header">
             <div class="row align-items-center">
-                <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
-                    <span> <i class="material-icons md-calendar_today"></i> <b>{{order.date}}</b> </span> <br />
+                <!-- Order Info Section -->
+                <div class="col-lg-6 col-md-6 mb-lg-0 mb-3">
+                    <span class="d-flex align-items-center mb-2">
+                        <i class="material-icons md-calendar_today me-2"></i>
+                        <b>{{order.date}}</b>
+                    </span>
                     <small class="text-muted">Order ID: #{{order.oid}}</small>
                 </div>
-                <form method="POST" action="{% url 'useradmin:change_order_status' order.oid %}" class="col-lg-6 col-md-6 ms-auto text-md-end">
-                    {% csrf_token %}
-                    <select name="status" class="form-select d-inline-block mb-lg-0 mr-5 mw-200">
-                        <option value="pending">Change Order Status</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                    </select>
-                    <button class="btn btn-primary" type="submit" >Save</button>
-                </form>
+         
+                <!-- Status Controls Section -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="d-flex justify-content-md-end align-items-center flex-wrap gap-3">
+                        <!-- Order Status Form -->
+                        <form method="POST" action="{% url 'useradmin:change_order_status' order.oid %}" 
+                              class="d-flex align-items-center gap-2">
+                            {% csrf_token %}
+                            <select name="status" class="form-select" style="width: 200px;">
+                                <option value="pending">Change Order Status</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                            </select>
+                            <button class="btn btn-primary" type="submit">Save</button>
+                        </form>
+         
+                        <!-- Payment Status Form -->
+                        <form action="{% url 'useradmin:update_payment_status' order.oid %}" 
+                              method="POST" 
+                              class="payment-status-form">
+                            {% csrf_token %}
+                            <div class="form-check form-switch d-flex align-items-center gap-2">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       name="paid_status"
+                                       {% if order.paid_status %}checked{% endif %}
+                                       onchange="this.form.submit()"
+                                       style="margin-top: 0;">
+                                <label class="form-check-label mb-0">
+                                    Payment Status: 
+                                    <span class="status-text ms-1 {% if order.paid_status %}text-success{% else %}text-danger{% endif %}">
+                                        {% if order.paid_status %}Paid{% else %}Unpaid{% endif %}
+                                    </span>
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </header>
+         </header>
+         
+         
         <!-- card-header end// -->
         <div class="card-body">
             <div class="row mb-50 mt-20 order-info-wrap">
@@ -163,5 +242,64 @@
         </div>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggles = document.querySelectorAll('.payment-status-toggle');
+        
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const orderId = this.dataset.orderId;
+                const isPaid = this.checked;
+                const statusSpan = this.closest('.form-check').querySelector('.status-text');
+                
+                fetch('/useradmin/update-payment-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        paid_status: isPaid
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        statusSpan.textContent = isPaid ? 'Paid' : 'Unpaid';
+                        alert(data.message);
+                    } else {
+                        this.checked = !isPaid;
+                        statusSpan.textContent = !isPaid ? 'Paid' : 'Unpaid';
+                        alert(data.message || 'Failed to update status');
+                    }
+                })
+                .catch(error => {
+                    this.checked = !isPaid;
+                    statusSpan.textContent = !isPaid ? 'Paid' : 'Unpaid';
+                    alert('Error updating payment status');
+                    console.error('Error:', error);
+                });
+            });
+        });
+    
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+    </script>
 
 {% endblock content %}

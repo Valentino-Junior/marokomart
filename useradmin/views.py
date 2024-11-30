@@ -17,6 +17,9 @@ from django.shortcuts import render, get_object_or_404
 
 from decimal import Decimal
 from collections import defaultdict
+import json
+from core.views import update_product_stock 
+
 
 
 @admin_required
@@ -94,6 +97,33 @@ def dashboard(request):
         "latest_orders": latest_orders,
     }
     return render(request, "useradmin/dashboard.html", context)
+
+
+@admin_required
+def update_payment_status(request, oid):
+    if request.method == 'POST':
+        try:
+            order = get_object_or_404(CartOrder, oid=oid)
+            
+            # Get current and new payment status
+            current_status = order.paid_status
+            new_status = 'paid_status' in request.POST
+            
+            # Update the payment status
+            order.paid_status = new_status
+            order.save()
+
+            # Check for cash payment status change
+            if order.payment_method == 'cash' and not current_status and new_status:
+                update_product_stock(order)
+                messages.success(request, 'Payment marked as paid and stock updated')
+            else:
+                messages.success(request, f'Payment status updated to {"Paid" if new_status else "Unpaid"}')
+            
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+    return redirect(request.META.get('HTTP_REFERER', 'useradmin:orders'))
 
 
 @admin_required
