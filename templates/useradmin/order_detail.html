@@ -59,7 +59,8 @@
                                 Shipping Method: {{order.shipping_method}} <br />
                                 Order Id: #{{order.oid}} <br>
                                 Order Status: {{order.product_status|title}} <br>
-                                Payment Status: {% if order.paid_status == True %} Paid {% else %} Not Paid {% endif %} 
+                                Payment Status: {% if order.paid_status == True %} Paid {% else %} Not Paid {% endif %} <br>
+                                Payment Method: {{order.payment_method}}
                             </p>
                         </div>
                     </article>
