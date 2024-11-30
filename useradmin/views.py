@@ -210,13 +210,14 @@ def orders(request):
 
 @admin_required
 def order_detail(request, id):
-    order = CartOrder.objects.get(id=id)
+    order = CartOrder.objects.select_related('shipping_address').get(id=id)
     order_items = CartOrderProducts.objects.filter(order=order)
     context = {
-        'order':order,
-        'order_items':order_items
+        'order': order,
+        'order_items': order_items
     }
     return render(request, "useradmin/order_detail.html", context)
+
 
 @admin_required
 @csrf_exempt

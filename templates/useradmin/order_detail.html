@@ -72,12 +72,20 @@
                         </span>
                         <div class="text">
                             <h6 class="mb-1">Deliver to</h6>
+                            {% if order.shipping_address %}
                             <p class="mb-1">
-                                Address: {{order.address}} <br />
-                                City: {{order.city}} <br />
-                                State: {{order.state}} <br />
-                                Country: {{order.country}}
+                                Name: {{ order.shipping_address.full_name }} <br />
+                                Region: {{ order.shipping_address.region }} <br />
+                                Phone: {{ order.shipping_address.phone }} <br />
+                                Email: {{ order.shipping_address.email }}
+                                {% if order.shipping_address.shipping_instructions %}
+                                <br />
+                                Instructions: {{ order.shipping_address.shipping_instructions }}
+                                {% endif %}
                             </p>
+                            {% else %}
+                            <p class="mb-1 text-muted">No shipping address provided</p>
+                            {% endif %}
                         </div>
                     </article>
                 </div>

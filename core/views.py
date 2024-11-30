@@ -40,6 +40,9 @@ from decimal import Decimal
 from django.views.decorators.http import require_http_methods
 
 
+import uuid
+
+
 
 def index(request):
     products = Product.objects.filter(product_status="published")
@@ -673,16 +676,7 @@ def apply_coupon_view(request):
     if request.method == "POST":
         try:
             code = request.POST.get("code")
-            order_id = request.POST.get("order_id")
-            
-            try:
-                order = CartOrder.objects.get(oid=order_id, user=request.user)
-                original_price = order.price + order.saved  # Get original price before any discounts
-            except CartOrder.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Order not found'
-                })
+            cart_total = Decimal(request.POST.get("cart_total", "0"))
             
             try:
                 coupon = Coupon.objects.get(code=code)
@@ -692,70 +686,51 @@ def apply_coupon_view(request):
                     'message': 'Invalid coupon code'
                 })
 
-            # Basic validation checks
-            if not coupon.active:
+            # Validate coupon
+            is_valid, message = coupon.is_valid()
+            if not is_valid:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'This coupon is no longer active'
+                    'message': message
                 })
 
-            if coupon.expiry_date and timezone.now() > coupon.expiry_date:
+            # Get or initialize coupon session data
+            coupon_data = request.session.get('coupon_data', {
+                'applied_coupons': [],
+                'total_saved': "0.00",
+                'final_total': str(cart_total)
+            })
+
+            # Check if already applied
+            if any(c['code'] == code for c in coupon_data['applied_coupons']):
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'This coupon has expired'
+                    'message': 'Coupon already applied'
                 })
 
-            if coupon.times_used >= coupon.usage_limit:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'This coupon has reached its usage limit'
-                })
+            # Calculate discount
+            discount_amount = (cart_total * Decimal(str(coupon.discount))) / Decimal('100')
+            total_saved = Decimal(coupon_data['total_saved']) + discount_amount
+            final_total = cart_total - total_saved
 
-            # Check if this specific coupon has been applied to this order
-            if coupon in order.coupons.all():
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'This coupon has already been applied'
-                })
+            # Update coupon data
+            coupon_data['applied_coupons'].append({
+                'code': coupon.code,
+                'discount': coupon.discount
+            })
+            coupon_data['total_saved'] = str(total_saved)
+            coupon_data['final_total'] = str(final_total)
             
-            # Calculate percentage discount based on original price
-            discount_percentage = Decimal(str(coupon.discount))
-            discount_amount = (original_price * discount_percentage) / Decimal('100')
-            discount_amount = discount_amount.quantize(Decimal('0.01'))
-            
-            # Calculate new price and total saved
-            new_total_saved = order.saved + discount_amount
-            new_price = original_price - new_total_saved
-            
-            # Update order
-            order.coupons.add(coupon)
-            order.price = new_price
-            order.saved = new_total_saved
-            order.save()
-
-            # Increment coupon usage counter
-            coupon.times_used += 1
-            coupon.save()
-
-            # Get all applied coupons info for display
-            applied_coupons = []
-            total_discount_percentage = 0
-            for applied_coupon in order.coupons.all():
-                applied_coupons.append({
-                    'code': applied_coupon.code,
-                    'discount': applied_coupon.discount
-                })
-                total_discount_percentage += applied_coupon.discount
+            # Save to session
+            request.session['coupon_data'] = coupon_data
             
             return JsonResponse({
                 'status': 'success',
                 'message': f'Coupon applied! {coupon.discount}% off - Additional Ksh{discount_amount:.2f} has been deducted',
-                'subtotal': float(original_price),
-                'new_price': float(new_price),
-                'total_saved': float(new_total_saved),
-                'current_discount': float(discount_amount),
-                'total_discount_percentage': float(total_discount_percentage),
-                'applied_coupons': applied_coupons
+                'subtotal': float(cart_total),
+                'new_price': float(final_total),
+                'total_saved': float(total_saved),
+                'applied_coupons': coupon_data['applied_coupons']
             })
                 
         except Exception as e:
@@ -763,72 +738,66 @@ def apply_coupon_view(request):
                 'status': 'error',
                 'message': str(e)
             })
-    
+
     return JsonResponse({
         'status': 'error',
         'message': 'Invalid request method'
     })
 
 
-# @login_required
-# def checkout(request, oid):
-#     try:
-#         order = CartOrder.objects.get(oid=oid, user=request.user)
-#         order_items = CartOrderProducts.objects.filter(order=order)
-        
-#         context = {
-#             "order": order,
-#             "order_items": order_items,
-#             "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
-#         }
-#         return render(request, "core/checkout.html", context)
-        
-#     except CartOrder.DoesNotExist:
-#         messages.error(request, "Order not found")
-#         return redirect("core:index")
 
-
-# @login_required
-# def payment_completed_view(request, oid):
-#     order = CartOrder.objects.get(oid=oid)
-    
-#     if order.paid_status == False:
-#         order.paid_status = True
-#         order.save()
-        
-#     context = {
-#         "order": order,
-#         "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
-
-#     }
-#     return render(request, 'core/payment-completed.html',  context)
-
-
-# @login_required
-# def payment_failed_view(request):
-#     return render(request, 'core/payment-failed.html')
-
+@login_required
+def redirect_to_checkout(request):
+    if 'cart_data_obj' in request.session:
+        # Generate a temporary unique identifier for checkout
+        temp_oid = f"TEMP_{uuid.uuid4().hex[:10]}"
+        return redirect("core:checkout", oid=temp_oid)
+    return redirect("core:cart")
 
 
 @login_required
 def checkout(request, oid):
-    try:
-        order = get_object_or_404(CartOrder, oid=oid, user=request.user)
-        order_items = CartOrderProducts.objects.filter(order=order)
-        
-        # Get all shipping addresses ordered by default first
-        shipping_addresses = ShippingAddress.objects.filter(user=request.user).order_by('-is_default', '-date_added')
+    cart_data = request.session.get('cart_data_obj', {})
+    
+    if not cart_data:
+        messages.error(request, "Your cart is empty")
+        return redirect("core:cart")
 
-        context = {
-            "order": order,
-            "order_items": order_items,
-            "shipping_addresses": shipping_addresses,
-            "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
-        }
-        return render(request, "core/checkout.html", context)
-    except CartOrder.DoesNotExist:
-        messages.error(request, "Order not found")
-        return redirect("core:index")
+    # Calculate cart totals from session data
+    cart_items = []
+    cart_total = 0
+    for product_id, item in cart_data.items():
+        subtotal = float(item['qty']) * float(item['price'])
+        cart_items.append({
+            'item': item['title'],
+            'image': item['image'],
+            'qty': item['qty'],
+            'price': item['price'],
+            'total': subtotal
+        })
+        cart_total += subtotal
+
+    # Get shipping addresses
+    shipping_addresses = ShippingAddress.objects.filter(user=request.user).order_by('-is_default', '-date_added')
+    
+    # Get coupon data from session if exists
+    coupon_data = request.session.get('coupon_data', {
+        'applied_coupons': [],
+        'total_discount': 0,
+        'final_total': cart_total
+    })
+
+    context = {
+        "oid": oid,
+        "order_items": cart_items,
+        "cart_total": cart_total,
+        "shipping_addresses": shipping_addresses,
+        "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
+        "coupon_data": coupon_data,
+    }
+    
+    return render(request, "core/checkout.html", context)
+
     
 
 # New helper function to clear cart
@@ -840,88 +809,177 @@ def clear_cart(request):
 
 
 def update_product_stock(request, order):
-    """Helper function to update product stock"""
-    cart = request.session.get('cart', {})
+    # Get all order items for this order
+    order_items = CartOrderProducts.objects.filter(order=order)
     
-    for product_id, quantity in cart.items():
+    for order_item in order_items:
         try:
-            product = Product.objects.get(pid=product_id)
+            # Get the product using the item title (assuming this matches product title)
+            product = Product.objects.get(title=order_item.item)
+            
+            # Check if stock is a valid number
             if product.stock_count.isdigit():
-                new_stock = int(product.stock_count) - int(quantity)
+                # Calculate new stock
+                new_stock = int(product.stock_count) - order_item.qty
+                # Ensure stock doesn't go below 0
                 product.stock_count = str(max(0, new_stock))
                 product.save()
+                
         except Product.DoesNotExist:
             continue
+
 
 
 @login_required
 def process_payment(request):
     if request.method == 'POST':
-        oid = request.POST.get('oid')
+        shipping_address_id = request.POST.get('shipping_address_id')
         payment_method = request.POST.get('payment_method')
+        cart_data = request.session.get('cart_data_obj', {})
+        coupon_data = request.session.get('coupon_data', {})
 
         try:
-            order = get_object_or_404(CartOrder, oid=oid, user=request.user)
-            cart = request.session.get('cart', {})
+            if not shipping_address_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please select a shipping address'
+                })
 
+            shipping_address = ShippingAddress.objects.get(
+                id=shipping_address_id, 
+                user=request.user
+            )
+            
+            # Calculate final price with discounts
+            cart_total = sum(int(item['qty']) * Decimal(str(item['price'])) for item in cart_data.values())
+            saved_amount = Decimal(coupon_data.get('total_saved', '0'))
+            final_total = cart_total - saved_amount
+
+            # Create initial order
+            order = CartOrder.objects.create(
+                user=request.user,
+                shipping_address=shipping_address,
+                price=final_total,
+                saved=saved_amount,
+                cart_data=cart_data,
+                payment_method=payment_method
+            )
+
+            # Add applied coupons
+            for coupon_info in coupon_data.get('applied_coupons', []):
+                try:
+                    coupon = Coupon.objects.get(code=coupon_info['code'])
+                    order.coupons.add(coupon)
+                    coupon.times_used += 1
+                    coupon.save()
+                except Coupon.DoesNotExist:
+                    continue
+
+            # Create order items
+            for item in cart_data.values():
+                CartOrderProducts.objects.create(
+                    order=order,
+                    invoice_no=f"INVOICE_NO-{order.id}",
+                    item=item['title'],
+                    image=item['image'],
+                    qty=item['qty'],
+                    price=item['price'],
+                    total=Decimal(str(item['qty'])) * Decimal(str(item['price']))
+                )
+
+            # Process payment based on method
             if payment_method == 'stripe':
-                # Store cart data before clearing session
-                order.cart_data = cart
-                order.paid_status = True
-                order.save()
-
-                # Update stock immediately
-                update_product_stock(request, order)
-                
-                # Clear session cart
-                clear_cart(request)
-                
-                return JsonResponse({
-                    'success': True, 
-                    'message': f'Payment for order {order.oid} successful', 
-                    'redirect': '/',
-                    'cart_count': 0
-                })
-
+                return process_stripe_payment(request, order)
             elif payment_method == 'mpesa':
-                # Store cart data before clearing session
-                order.cart_data = cart
-                order.paid_status = True
-                order.save()
-
-                # Update stock immediately
-                update_product_stock(request, order)
-                
-                # Clear session cart
-                clear_cart(request)
-                
-                return JsonResponse({
-                    'success': True, 
-                    'message': f'Payment for order {order.oid} successful', 
-                    'redirect': '/',
-                    'cart_count': 0
-                })
-
+                return process_mpesa_payment(request, order)
             elif payment_method == 'cash':
-                # Store cart data for later use
-                order.cart_data = cart
-                order.paid_status = False
-                order.save()
-                
-                # Clear session cart
-                clear_cart(request)
-                
-                return JsonResponse({
-                    'success': True, 
-                    'message': f'Order {order.oid} placed successfully', 
-                    'redirect': '/',
-                    'cart_count': 0
-                })
+                return process_cash_payment(request, order)
+            else:
+                raise ValueError("Invalid payment method")
 
-        except CartOrder.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Order not found'})
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            })
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+
+def process_stripe_payment(request, order):
+    try:
+        # Here you'll integrate Stripe API
+        # For now, simulating successful payment
+        order.paid_status = True
+        order.save()
+        
+        update_product_stock(request, order)
+        clear_session_data(request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Stripe payment for order {order.oid} successful',
+            'redirect': '/',
+            'cart_count': 0
+        })
+    except Exception as e:
+        order.delete()  # Remove order if payment fails
+        return JsonResponse({
+            'success': False,
+            'message': f'Stripe payment failed: {str(e)}'
+        })
+
+
+def process_mpesa_payment(request, order):
+    try:
+        # Here you'll integrate M-Pesa API
+        # For now, simulating successful payment
+        order.paid_status = True
+        order.save()
+        
+        update_product_stock(request, order)
+        clear_session_data(request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'M-Pesa payment for order {order.oid} successful',
+            'redirect': '/',
+            'cart_count': 0
+        })
+    except Exception as e:
+        order.delete()  # Remove order if payment fails
+        return JsonResponse({
+            'success': False,
+            'message': f'M-Pesa payment failed: {str(e)}'
+        })
+    
+
+def process_cash_payment(request, order):
+    try:
+        # Cash on delivery doesn't need payment processing
+        order.paid_status = False  # Will be marked as paid upon delivery
+        order.save()
+        
+        clear_session_data(request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Order {order.oid} placed successfully for cash on delivery',
+            'redirect': '/',
+            'cart_count': 0
+        })
+    except Exception as e:
+        order.delete()
+        return JsonResponse({
+            'success': False,
+            'message': f'Failed to place cash order: {str(e)}'
+        })
+
+def clear_session_data(request):
+    clear_cart(request)
+    if 'coupon_data' in request.session:
+        del request.session['coupon_data']
+
 
 
 @login_required

@@ -128,15 +128,15 @@
                     <div class="d-flex align-items-end justify-content-between mb-30">
                         <h4 class="order-summary-title">Order Summary</h4>
                     </div>
-
+            
                     <div class="summary-item">
                         <span class="summary-label">Subtotal:</span>
-                        <span class="summary-value">Ksh{{ order.price|add:order.saved|floatformat:2 }}</span>
+                        <span class="summary-value">Ksh{{ cart_total|floatformat:2 }}</span>
                     </div>
-
-                    {% if order.saved > 0 %}
+            
+                    {% if coupon_data.applied_coupons %}
                     <div class="applied-coupons">
-                        {% for coupon in order.coupons.all %}
+                        {% for coupon in coupon_data.applied_coupons %}
                         <div class="summary-item text-success">
                             <span class="summary-label">Coupon Applied ({{ coupon.code }}):</span>
                             <span class="discount-amount">{{ coupon.discount }}% off</span>
@@ -144,21 +144,22 @@
                         {% endfor %}
                         <div class="summary-item text-success fw-bold">
                             <span class="summary-label">Total Discount:</span>
-                            <span class="total-discount-amount">-Ksh{{ order.saved|floatformat:2 }}</span>
+                            <span class="total-discount-amount">-Ksh{{ coupon_data.total_discount|floatformat:2 }}</span>
                         </div>
                     </div>
                     {% endif %}
-
+            
                     <div class="summary-item total">
                         <span class="summary-label">Final Total:</span>
-                        <span class="final-price">Ksh{{ order.price|floatformat:2 }}</span>
+                        <span class="final-price">Ksh{{ coupon_data.final_total|default:cart_total|floatformat:2 }}</span>
                     </div>
                 </div>
-
+            
                 <div class="row mb-50">
                     <div class="col-lg-12">
                         <form id="coupon-form" class="apply-coupon">
                             {% csrf_token %}
+                            <input type="hidden" name="cart_total" value="{{ cart_total }}">
                             <div class="input-group">
                                 <input type="text" name="code" id="coupon-code" class="form-control"
                                     placeholder="Enter Coupon Code..." />
@@ -172,20 +173,24 @@
                         </form>
                     </div>
                 </div>
-
+            
                 <div class="payment-options">
                     <form id="payment-form" method="post">
                         {% csrf_token %}
-                        <input type="hidden" name="oid" value="{{ order.oid }}">
-
-                        <button type="button" onclick="submitPayment('stripe')" class="btn btn-primary">Pay With Stripe
-                            (Credit or Debit Card)</button>
-                        <button type="button" onclick="submitPayment('mpesa')" class="btn btn-success">Pay With
-                            M-Pesa</button>
-                        <button type="button" onclick="submitPayment('cash')" class="btn btn-secondary">Cash On
-                            Delivery</button>
+                        <input type="hidden" name="oid" value="{{ oid }}">
+                        <input type="hidden" name="shipping_address_id" id="selected_address_id">
+            
+                        <button type="button" onclick="submitPayment('stripe')" class="btn btn-primary w-100 mb-2">
+                            Pay With Stripe (Credit or Debit Card)
+                        </button>
+                        <button type="button" onclick="submitPayment('mpesa')" class="btn btn-success w-100 mb-2">
+                            Pay With M-Pesa
+                        </button>
+                        <button type="button" onclick="submitPayment('cash')" class="btn btn-secondary w-100">
+                            Cash On Delivery
+                        </button>
                     </form>
-
+            
                     <p id="payment-message" class="animate__animated animate__fadeInUp text-center mt-4"></p>
                 </div>
             </div>
@@ -248,120 +253,112 @@
 <!-- start coupon application -->
 <script>
     $(document).ready(function () {
-        const couponForm = $('#coupon-form');
-        const applyBtn = $('#apply-coupon-btn');
-        const spinner = $('.loading-spinner');
-        let currentRequest = null;
+    const couponForm = $('#coupon-form');
+    const applyBtn = $('#apply-coupon-btn');
+    const spinner = $('.loading-spinner');
+    let currentRequest = null;
 
-        couponForm.on('submit', function (e) {
-            e.preventDefault();
+    couponForm.on('submit', function (e) {
+        e.preventDefault();
 
-            const couponCode = $('#coupon-code').val().trim();
-            if (!couponCode) {
-                showNotification('error', 'Error', 'Please enter a coupon code');
-                return;
-            }
-
-            applyBtn.prop('disabled', true);
-            spinner.removeClass('d-none');
-
-            if (currentRequest) {
-                currentRequest.abort();
-            }
-
-            currentRequest = $.ajax({
-                url: '{% url "core:apply-coupon" %}',
-                type: 'POST',
-                data: {
-                    'code': couponCode,
-                    'order_id': '{{ order.oid }}',
-                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
-                },
-                success: function (response) {
-                    if (response.status === 'success') {
-                        // Update subtotal (original price)
-                        $('.summary-value').text(`Ksh${response.subtotal.toFixed(2)}`);
-
-                        // Update or create coupons section
-                        if ($('.applied-coupons').length) {
-                            // Add new coupon to list
-                            const newCouponHtml = `
-                            <div class="summary-item text-success">
-                                <span class="summary-label">Coupon Applied (${response.applied_coupons[response.applied_coupons.length-1].code}):</span>
-                                <span class="discount-amount">${response.applied_coupons[response.applied_coupons.length-1].discount}% off</span>
-                            </div>
-                        `;
-                            $('.total-discount-amount').closest('.summary-item').before(
-                                newCouponHtml);
-
-                            // Update total discount amount
-                            $('.total-discount-amount').text(
-                                `-Ksh${response.total_saved.toFixed(2)}`);
-                        } else {
-                            // Create new coupons section
-                            const couponsHtml = `
-                            <div class="applied-coupons">
-                                <div class="summary-item text-success">
-                                    <span class="summary-label">Coupon Applied (${response.applied_coupons[0].code}):</span>
-                                    <span class="discount-amount">${response.applied_coupons[0].discount}% off</span>
-                                </div>
-                                <div class="summary-item text-success fw-bold">
-                                    <span class="summary-label">Total Discount:</span>
-                                    <span class="total-discount-amount">-Ksh${response.total_saved.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        `;
-                            $('.summary-item').eq(0).after(couponsHtml);
-                        }
-
-                        // Update final price
-                        $('.final-price').text(`Ksh${response.new_price.toFixed(2)}`);
-
-                        showNotification('success', 'Success', response.message);
-                        $('#coupon-code').val('');
-
-                        if (typeof stripe !== 'undefined') {
-                            updatePaymentAmount(response.new_price);
-                        }
-                    } else {
-                        showNotification('error', 'Error', response.message);
-                    }
-                },
-                error: function (xhr) {
-                    if (xhr.statusText === "abort") {
-                        return;
-                    }
-                    showNotification('error', 'Error', 'Failed to apply coupon');
-                },
-                complete: function () {
-                    currentRequest = null;
-                    applyBtn.prop('disabled', false);
-                    spinner.addClass('d-none');
-                }
-            });
-        });
-
-        function showNotification(type, title, message) {
-            if (!$('#notification-container').length) {
-                $('body').append('<div id="notification-container"></div>');
-            }
-
-            const notification = $(`
-            <div class="notification ${type}">
-                <h4 style="margin: 0 0 5px; font-size: 16px;">${title}</h4>
-                <p style="margin: 0; font-size: 14px; color: #666;">${message}</p>
-            </div>
-        `);
-
-            $('#notification-container').append(notification);
-            notification[0].offsetHeight;
-            notification.addClass('show');
-
-            setTimeout(() => {
-                notification.removeClass('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+        const couponCode = $('#coupon-code').val().trim();
+        if (!couponCode) {
+            showNotification('error', 'Error', 'Please enter a coupon code');
+            return;
         }
+
+        applyBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+
+        if (currentRequest) {
+            currentRequest.abort();
+        }
+
+        currentRequest = $.ajax({
+            url: '{% url "core:apply-coupon" %}',
+            type: 'POST',
+            data: {
+                'code': couponCode,
+                'cart_total': '{{ cart_total }}',
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function (response) {
+                if (response.status === 'success') {
+                    // Update subtotal (original price)
+                    $('.summary-value').text(`Ksh${response.subtotal.toFixed(2)}`);
+
+                    // Update or create coupons section
+                    if ($('.applied-coupons').length) {
+                        // Add new coupon to list
+                        const newCouponHtml = `
+                        <div class="summary-item text-success">
+                            <span class="summary-label">Coupon Applied (${response.applied_coupons[response.applied_coupons.length-1].code}):</span>
+                            <span class="discount-amount">${response.applied_coupons[response.applied_coupons.length-1].discount}% off</span>
+                        </div>
+                    `;
+                        $('.total-discount-amount').closest('.summary-item').before(newCouponHtml);
+
+                        // Update total discount amount
+                        $('.total-discount-amount').text(`-Ksh${response.total_saved.toFixed(2)}`);
+                    } else {
+                        // Create new coupons section
+                        const couponsHtml = `
+                        <div class="applied-coupons">
+                            <div class="summary-item text-success">
+                                <span class="summary-label">Coupon Applied (${response.applied_coupons[0].code}):</span>
+                                <span class="discount-amount">${response.applied_coupons[0].discount}% off</span>
+                            </div>
+                            <div class="summary-item text-success fw-bold">
+                                <span class="summary-label">Total Discount:</span>
+                                <span class="total-discount-amount">-Ksh${response.total_saved.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                        $('.summary-item').eq(0).after(couponsHtml);
+                    }
+
+                    // Update final price
+                    $('.final-price').text(`Ksh${response.new_price.toFixed(2)}`);
+
+                    showNotification('success', 'Success', response.message);
+                    $('#coupon-code').val('');
+                } else {
+                    showNotification('error', 'Error', response.message);
+                }
+            },
+            error: function (xhr) {
+                if (xhr.statusText === "abort") {
+                    return;
+                }
+                showNotification('error', 'Error', 'Failed to apply coupon');
+            },
+            complete: function () {
+                currentRequest = null;
+                applyBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+            }
+        });
+    });
+
+    function showNotification(type, title, message) {
+        if (!$('#notification-container').length) {
+            $('body').append('<div id="notification-container"></div>');
+        }
+        const notification = $(`
+        <div class="notification ${type}">
+            <h4 style="margin: 0 0 5px; font-size: 16px;">${title}</h4>
+            <p style="margin: 0; font-size: 14px; color: #666;">${message}</p>
+        </div>
+    `);
+        $('#notification-container').append(notification);
+        notification[0].offsetHeight;
+        notification.addClass('show');
+        setTimeout(() => {
+            notification.removeClass('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
     });
 </script>
 
@@ -565,7 +562,7 @@
 </style>
 
 
-
+<!-- start payment -->
 <script>
     function submitPayment(method) {
         const formData = new FormData(document.getElementById('payment-form'));
@@ -618,6 +615,8 @@
             });
     }
 </script>
+<!-- end payment -->
+
 
 
 <!-- Add this CSS for notifications -->
@@ -732,6 +731,101 @@
     });
     </script>
 <!-- end shipping address -->
+
+<script>
+    // Update the submitPayment function
+function submitPayment(method) {
+    // Get all address radio buttons
+    const addressRadios = document.querySelectorAll('input[name="address_selection"]');
+    let selectedAddress = null;
+
+    // Check for default/selected address
+    for (const radio of addressRadios) {
+        if (radio.checked) {
+            selectedAddress = radio;
+            break;
+        }
+    }
+
+    // If no address is selected, try to use default or show error
+    if (!selectedAddress) {
+        // Try to find and select default address
+        const defaultAddress = document.querySelector('input[name="address_selection"][checked]');
+        if (defaultAddress) {
+            defaultAddress.checked = true;
+            selectedAddress = defaultAddress;
+        } else {
+            alert('Please select a shipping address');
+            return;
+        }
+    }
+
+    // Set selected address in hidden input
+    document.getElementById('selected_address_id').value = selectedAddress.value;
+
+    const formData = new FormData(document.getElementById('payment-form'));
+    formData.append('payment_method', method);
+
+    // Show loading state
+    const paymentMessage = document.getElementById('payment-message');
+    paymentMessage.innerText = 'Processing payment...';
+
+    fetch("/process_payment/", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        paymentMessage.innerText = data.message;
+        
+        if (data.success) {
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success animate__animated animate__fadeInDown';
+            notification.textContent = data.message;
+            document.body.appendChild(notification);
+
+            // Redirect after delay
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 2000);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        paymentMessage.innerText = 'An error occurred. Please try again.';
+    });
+}
+
+// Add this to ensure an address is selected when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Try to select default address if none is selected
+    const addressRadios = document.querySelectorAll('input[name="address_selection"]');
+    let hasSelectedAddress = false;
+
+    addressRadios.forEach(radio => {
+        if (radio.checked) {
+            hasSelectedAddress = true;
+        }
+    });
+
+    // If no address is selected, select the default one
+    if (!hasSelectedAddress && addressRadios.length > 0) {
+        const defaultAddress = document.querySelector('.address-card.border-success input[name="address_selection"]');
+        if (defaultAddress) {
+            defaultAddress.checked = true;
+        } else {
+            // If no default, select the first address
+            addressRadios[0].checked = true;
+        }
+    }
+});
+</script>
 
 
 

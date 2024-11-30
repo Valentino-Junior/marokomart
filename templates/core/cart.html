@@ -23,122 +23,103 @@
         </div>
 
 
-        <form action="{% url 'core:save_checkout_info' %}" method="POST">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="table-responsive shopping-summery">
-                        <table class="table table-wishlist">
-                            <thead>
-                                <tr class="main-heading">
-                                    <th scope="col">Product</th>
-                                    <th scope="col">Unit Price</th>
-                                    <th scope="col" class="text-center">Quantity</th>
-                                    <th scope="col">Subtotal</th>
-                                    <th scope="col" class="end">Remove</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if cart_data %}
-                                {% for product_id, item in cart_data.items %}
-                                <tr class="pt-30">
-                                    <td class="image product-thumbnail pt-10">
-                                        <h6 class="mb-5">
-                                            <a class="product-name mb-10 text-heading"
-                                                href="{% url 'core:product-detail' item.pid %}">
-                                                {{ item.title }}
-                                            </a>
-                                        </h6>
-
-                                        <img src="{{ item.image }}" alt="#">
-
-                                    </td>
-
-                                
-
-                                    <td class="price" data-title="Price">
-                                        <h4 class="text-body unit-price">Ksh{{ item.price|floatformat:2 }}</h4>
-                                    </td>
-
-                                    <td class="text-center detail-info" data-title="Stock">
-                                        <div class="mr-15">
-                                            <input type="number" class="w-25 product-qty" value="{{ item.qty }}" min="1"
-                                                data-product-id="{{ product_id }}" data-price="{{ item.price }}">
-                                        </div>
-                                    </td>
-
-                                    <td class="price" data-title="Subtotal">
-                                        <h4 class="text-brand product-subtotal" id="subtotal-{{ product_id }}">
-                                            Ksh{{ item.subtotal|floatformat:2 }}
-                                        </h4>
-                                    </td>
-
-
-                                    <td class="action text-center" data-title="Remove">
-                                        <a href="javascript:void(0);" class="text-body delete-product"
-                                            data-product="{{ product_id }}" title="Remove item">
-                                            <i class="fi-rs-trash"></i>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="table-responsive shopping-summery">
+                    <table class="table table-wishlist">
+                        <thead>
+                            <tr class="main-heading">
+                                <th scope="col">Product</th>
+                                <th scope="col">Unit Price</th>
+                                <th scope="col" class="text-center">Quantity</th>
+                                <th scope="col">Subtotal</th>
+                                <th scope="col" class="end">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if cart_data %}
+                            {% for product_id, item in cart_data.items %}
+                            <tr class="pt-30">
+                                <td class="image product-thumbnail pt-10">
+                                    <h6 class="mb-5">
+                                        <a class="product-name mb-10 text-heading"
+                                            href="{% url 'core:product-detail' item.pid %}">
+                                            {{ item.title }}
                                         </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center">Your cart is empty</td>
-                                </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-
-
+                                    </h6>
+                                    <img src="{{ item.image }}" alt="#">
+                                </td>
+        
+                                <td class="price" data-title="Price">
+                                    <h4 class="text-body unit-price">Ksh{{ item.price|floatformat:2 }}</h4>
+                                </td>
+        
+                                <td class="text-center detail-info" data-title="Stock">
+                                    <div class="mr-15">
+                                        <input type="number" class="w-25 product-qty" value="{{ item.qty }}" min="1"
+                                            data-product-id="{{ product_id }}" data-price="{{ item.price }}">
+                                    </div>
+                                </td>
+        
+                                <td class="price" data-title="Subtotal">
+                                    <h4 class="text-brand product-subtotal" id="subtotal-{{ product_id }}">
+                                        Ksh{{ item.subtotal|floatformat:2 }}
+                                    </h4>
+                                </td>
+        
+                                <td class="action text-center" data-title="Remove">
+                                    <a href="javascript:void(0);" class="text-body delete-product"
+                                        data-product="{{ product_id }}" title="Remove item">
+                                        <i class="fi-rs-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">Your cart is empty</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
                 </div>
-
-
-                <div class="col-lg-4">
-
-                    <div class="border p-md-4 cart-totals ml-30">
-                        <div class="table-responsive">
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <p class="fw-bold" style="font-weight: bolder; color: #333;">
-                                    CART TOTALS</p>
-
-                            </div>
-
-
-                            <div>
-
-                                <div class="d-flex justify-content-between mb-2">
-                                    <p class="fw-bold">Shipping</p>
-                                    <p>Free</p>
-                                </div>
-
-                                <div class="d-flex justify-content-between mb-2">
-                                    <p class="fw-bold">Total</p>
-                                    <p class="cart-total">Ksh<span
-                                            id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
-                                </div>
-                            </div>
-
-                        </div>
-                        {% if totalcartitems %}
-                        <button type=submit" class="btn mb-20 w-100">Proceed To CheckOut<i
-                                class="fi-rs-sign-out ml-15"></i></button>
-
-                        <a href="{% url 'core:product-list'  %}" class="btn continue-btn">
-                            <i class="fi-rs-shopping-bag mr-10"></i>
-                            Continue Shopping
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-
             </div>
-
-
-        </form>
-
+        
+            <div class="col-lg-4">
+                <div class="border p-md-4 cart-totals ml-30">
+                    <div class="table-responsive">
+                        <div class="d-flex justify-content-between mb-2">
+                            <p class="fw-bold" style="font-weight: bolder; color: #333;">
+                                CART TOTALS</p>
+                        </div>
+        
+                        <div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <p class="fw-bold">Shipping</p>
+                                <p>Free</p>
+                            </div>
+        
+                            <div class="d-flex justify-content-between mb-2">
+                                <p class="fw-bold">Total</p>
+                                <p class="cart-total">Ksh<span
+                                        id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
+                            </div>
+                        </div>
+                    </div>
+        
+                    {% if totalcartitems %}
+                    <a href="{% url 'core:redirect_to_checkout' %}" class="btn mb-20 w-100">
+                        Proceed To CheckOut<i class="fi-rs-sign-out ml-15"></i>
+                    </a>
+        
+                    <a href="{% url 'core:product-list' %}" class="btn continue-btn">
+                        <i class="fi-rs-shopping-bag mr-10"></i>
+                        Continue Shopping
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
     </div>
 </main>

@@ -202,6 +202,13 @@ class ShippingAddress(models.Model):
 
 
 class CartOrder(models.Model):
+    
+    PAYMENT_METHOD_CHOICES = (
+        ('stripe', 'Stripe'),
+        ('mpesa', 'M-Pesa'),
+        ('cash', 'Cash on Delivery')
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
     cart_data = models.JSONField(null=True, blank=True)  # Add this field
@@ -210,6 +217,7 @@ class CartOrder(models.Model):
     saved = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
     coupons = models.ManyToManyField("core.Coupon", blank=True)
     tracking_id = models.CharField(max_length=100, null=True, blank=True)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, null=True)
 
     paid_status = models.BooleanField(default=False)
     order_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
