@@ -45,8 +45,10 @@
                             <th>#ID</th>
                             <th scope="col">Name</th>
                             <th scope="col">Email</th>
+                            <th scope="col">Phone</th>
                             <th scope="col">Total</th>
                             <th scope="col">Order Status</th>
+                            <th scope="col">Payment Method</th>
                             <th scope="col">Payment Status</th>
                             <th scope="col">Action</th>
                         </tr>
@@ -56,9 +58,11 @@
                         {% for c in orders %}
                             <tr>
                                 <td>#{{c.oid}}</td>
-                                <td><b>{{c.full_name|title}}</b></td>
-                                <td>{{c.email}}</td>
+                                <td><b>{{c.shipping_address.full_name|title}}</b></td>
+                                <td>{{c.shipping_address.email}}</td>
+                                <td>{{c.shipping_address.phone}}</td>
                                 <td>Ksh{{c.price}}</td>
+                                <td>{{c.payment_method|title}}</td>
                                 <td><span class="badge alert-secondary">Pending</span></td>
                                 {% if c.paid_status == True %}
                                     <td><span class="badge alert-success"></span>Paid</td>

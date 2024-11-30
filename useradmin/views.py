@@ -202,7 +202,7 @@ def delete_product(request, pid):
 
 @admin_required
 def orders(request):
-    orders = CartOrder.objects.all()
+    orders = CartOrder.objects.select_related('shipping_address').all()
     context = {
         'orders':orders,
     }
