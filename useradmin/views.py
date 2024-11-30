@@ -109,15 +109,37 @@ def update_payment_status(request, oid):
             current_status = order.paid_status
             new_status = 'paid_status' in request.POST
             
-            # Update the payment status
+            # If it's a cash payment being marked as paid
+            if order.payment_method == 'cash' and not current_status and new_status:
+                # Get order items and update stock
+                order_items = CartOrderProducts.objects.filter(order=order)
+                
+                for item in order_items:
+                    try:
+                        # Get product directly from database
+                        product = Product.objects.get(title=item.item)
+                        
+                        # Convert current stock to int and subtract quantity
+                        current_stock = int(product.stock_count) if product.stock_count else 0
+                        new_stock = max(0, current_stock - item.qty)
+                        
+                        # Update product stock
+                        product.stock_count = str(new_stock)
+                        product.save()
+                        
+                    except Product.DoesNotExist:
+                        continue
+                    except Exception as e:
+                        print(f"Error updating stock for {item.item}: {str(e)}")
+                        continue
+                
+                messages.success(request, 'Payment marked as paid and stock updated')
+            
+            # Update payment status
             order.paid_status = new_status
             order.save()
-
-            # Check for cash payment status change
-            if order.payment_method == 'cash' and not current_status and new_status:
-                update_product_stock(order)
-                messages.success(request, 'Payment marked as paid and stock updated')
-            else:
+            
+            if not (order.payment_method == 'cash' and not current_status and new_status):
                 messages.success(request, f'Payment status updated to {"Paid" if new_status else "Unpaid"}')
             
         except Exception as e:
