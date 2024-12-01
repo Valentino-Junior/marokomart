@@ -66,37 +66,6 @@ class MultipleFileField(forms.FileField):
             result = single_file_clean(data, initial)
         return result
 
-class AddProductForm(forms.ModelForm):
-    title = forms.CharField(widget=forms.TextInput(attrs={'placeholder': "Product Title", "class":"form-control"}))
-    description = forms.CharField(widget=forms.Textarea(attrs={'placeholder': "Product Description", "class":"form-control"}))
-    price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Sale Price", "class":"form-control"}))
-    old_price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Old Price", "class":"form-control"}))
-    stock_count = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "How many are in stock?", "class":"form-control"}))
-    low_stock_threshold = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "What is your low stock threshold?", "class":"form-control"}))
-    image = forms.ImageField(widget=forms.FileInput(attrs={"class":"form-control"}))
-    # New multiple images field using custom field
-    additional_images = MultipleFileField(
-        required=False,
-        widget=MultipleFileInput(attrs={
-            'class': 'form-control',
-            'accept': 'image/*'
-        })
-    )
-
-    class Meta:
-        model = Product
-        fields = [
-            'title',
-            'image',
-            'description',
-            'price',
-            'old_price',
-            'stock_count',
-            'low_stock_threshold',
-            'category',
-        ]
-
-
 class EditProductForm(forms.ModelForm):
     title = forms.CharField(widget=forms.TextInput(attrs={'placeholder': "Product Title", "class":"form-control"}))
     description = forms.CharField(widget=forms.Textarea(attrs={'placeholder': "Product Description", "class":"form-control"}))
@@ -112,6 +81,43 @@ class EditProductForm(forms.ModelForm):
             'accept': 'image/*'
         })
     )
+    
+    # Special Offer Fields
+    is_special_offer = forms.BooleanField(required=False)
+    special_offer_price = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Special Offer Price'
+        })
+    )
+    special_offer_ends = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control',
+            'type': 'datetime-local'
+        })
+    )
+
+    # New Arrival Fields
+    is_new_arrival = forms.BooleanField(required=False)
+    new_arrival_ends = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control',
+            'type': 'datetime-local'
+        })
+    )
+    stock_status = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('in_stock', 'In Stock'),
+            ('new_stock', 'New Stock'),
+            ('low_stock', 'Low Stock'),
+            ('out_of_stock', 'Out of Stock')
+        ],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = Product
@@ -124,4 +130,82 @@ class EditProductForm(forms.ModelForm):
             'stock_count',
             'low_stock_threshold',
             'category',
+            'is_special_offer',
+            'special_offer_price',
+            'special_offer_ends',
+            'is_new_arrival',
+            'new_arrival_ends',
+            'stock_status',
+        ]
+
+class AddProductForm(forms.ModelForm):
+    title = forms.CharField(widget=forms.TextInput(attrs={'placeholder': "Product Title", "class":"form-control"}))
+    description = forms.CharField(widget=forms.Textarea(attrs={'placeholder': "Product Description", "class":"form-control"}))
+    price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Sale Price", "class":"form-control"}))
+    old_price = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "Old Price", "class":"form-control"}))
+    stock_count = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "How many are in stock?", "class":"form-control"}))
+    low_stock_threshold = forms.CharField(widget=forms.NumberInput(attrs={'placeholder': "What is your low stock threshold?", "class":"form-control"}))
+    image = forms.ImageField(widget=forms.FileInput(attrs={"class":"form-control"}))
+    additional_images = MultipleFileField(
+        required=False,
+        widget=MultipleFileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        })
+    )
+
+    # Special Offer Fields
+    is_special_offer = forms.BooleanField(required=False)
+    special_offer_price = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Special Offer Price'
+        })
+    )
+    special_offer_ends = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control',
+            'type': 'datetime-local'
+        })
+    )
+
+    # New Arrival Fields
+    is_new_arrival = forms.BooleanField(required=False)
+    new_arrival_ends = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control',
+            'type': 'datetime-local'
+        })
+    )
+    stock_status = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('in_stock', 'In Stock'),
+            ('new_stock', 'New Stock'),
+            ('low_stock', 'Low Stock'),
+            ('out_of_stock', 'Out of Stock')
+        ],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = Product
+        fields = [
+            'title',
+            'image',
+            'description',
+            'price',
+            'old_price',
+            'stock_count',
+            'low_stock_threshold',
+            'category',
+            'is_special_offer',
+            'special_offer_price',
+            'special_offer_ends',
+            'is_new_arrival',
+            'new_arrival_ends',
+            'stock_status',
         ]

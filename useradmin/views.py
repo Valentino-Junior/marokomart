@@ -165,9 +165,29 @@ def add_product(request):
     if request.method == "POST":
         form = AddProductForm(request.POST, request.FILES)
         if form.is_valid():
-            # Save the main product first
+            # Create product but don't save to DB yet
             new_product = form.save(commit=False)
             new_product.user = request.user
+            
+            # Handle product type and status
+            product_type = request.POST.get('product_type')
+            
+            # Set status flags based on product type
+            if product_type == 'special_offer':
+                new_product.is_special_offer = True
+                new_product.special_offer_price = form.cleaned_data.get('special_offer_price')
+                new_product.special_offer_ends = form.cleaned_data.get('special_offer_ends')
+                new_product.is_new_arrival = False
+            elif product_type == 'new_arrival':
+                new_product.is_new_arrival = True
+                new_product.new_arrival_ends = form.cleaned_data.get('new_arrival_ends')
+                new_product.stock_status = form.cleaned_data.get('stock_status')
+                new_product.is_special_offer = False
+            else:
+                new_product.is_special_offer = False
+                new_product.is_new_arrival = False
+
+            # Save the product
             new_product.save()
             form.save_m2m()
 
@@ -206,6 +226,23 @@ def edit_product(request, pid):
             # Handle main image
             if request.FILES.get('image'):
                 new_form.image = request.FILES['image']
+            
+            # Handle product type and status
+            product_type = request.POST.get('product_type')
+            
+            # Reset all status fields first
+            new_form.is_special_offer = False
+            new_form.is_new_arrival = False
+            
+            # Set fields based on product type
+            if product_type == 'special_offer':
+                new_form.is_special_offer = True
+                new_form.special_offer_price = form.cleaned_data.get('special_offer_price')
+                new_form.special_offer_ends = form.cleaned_data.get('special_offer_ends')
+            elif product_type == 'new_arrival':
+                new_form.is_new_arrival = True
+                new_form.new_arrival_ends = form.cleaned_data.get('new_arrival_ends')
+                new_form.stock_status = form.cleaned_data.get('stock_status')
             
             new_form.save()
             form.save_m2m()
