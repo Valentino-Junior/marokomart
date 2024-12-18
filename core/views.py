@@ -1403,7 +1403,50 @@ def track_order_ajax(request):
 
 
 def special_offers_view(request):
-    return render(request, "core/special_offers.html")
+    # Get all active special offers
+    special_offers = Product.objects.filter(
+        is_special_offer=True,
+        special_offer_ends__gt=timezone.now()
+    ).select_related('category')  # Optimize database queries
+    
+    # Calculate savings for each product
+    for offer in special_offers:
+        offer.saving_amount = offer.price - offer.special_offer_price
+        offer.saving_percentage = (offer.saving_amount / offer.price) * 100
+    
+    # Get offers ending soon (within 24 hours)
+    ending_soon = special_offers.filter(
+        special_offer_ends__lte=timezone.now() + timezone.timedelta(days=1)
+    )
+    
+    context = {
+        'products': special_offers,
+        'now': timezone.now(),
+        'title': 'Special Offers',
+        'product_count': special_offers.count(),
+        'ending_soon_count': ending_soon.count(),
+        'total_savings': sum(offer.saving_amount for offer in special_offers),
+    }
+    
+    # Add sorting functionality
+    sort_by = request.GET.get('sort_by', 'ending_soon')
+    
+    if sort_by == 'price_low_high':
+        special_offers = special_offers.order_by('special_offer_price')
+    elif sort_by == 'price_high_low':
+        special_offers = special_offers.order_by('-special_offer_price')
+    elif sort_by == 'biggest_savings':
+        special_offers = sorted(special_offers, key=lambda x: x.saving_percentage, reverse=True)
+    else:  # ending_soon
+        special_offers = special_offers.order_by('special_offer_ends')
+    
+    context['products'] = special_offers
+    context['sort_by'] = sort_by
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'core/partials/product_grid.html', context)
+    
+    return render(request, 'core/special_offers.html', context)
 
 
 def new_arrivals_view(request):
