@@ -1402,8 +1402,8 @@ def track_order_ajax(request):
 
 
 
-def hot_deals_view(request):
-    return render(request, "core/hot_deals.html")
+def special_offers_view(request):
+    return render(request, "core/special_offers.html")
 
 
 def new_arrivals_view(request):
