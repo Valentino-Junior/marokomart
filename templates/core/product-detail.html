@@ -1079,12 +1079,18 @@
 
                                                     <div class="product-card-bottom">
                                                         <div class="product-price">
-                                                            <span style="font-size: 16px;">Ksh{{ p.price }}</span>
-                                                            {% if p.old_price > p.price %}
-                                                            <span class="old-price">Ksh{{ p.old_price }}</span>
+                                                            {% if p.has_active_offer %}
+                                                                <span style="font-size: 16px;">Ksh{{ p.special_offer_price }}</span>
+                                                                <span class="old-price">Ksh{{ p.price }}</span>
+                                                            {% else %}
+                                                                <span style="font-size: 16px;">Ksh{{ p.price }}</span>
+                                                                {% if p.old_price > p.price %}
+                                                                    <span class="old-price">Ksh{{ p.old_price }}</span>
+                                                                {% endif %}
                                                             {% endif %}
-                                                        </div>
-
+                                                         </div>
+                                                         
+                                                         
                                                         <div class="add-cart">
                                                             {% if p.in_stock and p.stock_count|add:0 > 0 %}
                                                             <!-- Add hidden inputs for product data -->
