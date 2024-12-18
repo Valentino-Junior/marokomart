@@ -348,15 +348,20 @@ def add_to_cart(request):
         try:
             cart_product = {}
             product_id = request.GET['id']
-            # Get quantity from request, default to 1 if not provided
             quantity = int(request.GET.get('quantity', '1'))
+            
+            # Get the product instance and its current price
+            product = Product.objects.get(pid=request.GET['pid'])
+            current_price = product.get_actual_price()
             
             cart_product[str(product_id)] = {
                 'title': request.GET['title'],
-                'qty': str(quantity),  # Use the quantity from request
-                'price': request.GET['price'],
+                'qty': str(quantity),
+                'price': str(current_price),  # Use the actual price from get_actual_price
                 'image': request.GET['image'],
                 'pid': request.GET['pid'],
+                'is_special_offer': product.is_special_offer and product.special_offer_ends > timezone.now(),
+                'original_price': str(product.price),  # Store original price for reference
             }
 
             if 'cart_data_obj' in request.session:
@@ -366,6 +371,9 @@ def add_to_cart(request):
                     cart_data[str(product_id)]['qty'] = str(
                         int(cart_data[str(product_id)]['qty']) + quantity
                     )
+                    # Update price in case offer status has changed
+                    cart_data[str(product_id)]['price'] = str(current_price)
+                    cart_data[str(product_id)]['is_special_offer'] = product.is_special_offer and product.special_offer_ends > timezone.now()
                     request.session['cart_data_obj'] = cart_data
                 else:
                     cart_data = request.session['cart_data_obj']
@@ -376,8 +384,11 @@ def add_to_cart(request):
             
             request.session.modified = True
             
-            # Get the updated cart count by summing all quantities
-            # Get the updated cart count
+            # Calculate subtotal
+            cart_data = request.session['cart_data_obj']
+            for item_id, item_data in cart_data.items():
+                item_data['subtotal'] = str(float(item_data['qty']) * float(item_data['price']))
+            
             cart_count = len(request.session['cart_data_obj'])
             
             return JsonResponse({

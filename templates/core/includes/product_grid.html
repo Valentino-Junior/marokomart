@@ -12,6 +12,24 @@
                     </a>
                 </div>
 
+                {% if p.has_active_offer %}
+                <div class="offer-badge-container">
+                    <div class="offer-ribbon">
+                        <span class="offer-label">SPECIAL OFFER</span>
+                        <div class="price-wrap">
+                            <span class="flash-price">Ksh{{ p.special_offer_price }}</span>
+                            <span class="original-price">Ksh{{ p.price }}</span>
+                        </div>
+                        <div class="timer-wrap">
+                            <i class="fi-rs-time-fast"></i>
+                            <span class="countdown" data-end="{{ p.special_offer_ends|date:'Y-m-d H:i:s' }}">
+                                <span class="time-remaining"></span>
+                             </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="product-action-1">
                     {% if user.is_authenticated %}
                     <!-- Hidden inputs for wishlist -->
@@ -62,24 +80,49 @@
                         {% endif %}
                     </div>
 
+                
                     <div class="add-cart">
                         {% if p.in_stock and p.stock_count|add:0 > 0 %}
-                        <!-- Add hidden inputs for product data -->
-                        <input type="hidden" class="product-title-{{ p.id }}" value="{{ p.title }}">
-                        <input type="hidden" class="product-price-{{ p.id }}" value="{{ p.price }}">
-                        <input type="hidden" class="product-image-{{ p.id }}" value="{{ p.image.url }}">
-                        <input type="hidden" class="product-pid-{{ p.id }}" value="{{ p.pid }}">
-
-                        <button type="button" class="button button-add-to-cart" data-index="{{ p.id }}">
-                            <i class="fi-rs-shopping-cart mr-5"></i>Add to cart
-                        </button>
+                            <!-- Add hidden inputs for product data -->
+                            <input type="hidden" class="product-title-{{ p.id }}" value="{{ p.title }}">
+                            <input type="hidden" class="product-price-{{ p.id }}" value="{% if p.is_special_offer and p.special_offer_ends > now %}{{ p.special_offer_price }}{% else %}{{ p.price }}{% endif %}">
+                            <input type="hidden" class="product-image-{{ p.id }}" value="{{ p.image.url }}">
+                            <input type="hidden" class="product-pid-{{ p.id }}" value="{{ p.pid }}">
+                            <input type="hidden" class="product-is-offer-{{ p.id }}" value="{% if p.is_special_offer and p.special_offer_ends > now %}true{% else %}false{% endif %}">
+                            <input type="hidden" class="product-original-price-{{ p.id }}" value="{{ p.price }}">
+                
+                            <button type="button" class="button button-add-to-cart" data-index="{{ p.id }}">
+                                <i class="fi-rs-shopping-cart mr-5"></i>Add to cart
+                            </button>
                         {% else %}
-                        <button type="button" class="button button-add-to-cart out-of-stock" disabled>
-                            <i class="fi-rs-shopping-cart mr-5"></i>Out of stock
-                        </button>
+                            <button type="button" class="button button-add-to-cart out-of-stock" disabled>
+                                <i class="fi-rs-shopping-cart mr-5"></i>Out of stock
+                            </button>
                         {% endif %}
                     </div>
                 </div>
+                
+                <style>
+                    .special-price {
+                        color: #ff4444;
+                        font-weight: bold;
+                    }
+                    
+                    .offer-badge {
+                        background: #ff4444;
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 3px;
+                        font-size: 0.8em;
+                        margin-left: 8px;
+                    }
+                    
+                    .old-price {
+                        text-decoration: line-through;
+                        color: #999;
+                        margin-left: 8px;
+                    }
+                </style>
 
 
             </div>
@@ -255,10 +298,10 @@
 {% endblock %}
 
 
-<!-- start add to cart  -->
+<!-- Add to Cart Functionality -->
 <script>
     $(document).ready(function () {
-        // Style for notifications
+        // Notification Styles
         const notificationStyles = `
             <style>
                 #notification-container {
@@ -288,11 +331,15 @@
                 .notification-content {
                     flex-grow: 1;
                 }
-                
                 .notification-message {
                     color: #666;
                     font-size: 16px;
                     font-weight: bold;
+                }
+                .special-offer-tag {
+                    color: #ff4444;
+                    font-size: 14px;
+                    margin-top: 5px;
                 }
                 @keyframes slideIn {
                     to { transform: translateX(0); }
@@ -317,14 +364,16 @@
             let btn = $(this);
             let productId = btn.data('index');
 
-            // Get product data
+            // Get product data including special offer information
             let productData = {
                 'id': productId,
                 'title': $(`.product-title-${productId}`).val(),
                 'price': $(`.product-price-${productId}`).val(),
                 'image': $(`.product-image-${productId}`).val(),
                 'pid': $(`.product-pid-${productId}`).val(),
-                'qty': '1'
+                'qty': '1',
+                'is_special_offer': $(`.product-is-offer-${productId}`).val(),
+                'original_price': $(`.product-original-price-${productId}`).val()
             };
 
             if (!btn.hasClass('loading') && !btn.hasClass('out-of-stock')) {
@@ -339,9 +388,17 @@
                         if (response.status === 'success') {
                             // Update cart count with animation
                             updateCartCount(response.totalcartitems);
-                            // Show notification with product title
-                            showNotification('success', 'Added to Cart',
-                                `${productData.title} has been added to your cart!`);
+                            
+                            // Prepare notification message
+                            let message = `${productData.title} has been added to your cart!`;
+                            if (productData.is_special_offer === 'true') {
+                                message += `<div class="special-offer-tag">Special Offer: Ksh${productData.price} 
+                                          <span style="text-decoration: line-through; color: #999;">
+                                          Ksh${productData.original_price}</span></div>`;
+                            }
+                            
+                            // Show notification
+                            showNotification('success', 'Added to Cart', message);
                         } else {
                             showNotification('error', 'Error', response.message);
                         }
@@ -356,8 +413,6 @@
             }
         });
 
-
-
         // Function to update cart count
         function updateCartCount(count) {
             $('.cart-items-count').each(function () {
@@ -365,8 +420,6 @@
                 setTimeout(() => $(this).removeClass('count-update'), 300);
             });
         }
-
-
 
         // Enhanced notification function
         function showNotification(type, title, message) {
@@ -389,9 +442,36 @@
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
+
+        // Cart Preview/Mini Cart Update
+        function updateCartPreview(cartData) {
+            let cartPreview = $('.cart-preview');
+            if (cartPreview.length) {
+                let items = '';
+                Object.values(cartData).forEach(item => {
+                    let priceDisplay = item.is_special_offer === 'true' 
+                        ? `<span class="special-price">Ksh${item.price}</span>
+                           <span class="original-price">Ksh${item.original_price}</span>`
+                        : `<span>Ksh${item.price}</span>`;
+                        
+                    items += `
+                        <div class="cart-item">
+                            <img src="${item.image}" alt="${item.title}">
+                            <div class="item-details">
+                                <h6>${item.title}</h6>
+                                <div class="price-qty">
+                                    ${priceDisplay}
+                                    <span>× ${item.qty}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                cartPreview.html(items);
+            }
+        }
     });
 </script>
-<!-- end add to cart  -->
 
 
 
@@ -533,3 +613,167 @@
     }
 </style>
 <!-- end wishlist -->
+
+
+
+<!-- start special offer -->
+<style>
+    .offer-badge-container {
+        position: absolute;
+        top: 15px;
+        right: -5px;
+        z-index: 2;
+    }
+    
+    .offer-ribbon {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF4444 100%);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 4px 0 0 4px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        position: relative;
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    .offer-ribbon::after {
+        content: '';
+        position: absolute;
+        right: -8px;
+        top: 0;
+        border-left: 8px solid #FF4444;
+        border-top: 18px solid transparent;
+        border-bottom: 18px solid transparent;
+    }
+    
+    .offer-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+    }
+    
+    .price-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .flash-price {
+        font-weight: bold;
+        font-size: 15px;
+    }
+    
+    .original-price {
+        font-size: 12px;
+        text-decoration: line-through;
+        opacity: 0.8;
+    }
+    
+    .timer-wrap {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        margin-top: 2px;
+        opacity: 0.9;
+    }
+    
+    .timer-wrap i {
+        color: #FFD700;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(30px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    /* Hover Animation */
+    .offer-ribbon:hover {
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+    
+    .offer-ribbon:hover .flash-price {
+        animation: sparkle 1.5s infinite;
+    }
+    
+    @keyframes sparkle {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Urgency Animation when less than 1 hour */
+    .urgent .time-remaining {
+        animation: urgentPulse 1s infinite;
+    }
+    
+    @keyframes urgentPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+           const countdowns = document.querySelectorAll('.countdown');
+           
+           countdowns.forEach(countdown => {
+               const endTime = new Date(countdown.dataset.end).getTime();
+               const timeSpan = countdown.querySelector('.time-remaining');
+               
+               function updateCountdown() {
+                   const now = new Date().getTime();
+                   const distance = endTime - now;
+                   
+                   if (distance < 0) {
+                       countdown.parentElement.style.display = 'none';
+                       return;
+                   }
+                   
+                   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                   const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                   const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                   const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                   
+                   let timeText = '';
+                   if (days > 0) {
+                       timeText = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
+                   } else if (hours > 0) {
+                       timeText = `${hours}h ${minutes}m ${seconds}s left`;
+                   } else if (minutes > 0) {
+                       timeText = `${minutes}m ${seconds}s left`;
+                   } else {
+                       timeText = `${seconds}s left`;
+                   }
+                   
+                   timeSpan.textContent = timeText;
+               }
+               
+               // Update immediately and then every second
+               updateCountdown();
+               setInterval(updateCountdown, 1000);
+           });
+        });
+        </script>
+    <!-- end special offer -->

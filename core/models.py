@@ -116,6 +116,16 @@ class Product(models.Model):
     class Meta:
         verbose_name_plural = "Products"
 
+    def has_active_offer(self):
+        return self.is_special_offer and self.special_offer_ends and self.special_offer_ends > timezone.now()
+    
+    def get_special_offer_percentage(self):
+        if self.is_special_offer and self.special_offer_price:
+            discount = self.price - self.special_offer_price
+            percentage = (discount / self.price) * 100
+            return round(percentage)
+        return 0
+
     def product_image(self):
         return mark_safe('<img src="%s" width="50" height="50" />' % (self.image.url))
 
@@ -134,6 +144,13 @@ class Product(models.Model):
             return current_stock <= self.low_stock_threshold
         except ValueError:
             return False
+
+    
+    def get_actual_price(self):
+        if self.is_special_offer and self.special_offer_ends > timezone.now():
+            return self.special_offer_price
+        return self.price
+    
         
 
     def save(self, *args, **kwargs):

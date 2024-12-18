@@ -685,26 +685,61 @@
                                 
                                 <div class="col-md-6 col-sm-12 col-xs-12">
                                     <div class="detail-info pr-30 pl-30">
+                                        {% if p.has_active_offer %}
+
+                                        <span class="stock-status out-stock"> -{{ p.get_special_offer_percentage }}%
+                                        </span>
+
+                                        {% else %}
+
                                         <span class="stock-status out-stock"> -{{p.get_precentage|floatformat:0}}%
                                         </span>
+
+                                        {% endif %}
+
                                         <h2 class="title-detail">{{p.title}}</h2>
 
 
                                         <div class="clearfix product-price-cover">
                                             <div class="product-price primary-color float-left">
-                                                <span class="current-price text-brand"
-                                                    style="font-size: 36px;">Ksh</span><span
-                                                    class="current-price text-brand current-price current-product-price-{{ p.id }}"
-                                                    id="current-product-price"
-                                                    style="font-size: 36px;">{{p.price}}</span>
-                                                <span>
-                                                    <span class="save-price font-md color3 ml-15"
-                                                        style="font-size: 12px;">-{{p.get_precentage|floatformat:0}}%
-                                                        Off</span>
-                                                    <span class="old-price font-md ml-15"
-                                                        style="font-size: 18px;">Ksh{{p.old_price}}</span>
-                                                </span>
+                                                {% if p.has_active_offer %}
+                                                    <!-- Special Offer Price -->
+                                                    <div class="price-wrapper">
+                                                        <span class="current-price text-brand" style="font-size: 36px;">Ksh</span>
+                                                        <span class="current-price text-brand current-product-price-{{ p.id }}" 
+                                                              id="current-product-price" 
+                                                              style="font-size: 36px;">{{p.special_offer_price}}</span>
+                                                        
+                                                        <span class="price-tags">
+                                                            <span class="offer-badge">Special Offer!</span>
+                                                            <span class="save-price font-md color3 ml-15" style="font-size: 12px;">
+                                                                -{{ p.get_special_offer_percentage }}% Off
+                                                            </span>
+                                                            <span class="old-price font-md ml-15" style="font-size: 18px;">
+                                                                Ksh{{p.price}}
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                {% else %}
+                                                    <!-- Regular Price -->
+                                                    <span class="current-price text-brand" style="font-size: 36px;">Ksh</span>
+                                                    <span class="current-price text-brand current-product-price-{{ p.id }}" 
+                                                          id="current-product-price" 
+                                                          style="font-size: 36px;">{{p.price}}</span>
+                                                    
+                                                    {% if p.old_price > p.price %}
+                                                    <span>
+                                                        <span class="save-price font-md color3 ml-15" style="font-size: 12px;">
+                                                            -{{p.get_precentage|floatformat:0}}% Off
+                                                        </span>
+                                                        <span class="old-price font-md ml-15" style="font-size: 18px;">
+                                                            Ksh{{p.old_price}}
+                                                        </span>
+                                                    </span>
+                                                    {% endif %}
+                                                {% endif %}
                                             </div>
+                                             
                                         </div>
 
 
@@ -1622,5 +1657,42 @@
     });
 </script>
 <!-- end zoom image -->
+
+
+<!-- start special offer -->
+<style>
+    .price-wrapper {
+       display: flex;
+       align-items: center;
+       flex-wrap: wrap;
+    }
+    
+    .price-tags {
+       display: inline-flex;
+       align-items: center;
+       margin-left: 15px;
+    }
+    
+    .offer-badge {
+       background: #ff4444;
+       color: white;
+       padding: 4px 8px;
+       border-radius: 4px;
+       font-size: 12px;
+       font-weight: 600;
+       margin-right: 10px;
+    }
+    
+    .save-price {
+       color: #ff4444;
+       font-weight: 600;
+    }
+    
+    .old-price {
+       text-decoration: line-through;
+       color: #999;
+    }
+    </style>
+    <!-- end special offer -->
 
 {% endblock content %}
