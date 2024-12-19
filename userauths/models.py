@@ -2,6 +2,7 @@ from enum import unique
 from django.db import models
 from django.contrib.auth.models import AbstractUser 
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -33,16 +34,18 @@ class Profile(models.Model):
 class ContactUs(models.Model):
     full_name = models.CharField(max_length=200)
     email = models.CharField(max_length=200)
-    phone = models.CharField(max_length=200) 
+    phone = models.CharField(max_length=200, blank=True)
     subject = models.CharField(max_length=200) 
     message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Contact Us"
-        verbose_name_plural = "Contact Us"
+        verbose_name = "Contact Message"
+        verbose_name_plural = "Contact Messages"
+        ordering = ['-created_at']
 
     def __str__(self):
-        return self.full_name
+        return f"{self.full_name} - {self.subject}"
 
     
 def create_user_profile(sender, instance, created, **kwargs):

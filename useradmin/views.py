@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import check_password
 
 
 from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages
-from userauths.models import Profile, User
+from userauths.models import Profile, User, ContactUs
 from useradmin.forms import AddProductForm, EditProductForm, CategoryForm, CouponForm, Coupon
 from useradmin.decorators import admin_required
 from django.http import JsonResponse
@@ -20,6 +20,7 @@ from collections import defaultdict
 import json
 from core.views import update_product_stock 
 from django.db.models import Sum, F
+from django.core.paginator import Paginator
 
 
 
@@ -530,3 +531,14 @@ def coupon_delete(request, pk):
         'success': False,
         'message': 'Invalid request method'
     })
+
+
+
+def contact_messages(request):
+    messages_list = ContactUs.objects.all().order_by('-created_at')
+    paginator = Paginator(messages_list, 10)  # Show 10 messages per page
+    
+    page = request.GET.get('page')
+    messages = paginator.get_page(page)
+    
+    return render(request, 'useradmin/contact_messages.html', {'messages': messages})
