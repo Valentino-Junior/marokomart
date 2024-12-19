@@ -1,4 +1,4 @@
-{% extends 'useradmin/base_contact.html' %}
+{% extends 'useradmin/base.html' %}
 {% load static %}
 
 {% block content %}
@@ -13,7 +13,7 @@
                 <div class="bg-white px-6 py-3 rounded-lg shadow-sm border border-gray-100">
                     <div class="flex items-center space-x-2">
                         <span class="text-sm font-medium text-gray-600">Total Messages:</span>
-                        <span class="text-lg font-semibold text-indigo-900">{{ messages.paginator.count }}</span>
+                        <span class="text-lg font-semibold text-indigo-900">{{ messagez.paginator.count }}</span>
                     </div>
                 </div>
             </div>
@@ -37,7 +37,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        {% for message in messages %}
+                        {% for message in messagez %}
                         <tr class="hover:bg-gray-50 transition-all duration-300 animate-fadeIn" style="animation-delay: {{ forloop.counter|add:3 }}0ms">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col">

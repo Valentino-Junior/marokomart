@@ -541,4 +541,4 @@ def contact_messages(request):
     page = request.GET.get('page')
     messages = paginator.get_page(page)
     
-    return render(request, 'useradmin/contact_messages.html', {'messages': messages})
+    return render(request, 'useradmin/contact_messages.html', {'messagez': messages})
