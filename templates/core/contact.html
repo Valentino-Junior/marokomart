@@ -19,15 +19,7 @@
         font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    body {
-        min-height: 100vh;
-        background: var(--bg);
-        color: var(--text);
-        padding: 2rem;
-        background-image: 
-            radial-gradient(circle at 10% 20%, rgba(46, 125, 50, 0.05) 0%, transparent 20%),
-            radial-gradient(circle at 90% 80%, rgba(129, 199, 132, 0.05) 0%, transparent 20%);
-    }
+    
 
     .main-container {
         max-width: 1200px;
@@ -178,31 +170,7 @@
         overflow: hidden;
     }
 
-    .alert {
-        padding: 1rem 1.5rem;
-        border-radius: 10px;
-        margin-bottom: 1.5rem;
-        display: none;
-        animation: slideDown 0.3s ease-out;
-        font-weight: 500;
-    }
-
-    .alert-success {
-        background-color: #E8F5E9;
-        color: #2E7D32;
-        border-left: 4px solid #4CAF50;
-    }
-
-    .alert-error {
-        background-color: #FFEBEE;
-        color: #C62828;
-        border-left: 4px solid #EF5350;
-    }
-
-    .alert i {
-        margin-right: 8px;
-    }
-
+    
     @keyframes slideDown {
         from {
             transform: translateY(-20px);
@@ -452,9 +420,11 @@
                             <textarea name="message" placeholder="Your Message *" required></textarea>
                         </div>
                         <div class="form-group full-width">
-                            <!-- Alert will be shown above the button -->
-                            <div id="alertBox" class="alert"></div>
-                            <div style="text-align: center;">
+                            <div class="button-container">
+                                <!-- Alert box with inline-block display -->
+                                <div class="notification-wrapper">
+                                    <div id="alertBox" class="notification-container"></div>
+                                </div>
                                 <button type="submit" class="submit-button">
                                     <span class="button-text">Send Message</span>
                                 </button>
@@ -463,8 +433,160 @@
                     </div>
                 </form>
             </div>
-        </div>
-    
+
+            <!-- start contact submission styling and script -->
+            
+            <style>
+            .button-container {
+                position: relative;
+                text-align: center;
+                margin-top: 20px;
+            }
+            
+            .notification-wrapper {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 15px;
+            }
+            
+            .notification-container {
+                display: none;
+            }
+            
+            .alert {
+                display: inline-block;
+                padding: 8px 16px;
+                border-radius: 4px;
+                margin-bottom: 15px;
+                animation: fadeIn 0.3s ease-in-out;
+                white-space: nowrap;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .alert-success {
+                background-color: #4CAF50;
+                color: white;
+            }
+            
+            .alert-error {
+                background-color: #f44336;
+                color: white;
+            }
+            
+            .submit-button:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+            
+            /* Animation for notification dismiss */
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+            }
+            
+            .fade-out {
+                animation: fadeOut 0.3s ease-in-out;
+            }
+            </style>
+            
+            <script>
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const alertBox = document.getElementById('alertBox');
+                const submitButton = form.querySelector('button[type="submit"]');
+                const buttonText = submitButton.querySelector('.button-text');
+                
+                // Get form data
+                const formData = new FormData(form);
+                
+                // Disable button and show loading state
+                submitButton.disabled = true;
+                buttonText.textContent = 'Sending...';
+                
+                // Send AJAX request
+                fetch('/contact/submit/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Clear the form
+                    form.reset();
+                    
+                    // Show success message
+                    alertBox.style.display = 'block';
+                    alertBox.innerHTML = `
+                        <div class="alert alert-success">
+                            ✓ Message sent successfully!
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    // Show error message
+                    alertBox.style.display = 'block';
+                    alertBox.innerHTML = `
+                        <div class="alert alert-error">
+                            ⚠ Error sending message
+                        </div>
+                    `;
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitButton.disabled = false;
+                    buttonText.textContent = 'Send Message';
+                    
+                    // Hide alert after 5 seconds
+                    setTimeout(() => {
+                        const alert = alertBox.querySelector('.alert');
+                        alert.classList.add('fade-out');
+                        setTimeout(() => {
+                            alertBox.style.display = 'none';
+                            alertBox.innerHTML = '';
+                        }, 300);
+                    }, 5000);
+                });
+            });
+            
+            // Function to get CSRF token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            </script>
+            <!-- start contact submission styling and script -->
+
         
     </main>
 {% endblock content %}

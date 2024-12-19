@@ -1,6 +1,6 @@
 from django import views
 from django.urls import path, include
-from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, ajax_contact_form, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, terms_of_service, order_tracking_view, new_arrivals_view, special_offers_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, process_payment, clear_cart, track_order_ajax, my_orders_view, cancel_order, contact_support, delete_address, make_address_default, redirect_to_checkout
+from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, terms_of_service, order_tracking_view, new_arrivals_view, special_offers_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, process_payment, clear_cart, track_order_ajax, my_orders_view, cancel_order, contact_support, delete_address, make_address_default, redirect_to_checkout, contact_submit
 
 app_name = "core"
 
@@ -38,7 +38,7 @@ urlpatterns = [
     path("add-to-wishlist/", add_to_wishlist, name="add-to-wishlist"),
     path("remove-from-wishlist/", remove_wishlist, name="remove-from-wishlist"),
     path("contact/", contact, name="contact"),
-    path("ajax-contact-form/", ajax_contact_form, name="ajax-contact-form"),
+    path("contact/submit/", contact_submit, name="contact_submit"),
     path("about_us/", about_us, name="about_us"),
     path("purchase_guide/", purchase_guide, name="purchase_guide"),
     path("privacy_policy/", privacy_policy, name="privacy_policy"),

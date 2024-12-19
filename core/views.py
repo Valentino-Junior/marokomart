@@ -1316,27 +1316,31 @@ def contact(request):
     return render(request, "core/contact.html")
 
 
-def ajax_contact_form(request):
-    full_name = request.GET['full_name']
-    email = request.GET['email']
-    phone = request.GET['phone']
-    subject = request.GET['subject']
-    message = request.GET['message']
+@require_http_methods(["POST"])
+def contact_submit(request):
+    try:
+        # Create new contact entry
+        contact = ContactUs.objects.create(
+            full_name=request.POST.get('full_name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone', ''),  # Phone is optional
+            subject=request.POST.get('subject'),
+            message=request.POST.get('message')
+        )
+        
+        # You could add email notification here if needed
+        # send_email_notification(contact)
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Contact form submitted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
-    contact = ContactUs.objects.create(
-        full_name=full_name,
-        email=email,
-        phone=phone,
-        subject=subject,
-        message=message,
-    )
-
-    data = {
-        "bool": True,
-        "message": "Message Sent Successfully"
-    }
-
-    return JsonResponse({"data":data})
 
 
 def about_us(request):
