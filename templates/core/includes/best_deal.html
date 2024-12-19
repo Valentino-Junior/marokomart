@@ -1,536 +1,1198 @@
+<!-- Add this in your <head> section -->
+<style>
+  /* Badge Container and Special Offer Styling */
+.badge-container {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 130px;
+}
+
+.special-offer-badge {
+    background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: white;
+    font-size: 10px;
+    box-shadow: 0 2px 8px rgba(255, 65, 108, 0.2);
+}
+
+.special-offer-badge .label {
+    font-weight: 600;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Price Display */
+.special-offer-badge .prices {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 3px 0;
+}
+
+.special-offer-badge .new-price {
+    font-weight: 600;
+    font-size: 11px;
+    color: #fff;
+}
+
+.special-offer-badge .old-price {
+    text-decoration: line-through;
+    opacity: 0.7;
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+
+
+}
+
+/* Timer Section */
+.special-offer-badge .timer {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.special-offer-badge .timer i {
+    font-size: 8px;
+    color: #FFE082;
+}
+
+.time-remaining {
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+/* New Arrival Badge */
+.new-arrival-badge {
+    background: linear-gradient(135deg, #00BFA6 0%, #00897B 100%);
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+    font-size: 9px;
+    font-weight: 500;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 191, 166, 0.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .badge-container {
+        max-width: 110px;
+    }
+    
+    .special-offer-badge {
+        padding: 4px 6px;
+    }
+    
+    .special-offer-badge .label {
+        font-size: 8px;
+    }
+    
+    .special-offer-badge .new-price {
+        font-size: 10px;
+    }
+    
+    .special-offer-badge .old-price {
+        font-size: 8px;
+    }
+    
+    .special-offer-badge .timer {
+        font-size: 8px;
+    }
+}
+
+/* Animation for urgent offers */
+.special-offer-badge.urgent {
+    animation: urgentPulse 2s infinite;
+}
+
+@keyframes urgentPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+
+
+
+.product-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.product-price .current-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    white-space: nowrap;
+}
+
+.product-price .old-price {
+    font-size: 13px;
+    color: #999;
+    font-weight: 900;
+    text-decoration: line-through;
+    white-space: nowrap;
+    opacity: 0.8;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .product-price {
+        gap: 6px;
+    }
+    
+    .product-price .current-price {
+        font-size: 14px;
+    }
+    
+    .product-price .old-price {
+        font-size: 12px;
+    }
+}
+
+/* For extra small screens or very long prices */
+@media (max-width: 375px) {
+    .product-price {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+
+  .product-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+  }
+
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Image Container */
+  .product-img-zoom {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+  }
+
+  .product-img-zoom img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .product-card:hover .product-img-zoom img {
+    transform: scale(1.08);
+  }
+
+  /* Badges Container */
+  .badge-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 5;
+  }
+
+  /* Special Offer Badge */
+  .special-offer-badge {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(255, 65, 108, 0.2);
+    color: white;
+    font-size: 12px;
+    width: auto;
+    max-width: 150px;
+  }
+
+  .special-offer-badge .label {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .special-offer-badge .prices {
+    margin-top: 4px;
+    font-size: 11px;
+  }
+
+  .special-offer-badge .new-price {
+    font-weight: 600;
+  }
+
+  .special-offer-badge .old-price {
+    text-decoration: line-through;
+    opacity: 0.8;
+    margin-left: 4px;
+  }
+
+  .special-offer-badge .timer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 10px;
+  }
+
+  .special-offer-badge .timer i {
+    color: #ffe082;
+  }
+
+  /* New Arrival Badge */
+  .new-arrival-badge {
+    background: linear-gradient(135deg, #00bfa6 0%, #00897b 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 191, 166, 0.2);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Stock Status */
+  .stock-status {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    z-index: 5;
+  }
+
+  .stock-status.in-stock {
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+  }
+
+  .stock-status.out-of-stock {
+    background: rgba(244, 67, 54, 0.9);
+    color: white;
+  }
+
+  /* Product Content */
+  .product-content-wrap {
+    padding: 16px;
+  }
+
+  .product-category a {
+    color: #666;
+    font-size: 12px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .product-category a:hover {
+    color: #ff416c;
+  }
+
+  .product-title {
+    font-size: 14px;
+    margin: 8px 0;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .product-title a {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    margin: 8px 0;
+    transition: color 0.2s ease;
+  }
+
+  .product-title a:hover {
+    color: #ff416c;
+  }
+
+  /* Stock Status */
+  .stock-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stock-badge.in-stock {
+    background: rgba(76, 175, 80, 0.95);
+    color: white;
+  }
+
+  .stock-badge.out-of-stock {
+    background: rgba(244, 67, 54, 0.95);
+    color: white;
+  }
+
+  .stock-badge i {
+    font-size: 10px;
+  }
+
+  /* Price Section */
+  .product-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .current-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .old-price {
+    color: #999;
+    text-decoration: line-through;
+    font-size: 14px;
+  }
+
+  /* Add to Cart Button */
+  .add-cart {
+    margin-top: 12px;
+  }
+
+  .button-add-to-cart {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: #4caf50;
+    color: white;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .button-add-to-cart:not(:disabled):hover {
+    background: #43a047;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+  }
+
+  .button-add-to-cart.out-of-stock {
+    background: #e0e0e0;
+    cursor: not-allowed;
+    color: #666;
+  }
+
+  /* Action Buttons (Wishlist & Quick View) */
+  .product-action-1 {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 6;
+  }
+
+  .action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  .product-card:hover .action-btn {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .action-btn i {
+    font-size: 16px;
+    color: #666;
+    transition: color 0.2s ease;
+  }
+
+  .action-btn.wishlisted i {
+    color: #ff416c;
+  }
+
+  /* Notification System */
+  #notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .notification {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    min-width: 300px;
+    max-width: 400px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transform: translateX(100%);
+    animation: slideIn 0.3s forwards;
+  }
+
+  .notification-success {
+    border-left: 4px solid #4caf50;
+  }
+
+  .notification-error {
+    border-left: 4px solid #f44336;
+  }
+
+  .notification-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-content {
+    flex-grow: 1;
+  }
+
+  .notification-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+  }
+
+  .notification-message {
+    color: #666;
+    font-size: 14px;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Animations */
+  @keyframes ripple {
+    to {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 0;
+    }
+  }
+
+  .ripple {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    width: 100px;
+    height: 100px;
+    transform: translate(-50%, -50%) scale(0);
+    animation: ripple 0.6s ease-out;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin: 24px 0;
+  }
+
+  .empty-state h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .empty-state p {
+    color: #666;
+    font-size: 16px;
+  }
+
+  .product-content-wrap h2 {
+    margin: 8px 0;
+}
+
+.product-content-wrap h2 a {
+    font-size: 14px;
+    font-weight: 900;  /* Changed to semi-bold */
+    color: #2c3e50;    /* Rich dark blue-gray color */
+    text-decoration: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    height: 37px;
+    transition: all 0.2s ease;
+}
+
+.product-content-wrap h2 a:hover {
+    color: red;    /* Bright blue on hover */
+    transform: translateX(2px);
+}
+
+/* For mobile screens */
+@media (max-width: 768px) {
+    .product-content-wrap h2 a {
+        font-size: 12px;
+        height: 34px;
+    }
+}
+</style>
 
 <div class="product-grid-4 row" id="filtered-product">
-    {% for p in products %}
-    <div class="col-lg-1-5 col-md-4 col-12 col-sm-6">
-        <div class="product-cart-wrap mb-30">
-            <div class="product-img-action-wrap">
-                <div class="product-img product-img-zoom">
-                    <a href="{% url 'core:product-detail' p.pid %}">
-                        <img class="default-img" src="{{ p.image.url }}" alt="{{ p.title }}"
-                            style="height: 280px; width: 280px; object-fit: cover;" />
-                        <img class="hover-img" src="{{ p.image.url }}" alt="{{ p.title }}"
-                            style="height: 280px; width: 280px; object-fit: cover;" />
-                    </a>
-                </div>
-
-                <div class="product-action-1">
-                    {% if user.is_authenticated %}
-                    <!-- Hidden inputs for wishlist -->
-                    <input type="hidden" class="product-title-{{ p.id }}" value="{{ p.title }}">
-                    <input type="hidden" class="product-image-{{ p.id }}" value="{{ p.image.url }}">
-                    <input type="hidden" class="product-pid-{{ p.id }}" value="{{ p.pid }}">
-
-                    <a aria-label="Add To Wishlist" class="action-btn add-to-wishlist" data-index="{{ p.id }}">
-                        <i class="fi-rs-heart"></i>
-                    </a>
-                    {% endif %}
-                    <a aria-label="Quick view" class="action-btn" href="{% url 'core:product-detail' p.pid %}">
-                        <i class="fi-rs-eye"></i>
-                    </a>
-                </div>
-
-                {% if p.get_percentage > 0 %}
-                <div class="product-badges product-badges-position product-badges-mrg">
-                    <span class="hot">-{{p.get_percentage|floatformat:0}}%</span>
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="product-content-wrap">
-                <div class="product-category">
-                    <a href="/category/{{p.category.cid}}/">{{ p.category.title }}</a>
-                </div>
-
-                <h2><a href="{% url 'core:product-detail' p.pid %}">{{ p.title }}</a></h2>
-
-                <div class="product-rate-cover">
-
-                    <i class="fi-rs-star" style="color: rgb(255, 153, 0);"></i>
-
-                    <span class="font-small ml-5 text-muted">({{ p.reviews.all.count }}
-                        {% if p.reviews.all.count <= 1 %}
-                        review
-                        {% else %}
-                        reviews
-                        {% endif %})</span>
-                </div>
-
-                <div class="product-card-bottom">
-                    <div class="product-price">
-                        <span>Ksh{{ p.price }}</span>
-                        {% if p.old_price > p.price %}
-                        <span class="old-price">Ksh{{ p.old_price }}</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="add-cart">
-                        {% if p.in_stock and p.stock_count|add:0 > 0 %}
-                        <!-- Add hidden inputs for product data -->
-                        <input type="hidden" class="product-title-{{ p.id }}" value="{{ p.title }}">
-                        <input type="hidden" class="product-price-{{ p.id }}" value="{{ p.price }}">
-                        <input type="hidden" class="product-image-{{ p.id }}" value="{{ p.image.url }}">
-                        <input type="hidden" class="product-pid-{{ p.id }}" value="{{ p.pid }}">
-
-                        <button type="button" class="button button-add-to-cart" data-index="{{ p.id }}">
-                            <i class="fi-rs-shopping-cart mr-5"></i>Add to cart
-                        </button>
-                        {% else %}
-                        <button type="button" class="button button-add-to-cart out-of-stock" disabled>
-                            <i class="fi-rs-shopping-cart mr-5"></i>Out of stock
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-
-
-            </div>
+  {% for p in products %}
+  <div class="col-lg-1-5 col-md-4 col-12 col-sm-6">
+    <div class="product-card">
+      <div class="product-img-action-wrap">
+        <div class="product-img-zoom">
+          <a href="{% url 'core:product-detail' p.pid %}">
+            <img
+              class="default-img"
+              src="{{ p.image.url }}"
+              alt="{{ p.title }}"
+            />
+          </a>
         </div>
-    </div>
-    {% endfor %}
 
+        <!-- Badges -->
+        <div class="badge-container">
+          {% if p.has_active_offer %}
+          <div class="special-offer-badge">
+            <span class="label">SPECIAL OFFER</span>
+            <div class="prices">
+              <span class="new-price">Ksh{{ p.special_offer_price }}</span>
+              <span class="old-price">Ksh{{ p.price }}</span>
+            </div>
+            <div
+              class="timer"
+              data-end="{{ p.special_offer_ends|date:'Y-m-d H:i:s' }}"
+            >
+              <i class="fi-rs-time-fast"></i>
+              <span class="time-remaining"></span>
+            </div>
+          </div>
+          {% endif %} {% if p.is_new_arrival %}
+          <div class="new-arrival-badge">NEW ARRIVAL</div>
+          {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="product-action-1">
+          {% if user.is_authenticated %}
+          <input
+            type="hidden"
+            class="product-title-{{ p.id }}"
+            value="{{ p.title }}"
+          />
+          <input
+            type="hidden"
+            class="product-image-{{ p.id }}"
+            value="{{ p.image.url }}"
+          />
+          <input
+            type="hidden"
+            class="product-pid-{{ p.id }}"
+            value="{{ p.pid }}"
+          />
+          <input
+            type="hidden"
+            class="product-price-{{ p.id }}"
+            value="{{ p.get_actual_price }}"
+          />
+          {% if p.has_active_offer %}
+          <input
+            type="hidden"
+            class="product-is-offer-{{ p.id }}"
+            value="true"
+          />
+          <input
+            type="hidden"
+            class="product-original-price-{{ p.id }}"
+            value="{{ p.price }}"
+          />
+          {% endif %}
+
+          <a
+            aria-label="Add To Wishlist"
+            class="action-btn add-to-wishlist"
+            data-index="{{ p.id }}"
+          >
+            <i class="fi-rs-heart"></i>
+          </a>
+          {% endif %}
+          <a
+            aria-label="Quick view"
+            class="action-btn"
+            href="{% url 'core:product-detail' p.pid %}"
+          >
+            <i class="fi-rs-eye"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="product-content-wrap">
+        <div class="product-category">
+          <a href="/category/{{p.category.cid}}/">{{ p.category.title }}</a>
+        </div>
+
+        <h2>
+          <a href="{% url 'core:product-detail' p.pid %}">{{ p.title }}</a>
+        </h2>
+
+        <div class="product-card-bottom">
+          <div class="product-price">
+            <span class="current-price">Ksh{{ p.get_actual_price }}</span>
+            {% if p.old_price > p.get_actual_price %}
+            <span class="old-price">Ksh{{ p.old_price }}</span>
+            {% endif %}
+          </div>
+
+          <div class="add-cart">
+            {% if p.in_stock and p.stock_count|add:0 > 0 %}
+            <button
+              type="button"
+              class="button-add-to-cart"
+              data-index="{{ p.id }}"
+            >
+              <i class="fi-rs-shopping-cart"></i>Add to cart
+            </button>
+            {% else %}
+            <button
+              type="button"
+              class="button-add-to-cart out-of-stock"
+              disabled
+            >
+              <i class="fi-rs-shopping-cart"></i>Out of stock
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="empty-state">
+      <h3>No special offers or new arrivals at the moment</h3>
+      <p>Check back soon for exciting deals!</p>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 
-{% block extra_css %}
-<style>
-    /* Loading Spinner Styles */
-    .spinner-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
+<!-- Add this before closing body tag -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize notification container
+    if (!document.getElementById("notification-container")) {
+      const container = document.createElement("div");
+      container.id = "notification-container";
+      document.body.appendChild(container);
     }
 
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #3498db;
-        border-radius: 50%;
+    // Notification function
+    function showNotification(type, title, message, duration = 3000) {
+      const container = document.getElementById("notification-container");
+      const notification = document.createElement("div");
+      notification.className = `notification notification-${type}`;
+
+      const icon = type === "success" ? "check-circle" : "alert-circle";
+      notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fi-rs-${icon}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+            `;
+
+      container.appendChild(notification);
+
+      // Remove notification after duration
+      setTimeout(() => {
+        notification.style.transform = "translateX(100%)";
+        notification.style.opacity = "0";
+        setTimeout(() => notification.remove(), 300);
+      }, duration);
+    }
+
+    // Initialize countdown timers
+    function initializeTimers() {
+      const timers = document.querySelectorAll(".timer");
+
+      timers.forEach((timer) => {
+        const endTime = new Date(timer.dataset.end).getTime();
+
+        function updateTimer() {
+          const now = new Date().getTime();
+          const distance = endTime - now;
+
+          if (distance < 0) {
+            timer.closest(".special-offer-badge").style.display = "none";
+            return;
+          }
+
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          let timeText = "";
+          if (days > 0) {
+            timeText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+          } else if (hours > 0) {
+            timeText = `${hours}h ${minutes}m ${seconds}s`;
+          } else if (minutes > 0) {
+            timeText = `${minutes}m ${seconds}s`;
+          } else {
+            timeText = `${seconds}s`;
+            timer.classList.add("urgent");
+          }
+
+          const timeElement = timer.querySelector(".time-remaining");
+          if (timeElement) {
+            timeElement.textContent = timeText;
+          }
+
+          // Add urgency class when less than 1 hour remains
+          if (distance < 3600000) {
+            // 1 hour in milliseconds
+            timer.classList.add("urgent");
+            timer.closest(".special-offer-badge").classList.add("urgent");
+          }
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+      });
+    }
+
+    // Initialize wishlist functionality
+    function initializeWishlist() {
+      const wishlistButtons = document.querySelectorAll(".add-to-wishlist");
+
+      wishlistButtons.forEach((button) => {
+        button.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const productId = this.dataset.index;
+          const heartIcon = this.querySelector("i");
+          const isWishlisted = heartIcon.classList.contains("text-danger");
+          const productTitle = document.querySelector(
+            `.product-title-${productId}`
+          ).value;
+
+          // Toggle wishlist state
+          heartIcon.classList.toggle("text-danger");
+          this.classList.toggle("wishlisted");
+
+          // Show notification
+          if (!isWishlisted) {
+            showNotification(
+              "success",
+              "Added to Wishlist",
+              `${productTitle} has been added to your wishlist!`
+            );
+          } else {
+            showNotification(
+              "success",
+              "Removed from Wishlist",
+              `${productTitle} has been removed from your wishlist.`
+            );
+          }
+        });
+      });
+    }
+
+
+    // Initialize everything
+    function initialize() {
+      initializeTimers();
+      initializeWishlist();
+      initializeAddToCart();
+
+      // Optional: Initialize tooltips if you're using them
+      const tooltips = document.querySelectorAll("[data-tooltip]");
+      tooltips.forEach((tooltip) => {
+        tooltip.addEventListener("mouseenter", showTooltip);
+        tooltip.addEventListener("mouseleave", hideTooltip);
+      });
+    }
+
+    // Start the initialization
+    initialize();
+
+    // Add some additional animation classes
+    const styles = document.createElement("style");
+    styles.textContent = `
+    .bump {
+        animation: bump 0.3s ease;
+    }
+
+    @keyframes bump {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    .urgent {
+        animation: urgent 1s ease infinite;
+    }
+
+    @keyframes urgent {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .fi-rs-spinner-alt {
         animation: spin 1s linear infinite;
     }
 
     @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
-
-    /* Product Grid Transition */
-    .product-grid-4 {
-        transition: opacity 0.3s ease;
-    }
-
-    .product-grid-4.loading {
-        opacity: 0.5;
-    }
-
-    /* Sort Options */
-    .sort-option {
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-
-    .sort-option:hover {
-        background-color: #f8f9fa;
-    }
-
-    .sort-option.active {
-        background-color: #e9ecef;
-        font-weight: bold;
-    }
-</style>
-{% endblock %}
-
-
-
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const productGridContainer = document.getElementById('product-grid-container');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const productCountElement = document.querySelector('.product-count');
-
-        // Function to update URL without page reload
-        function updateURL(sortBy) {
-            const newURL = new URL(window.location.href);
-            newURL.searchParams.set('sort_by', sortBy);
-            window.history.pushState({
-                sortBy: sortBy
-            }, '', newURL);
-        }
-
-        // Function to update the active sort option
-        function updateActiveSortOption(sortBy) {
-            document.querySelectorAll('.sort-option').forEach(option => {
-                option.classList.remove('active');
-                if (option.dataset.sort === sortBy) {
-                    option.classList.add('active');
-                    document.getElementById('current-sort-text').textContent = option.textContent
-                        .trim();
-                }
-            });
-        }
-
-        // Function to fetch and update products
-        async function fetchProducts(sortBy) {
-            try {
-                // Show loading spinner
-                loadingSpinner.style.display = 'block';
-                productGridContainer.classList.add('loading');
-
-                // Fetch sorted products
-                const response = await fetch(`?sort_by=${sortBy}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                if (!response.ok) throw new Error('Network response was not ok');
-
-                const data = await response.json();
-
-                // Update the product grid and count
-                productGridContainer.innerHTML = data.product_grid;
-                productCountElement.textContent = data.product_count;
-
-                // Update URL and active sort option
-                updateURL(sortBy);
-                updateActiveSortOption(sortBy);
-
-                // Initialize any necessary event listeners on new content
-                initializeProductEventListeners();
-
-            } catch (error) {
-                console.error('Error fetching products:', error);
-                // Handle error (show error message to user)
-            } finally {
-                // Hide loading spinner
-                loadingSpinner.style.display = 'none';
-                productGridContainer.classList.remove('loading');
-            }
-        }
-
-        // Handle sort option clicks
-        document.querySelectorAll('.sort-option').forEach(option => {
-            option.addEventListener('click', function (e) {
-                e.preventDefault();
-                const sortBy = this.dataset.sort;
-                fetchProducts(sortBy);
-            });
-        });
-
-        // Function to initialize event listeners for product actions
-        function initializeProductEventListeners() {
-            // Add to cart buttons
-            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-                button.addEventListener('click', function (e) {
-                    const productId = this.dataset.index;
-                    // Add your cart functionality here
-                });
-            });
-
-            // Add to wishlist buttons
-            document.querySelectorAll('.add-to-wishlist').forEach(button => {
-                button.addEventListener('click', function (e) {
-                    const productId = this.dataset.productItem;
-                    // Add your wishlist functionality here
-                });
-            });
-        }
-
-        // Initialize event listeners on page load
-        initializeProductEventListeners();
-    });
+`;
+    document.head.appendChild(styles);
+  });
 </script>
-{% endblock %}
 
 
-<!-- start add to cart  -->
+
 <script>
-    $(document).ready(function () {
-        // Style for notifications
-        const notificationStyles = `
-            <style>
-                #notification-container {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    z-index: 9999;
-                }
-                .notification {
-                    background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    margin-bottom: 10px;
-                    padding: 15px 20px;
-                    min-width: 300px;
-                    display: flex;
-                    align-items: flex-start;
-                    transform: translateX(100%);
-                    animation: slideIn 0.3s forwards;
-                }
-                .notification-success {
-                    border-left: 4px solid #4CAF50;
-                }
-                .notification-error {
-                    border-left: 4px solid #f44336;
-                }
-                .notification-content {
-                    flex-grow: 1;
-                }
-                
-                .notification-message {
-                    color: #666;
-                    font-size: 16px;
-                    font-weight: bold;
-                }
-                @keyframes slideIn {
-                    to { transform: translateX(0); }
-                }
-                .count-update {
-                    animation: countPulse 0.3s ease-in-out;
-                }
-                @keyframes countPulse {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.2); }
-                    100% { transform: scale(1); }
-                }
-            </style>
-        `;
-        $('head').append(notificationStyles);
+  document.addEventListener("DOMContentLoaded", function () {
+    // Cart functionality
+    function addToCart(button, productData) {
+      button.classList.add("loading");
+      button.disabled = true;
+      button.innerHTML = '<i class="fi-rs-spinner-alt"></i> Adding...';
 
-        // Add to cart functionality
-        $(document).on('click', '.button-add-to-cart', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            let btn = $(this);
-            let productId = btn.data('index');
-
-            // Get product data
-            let productData = {
-                'id': productId,
-                'title': $(`.product-title-${productId}`).val(),
-                'price': $(`.product-price-${productId}`).val(),
-                'image': $(`.product-image-${productId}`).val(),
-                'pid': $(`.product-pid-${productId}`).val(),
-                'qty': '1'
-            };
-
-            if (!btn.hasClass('loading') && !btn.hasClass('out-of-stock')) {
-                btn.addClass('loading').prop('disabled', true);
-
-                $.ajax({
-                    url: '/add-to-cart/',
-                    type: 'GET',
-                    data: productData,
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            // Update cart count with animation
-                            updateCartCount(response.totalcartitems);
-                            // Show notification with product title
-                            showNotification('success', 'Added to Cart',
-                                `${productData.title} has been added to your cart!`);
-                        } else {
-                            showNotification('error', 'Error', response.message);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        showNotification('error', 'Error', 'Failed to add item to cart');
-                    },
-                    complete: function () {
-                        btn.removeClass('loading').prop('disabled', false);
-                    }
-                });
-            }
-        });
-
-
-
-        // Function to update cart count
-        function updateCartCount(count) {
-            $('.cart-items-count').each(function () {
-                $(this).text(count).addClass('count-update');
-                setTimeout(() => $(this).removeClass('count-update'), 300);
+      $.ajax({
+        url: "/add-to-cart/",
+        type: "GET",
+        data: productData,
+        dataType: "json",
+        success: function (response) {
+          if (response.status === "success") {
+            // Update cart count
+            $(".cart-items-count").each(function () {
+              $(this).text(response.totalcartitems);
+              $(this).addClass("bump");
+              setTimeout(() => $(this).removeClass("bump"), 300);
             });
-        }
 
-
-
-        // Enhanced notification function
-        function showNotification(type, title, message) {
-            if (!$('#notification-container').length) {
-                $('body').append('<div id="notification-container"></div>');
+            // Show notification
+            let message = `${productData.title} has been added to your cart!`;
+            if (productData.is_special_offer === "true") {
+              message += `<div class="special-offer-tag">
+                                Special Offer: Ksh${productData.price} 
+                                <span style="text-decoration: line-through; color: #999;">
+                                    Ksh${productData.original_price}
+                                </span>
+                            </div>`;
             }
+            showNotification("success", "Added to Cart", message);
 
-            const notification = $(`
+            // Add ripple effect
+            const ripple = document.createElement("span");
+            ripple.className = "ripple";
+            button.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+          } else {
+            showNotification(
+              "error",
+              "Error",
+              response.message || "Failed to add item to cart"
+            );
+          }
+        },
+        error: function () {
+          showNotification("error", "Error", "Failed to add item to cart");
+        },
+        complete: function () {
+          button.classList.remove("loading");
+          button.disabled = false;
+          button.innerHTML =
+            '<i class="fi-rs-shopping-cart mr-5"></i>Add to cart';
+        },
+      });
+    }
+
+    // Wishlist functionality
+    function toggleWishlist(button, productData) {
+      button.classList.add("loading");
+
+      $.ajax({
+        url: "/add-to-wishlist/",
+        type: "GET",
+        data: productData,
+        dataType: "json",
+        success: function (response) {
+          if (response.status === "success") {
+            // Update wishlist count
+            $(".wishlist-count").text(response.totalwishlistitems);
+
+            // Toggle wishlist state
+            const heartIcon = button.querySelector("i");
+            button.classList.toggle("wishlisted");
+            heartIcon.classList.toggle("text-danger");
+
+            // Show notification
+            const message = button.classList.contains("wishlisted")
+              ? `${productData.title} has been added to your wishlist!`
+              : `${productData.title} has been removed from your wishlist`;
+            showNotification("success", "Wishlist Updated", message);
+          } else {
+            showNotification(
+              "error",
+              "Error",
+              response.message || "Failed to update wishlist"
+            );
+          }
+        },
+        error: function () {
+          showNotification("error", "Error", "Failed to update wishlist");
+        },
+        complete: function () {
+          button.classList.remove("loading");
+        },
+      });
+    }
+
+    // Initialize Wishlist buttons
+    document.querySelectorAll(".add-to-wishlist").forEach((button) => {
+      button.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (this.classList.contains("loading")) return;
+
+        const productId = this.dataset.index;
+        const productData = {
+          id: productId,
+          title: $(`.product-title-${productId}`).val(),
+          image: $(`.product-image-${productId}`).val(),
+          pid: $(`.product-pid-${productId}`).val(),
+        };
+
+        toggleWishlist(this, productData);
+      });
+    });
+  });
+</script>
+
+<!-- Add to Cart Script -->
+<script>
+  $(document).ready(function () {
+    // Add to Cart functionality
+    $(document).on("click", ".button-add-to-cart", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      let btn = $(this);
+      let productId = btn.data("index");
+
+      // Get all product data
+      let productData = {
+        id: productId,
+        title: $(`.product-title-${productId}`).val(),
+        price: $(`.product-price-${productId}`).val(),
+        image: $(`.product-image-${productId}`).val(),
+        pid: $(`.product-pid-${productId}`).val(),
+        qty: "1",
+      };
+
+      // Add special offer data if available
+      if ($(`.product-is-offer-${productId}`).length) {
+        productData.is_special_offer = $(
+          `.product-is-offer-${productId}`
+        ).val();
+        productData.original_price = $(
+          `.product-original-price-${productId}`
+        ).val();
+      }
+
+      // Only proceed if button isn't loading or out of stock
+      if (!btn.hasClass("loading") && !btn.hasClass("out-of-stock")) {
+        // Add loading state
+        btn.addClass("loading").prop("disabled", true);
+        btn.html('<i class="fi-rs-spinner-alt"></i> Adding...');
+
+        // Make AJAX call
+        $.ajax({
+          url: "/add-to-cart/",
+          type: "GET",
+          data: productData,
+          dataType: "json",
+          success: function (response) {
+            if (response.status === "success") {
+              // Update cart count with animation
+              updateCartCount(response.totalcartitems);
+
+              // Prepare notification message
+              let message = `${productData.title} has been added to your cart!`;
+              if (productData.is_special_offer === "true") {
+                message += `<div class="special-offer-tag">
+                                    Special Offer: Ksh${productData.price} 
+                                    <span style="text-decoration: line-through; color: #999;">
+                                        Ksh${productData.original_price}
+                                    </span>
+                                </div>`;
+              }
+
+              // Show notification
+              showNotification("success", "Added to Cart", message);
+
+              // Update cart preview if it exists
+              if (typeof updateCartPreview === "function") {
+                updateCartPreview(response.cart_data);
+              }
+            } else {
+              showNotification(
+                "error",
+                "Error",
+                response.message || "Failed to add item to cart"
+              );
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("Cart error:", error);
+            showNotification("error", "Error", "Failed to add item to cart");
+          },
+          complete: function () {
+            // Reset button state
+            btn.removeClass("loading").prop("disabled", false);
+            btn.html('<i class="fi-rs-shopping-cart mr-5"></i>Add to cart');
+
+            // Add ripple effect
+            const ripple = document.createElement("span");
+            ripple.className = "ripple";
+            const rect = btn[0].getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            btn[0].appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+          },
+        });
+      }
+    });
+
+    // Function to update cart count
+    function updateCartCount(count) {
+      $(".cart-items-count").each(function () {
+        $(this).text(count).addClass("count-update");
+        setTimeout(() => $(this).removeClass("count-update"), 300);
+      });
+    }
+
+    // Function to show notifications
+    function showNotification(type, title, message) {
+      if (!$("#notification-container").length) {
+        $("body").append('<div id="notification-container"></div>');
+      }
+
+      const notification = $(`
                 <div class="notification notification-${type}">
                     <div class="notification-content">
+                        <div class="notification-title">${title}</div>
                         <div class="notification-message">${message}</div>
                     </div>
                 </div>
             `);
 
-            $('#notification-container').append(notification);
+      $("#notification-container").append(notification);
 
-            setTimeout(() => {
-                notification.css('transform', 'translateX(100%)');
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-    });
+      setTimeout(() => {
+        notification.css("transform", "translateX(100%)");
+        notification.css("opacity", "0");
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+  });
 </script>
-<!-- end add to cart  -->
-
-
-
-<!-- start wishlist -->
-<script>
-    $(document).ready(function () {
-        // Add to wishlist functionality
-        $(document).on('click', '.add-to-wishlist', function (e) {
-            e.preventDefault();
-
-            let btn = $(this);
-            let productId = btn.data('index');
-
-            // Get product data
-            let productData = {
-                'id': productId,
-                'title': $(`.product-title-${productId}`).val(),
-                'image': $(`.product-image-${productId}`).val(),
-                'pid': $(`.product-pid-${productId}`).val()
-            };
-
-            if (!btn.hasClass('loading')) {
-                btn.addClass('loading').prop('disabled', true);
-
-                $.ajax({
-                    url: '/add-to-wishlist/',
-                    data: productData,
-                    dataType: 'json',
-                    success: function (response) {
-                        console.log('Response:', response); // Debug log
-                        if (response.status === 'success') {
-                            // Update wishlist count
-                            $('.wishlist-count').text(response.totalwishlistitems);
-
-                            // Toggle heart icon
-                            let heartIcon = btn.find('i.fi-rs-heart');
-                            heartIcon.toggleClass('text-danger');
-
-                            // Show notification
-                            // showNotification('success', 'Wishlist', response.message);
-                            showNotification('success', 'Added to wishlist',
-                                `${productData.title} has been added to your wishlist!`);
-                        } else {
-                            showNotification('error', 'Error', response.message);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Wishlist error:', error);
-                        showNotification('error', 'Error', 'Failed to update wishlist');
-                    },
-                    complete: function () {
-                        btn.removeClass('loading').prop('disabled', false);
-                    }
-                });
-            }
-        });
-
-        // Notification function
-        function showNotification(type, title, message) {
-            if (!$('#notifications').length) {
-                $('body').append('<div id="notifications"></div>');
-            }
-
-            const notification = $(`
-            <div class="notification ${type}" style="background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 12px 15px; min-width: 300px; margin-bottom: 10px;">
-           
-            <div style="font-size: 16px; color: #666; font-weight: bold">${message}</div>
-        </div>
-        `);
-
-            $('#notifications').append(notification);
-
-            setTimeout(() => {
-                notification.fadeOut(300, function () {
-                    $(this).remove();
-                });
-            }, 3000);
-        }
-    });
-</script>
-
-<style>
-    #notifications {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-
-    .notification {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        margin-bottom: 10px;
-        padding: 15px 20px;
-        min-width: 300px;
-        display: flex;
-        align-items: flex-start;
-        transform: translateX(100%);
-        animation: slideIn 0.3s forwards;
-    }
-
-    /* Status-based borders */
-    .notification.success {
-        border-left: 3px solid #4CAF50;
-    }
-
-    .notification.error {
-        border-left: 3px solid #f44336;
-    }
-
-    .add-to-wishlist.loading {
-        opacity: 0.7;
-        pointer-events: none;
-    }
-
-    .text-danger {
-        color: #ff6b6b !important;
-    }
-
-    /* Animation for heart icon */
-    .fi-rs-heart {
-        transition: all 0.3s ease;
-    }
-
-    .fi-rs-heart.text-danger {
-        transform: scale(1.2);
-    }
-
-
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-        }
-
-        to {
-            transform: translateX(0);
-        }
-    }
-</style>
-<!-- end wishlist -->

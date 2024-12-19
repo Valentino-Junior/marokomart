@@ -44,36 +44,58 @@ import uuid
 
 
 
+# views.py
 def index(request):
-    products = Product.objects.filter(product_status="published")
-    sort_by = request.GET.get('sort_by', '')
-    
-    # Apply sorting
-    if sort_by == 'price_low_high':
-        products = products.order_by('price', '-id')
-    elif sort_by == 'price_high_low':
-        products = products.order_by('-price', '-id')
-    else:
-        products = products.order_by("-id")
-    
-    context = {
-        "products": products,
-        "current_sort": sort_by,
-    }
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # If AJAX request, return only the product grid
-        best_deal_html = render_to_string(
-            'core/includes/best_deal.html',
-            context,
-            request=request
-        )
-        return JsonResponse({
-            'product_grid': best_deal_html,
-            'product_count': products.count(),
-        })
+   # Get current time for checking active offers and new arrivals
+   now = timezone.now()
+   
+   # Get active special offers and new arrivals
+   special_offers = Product.objects.filter(
+       product_status="published",
+       is_special_offer=True,
+       special_offer_ends__gt=now
+   )
 
-    return render(request, 'core/index.html', context)
+   new_arrivals = Product.objects.filter(
+       product_status="published", 
+       is_new_arrival=True,
+       new_arrival_ends__gt=now
+   )
+
+   # Combine and remove duplicates
+   featured_products = list(special_offers) + list(new_arrivals)
+   featured_products = list(dict.fromkeys(featured_products))  # Remove duplicates
+
+   sort_by = request.GET.get('sort_by', '')
+   
+   # Apply sorting
+   if sort_by == 'price_low_high':
+       featured_products.sort(key=lambda x: x.get_actual_price())
+   elif sort_by == 'price_high_low':
+       featured_products.sort(key=lambda x: x.get_actual_price(), reverse=True)
+   else:
+       featured_products.sort(key=lambda x: x.id, reverse=True)
+   
+   context = {
+       "products": featured_products,
+       "current_sort": sort_by,
+       "now": now,
+       "special_offers_count": special_offers.count(),
+       "new_arrivals_count": new_arrivals.count()
+   }
+   
+   if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+       best_deal_html = render_to_string(
+           'core/includes/best_deal.html',
+           context,
+           request=request
+       )
+       return JsonResponse({
+           'product_grid': best_deal_html,
+           'product_count': len(featured_products),
+       })
+
+   return render(request, 'core/index.html', context)
 
 
 
