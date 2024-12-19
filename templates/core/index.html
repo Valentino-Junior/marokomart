@@ -424,47 +424,22 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <!-- Sort and Filter Section -->
-                            <div class="shop-product-fillter">
+                            <div class="shop-product-fillter mb-4">
                                 <div class="totall-product">
-                                    <p>We found <strong class="text-brand product-count">{{ products.count }}</strong>
-                                        items
-                                        for you!</p>
+                                    <p>We found <strong class="text-brand product-count">{{ products|length }}</strong> items!</p>
                                 </div>
-
                                 <div class="sort-by-product-area">
-                                    <!-- Sort By Dropdown -->
-                                    <div class="sort-by-cover">
-                                        <div class="sort-by-product-wrap">
-                                            <div class="sort-by">
-                                                <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
-                                            </div>
-                                            <div class="sort-by-dropdown-wrap">
-                                                <span id="current-sort-text">
-                                                    {% if current_sort == 'price_low_high' %}
-                                                    Price: Low to High
-                                                    {% elif current_sort == 'price_high_low' %}
-                                                    Price: High to Low
-                                                    {% else %}
-                                                    Featured
-                                                    {% endif %}
-                                                    <i class="fi-rs-angle-small-down"></i>
-                                                </span>
-                                            </div>
+                                    <div class="sort-by-cover mr-10 position-relative">
+                                        <div class="sort-by-dropdown-wrap">
+                                            <span>Sort by: </span>
+                                            <span id="current-sort" class="sort-by-text">Default</span>
+                                            <i class="fi-rs-angle-small-down"></i>
                                         </div>
                                         <div class="sort-by-dropdown">
                                             <ul>
-                                                <li>
-                                                    <a href="#" data-sort="price_low_high"
-                                                        class="sort-option {% if current_sort == 'price_low_high' %}active{% endif %}">
-                                                        Price: Low to High
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a href="#" data-sort="price_high_low"
-                                                        class="sort-option {% if current_sort == 'price_high_low' %}active{% endif %}">
-                                                        Price: High to Low
-                                                    </a>
-                                                </li>
+                                                <li><a href="#" class="sort-option active" data-sort="default">Default</a></li>
+                                                <li><a href="#" class="sort-option" data-sort="price_low_high">Price: Low to High</a></li>
+                                                <li><a href="#" class="sort-option" data-sort="price_high_low">Price: High to Low</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -664,6 +639,237 @@
         });
     });
 </script>
+
+
+<!-- start sorting styling and script -->
+<style>
+    /* Sorting Styles */
+    .shop-product-fillter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .totall-product {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .text-brand {
+        color: #3498db;
+        font-weight: 600;
+    }
+    
+    .sort-by-product-area {
+        position: relative;
+    }
+    
+    .sort-by-cover {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 8px 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sort-by-cover:hover {
+        border-color: #3498db;
+    }
+    
+    .sort-by-dropdown-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    
+    .sort-by-text {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .sort-by-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 5px;
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        width: 200px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        z-index: 100;
+    }
+    
+    .sort-by-cover:hover .sort-by-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .sort-by-dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .sort-by-dropdown ul li {
+        padding: 8px 15px;
+        transition: all 0.2s ease;
+    }
+    
+    .sort-by-dropdown ul li:hover {
+        background: #f8f9fa;
+    }
+    
+    .sort-by-dropdown ul li a {
+        color: #666;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+    }
+    
+    .sort-by-dropdown ul li a.active {
+        color: #3498db;
+        font-weight: 500;
+    }
+    
+    /* Loading State */
+    .product-grid-4.loading {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    
+    /* Loading Spinner */
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+        .shop-product-fillter {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .sort-by-dropdown {
+            right: auto;
+            left: 0;
+        }
+    }
+    </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add loading spinner to body
+        const spinnerHTML = `
+            <div class="spinner-overlay">
+                <div class="loading-spinner"></div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', spinnerHTML);
+    
+        const spinner = document.querySelector('.spinner-overlay');
+        const productGrid = document.getElementById('filtered-product');
+        const sortOptions = document.querySelectorAll('.sort-option');
+        const currentSortText = document.getElementById('current-sort');
+        
+        // Function to handle sorting
+        function sortProducts(sortBy) {
+            // Show loading state
+            spinner.style.display = 'flex';
+            productGrid.classList.add('loading');
+    
+            // Make AJAX request
+            $.ajax({
+                url: window.location.pathname,
+                data: { sort_by: sortBy },
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    // Update product grid
+                    productGrid.innerHTML = response.product_grid;
+                    
+                    // Update product count
+                    document.querySelector('.product-count').textContent = response.product_count;
+                    
+                    // Update URL without reload
+                    const url = new URL(window.location);
+                    url.searchParams.set('sort_by', sortBy);
+                    window.history.pushState({}, '', url);
+    
+                    // Update active sort option
+                    sortOptions.forEach(option => {
+                        option.classList.toggle('active', option.dataset.sort === sortBy);
+                    });
+                    currentSortText.textContent = sortBy === 'default' ? 'Default' : 
+                                                sortBy === 'price_low_high' ? 'Price: Low to High' : 
+                                                'Price: High to Low';
+                },
+                error: function(xhr, status, error) {
+                    console.error('Sorting error:', error);
+                    // Show error notification
+                    showNotification('error', 'Error', 'Failed to sort products');
+                },
+                complete: function() {
+                    // Hide loading state
+                    spinner.style.display = 'none';
+                    productGrid.classList.remove('loading');
+                    
+                    // Reinitialize any necessary event listeners
+                    initializeProductEventListeners();
+                }
+            });
+        }
+    
+        // Add click event listeners to sort options
+        sortOptions.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sortBy = this.dataset.sort;
+                sortProducts(sortBy);
+            });
+        });
+    
+        // Initialize any product-specific event listeners
+        function initializeProductEventListeners() {
+            // Re-initialize your existing product event listeners here
+            // This ensures they work after the product grid is updated
+        }
+    });
+    </script>
+<!-- end sorting styling and script -->
 
 
 
