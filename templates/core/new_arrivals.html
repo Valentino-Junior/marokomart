@@ -32,9 +32,10 @@
                             </div>
                             <div class="sort-by-dropdown">
                                 <ul>
-                                    <li><a class="active sort-option" data-sort="newest">Newest</a></li>
-                                    <li><a class="sort-option" data-sort="price_low_high">Price: Low to High</a></li>
-                                    <li><a class="sort-option" data-sort="price_high_low">Price: High to Low</a></li>
+                                    <li><a class="sort-option {% if sort_by == 'newest' %}active{% endif %}" data-sort="newest">Newest</a></li>
+                                    <li><a class="sort-option {% if sort_by == 'price_low_high' %}active{% endif %}" data-sort="price_low_high">Price: Low to High</a></li>
+                                    <li><a class="sort-option {% if sort_by == 'price_high_low' %}active{% endif %}" data-sort="price_high_low">Price: High to Low</a></li>
+                                    <li><a class="sort-option {% if sort_by == 'oldest' %}active{% endif %}" data-sort="oldest">Oldest</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -249,5 +250,106 @@
     padding-left: 10px;
 }
 </style>
+
+
+<!-- start sort script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle sorting
+        function applySorting(sortBy) {
+            const productGrid = document.getElementById('filtered-product');
+            
+            // Show loading state
+            productGrid.style.opacity = '0.5';
+            
+            // Make AJAX request
+            fetch(`?sort_by=${sortBy}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update product count
+                const countElement = document.querySelector('.text-brand.product-count');
+                if (countElement) {
+                    countElement.textContent = data.product_count;
+                }
+                
+                // Parse the HTML and update product grid
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.products_html;
+                const newProductGrid = tempDiv.querySelector('#filtered-product');
+                if (newProductGrid) {
+                    productGrid.innerHTML = newProductGrid.innerHTML;
+                }
+                
+                // Update URL without reload
+                const url = new URL(window.location);
+                url.searchParams.set('sort_by', sortBy);
+                window.history.pushState({}, '', url);
+                
+                // Update current sort text
+                const currentSortText = document.getElementById('current-sort-text');
+                if (currentSortText) {
+                    currentSortText.textContent = getSortText(sortBy);
+                }
+                
+                // Update active class
+                document.querySelectorAll('.sort-option').forEach(option => {
+                    option.classList.toggle('active', option.dataset.sort === sortBy);
+                });
+                
+                // Reinitialize event listeners
+                initializeEventListeners();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('error', 'Error', 'Failed to sort products');
+            })
+            .finally(() => {
+                productGrid.style.opacity = '1';
+            });
+        }
+    
+        // Helper function to get sort text
+        function getSortText(sortBy) {
+            switch(sortBy) {
+                case 'price_low_high':
+                    return 'Price: Low to High';
+                case 'price_high_low':
+                    return 'Price: High to Low';
+                case 'oldest':
+                    return 'Oldest';
+                default:
+                    return 'Newest';
+            }
+        }
+    
+        // Add click handlers to sort options
+        document.querySelectorAll('.sort-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sortBy = this.dataset.sort;
+                applySorting(sortBy);
+            });
+        });
+    
+        // Function to reinitialize event listeners after sorting
+        function initializeEventListeners() {
+            // Reinitialize add to cart buttons
+            document.querySelectorAll('.button-add-to-cart').forEach(button => {
+                // Your existing cart initialization code
+            });
+            
+            // Reinitialize wishlist buttons
+            document.querySelectorAll('.add-to-wishlist').forEach(button => {
+                // Your existing wishlist initialization code
+            });
+        }
+    });
+    </script>
+<!-- end sort script -->
+
 
 {% endblock content %}

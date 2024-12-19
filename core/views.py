@@ -1489,37 +1489,43 @@ def special_offers_view(request):
 
 
 def new_arrivals_view(request):
-   # Get new arrival products
-   new_arrivals = Product.objects.filter(
-       is_new_arrival=True,
-       new_arrival_ends__gt=timezone.now()
-   ).select_related('category').order_by('-date')
+    # Get new arrival products
+    new_arrivals = Product.objects.filter(
+        is_new_arrival=True,
+        new_arrival_ends__gt=timezone.now()
+    ).select_related('category').order_by('-date')
 
-   context = {
-       'products': new_arrivals,
-       'now': timezone.now(),
-       'title': 'New Arrivals',
-       'product_count': new_arrivals.count()
-   }
+    # Handle sorting
+    sort_by = request.GET.get('sort_by', 'newest')
+    
+    if sort_by == 'price_low_high':
+        new_arrivals = new_arrivals.order_by('price')
+    elif sort_by == 'price_high_low':
+        new_arrivals = new_arrivals.order_by('-price')
+    elif sort_by == 'oldest':
+        new_arrivals = new_arrivals.order_by('date')
+    # Default (newest) is already handled by initial order_by('-date')
+    
+    context = {
+        'products': new_arrivals,
+        'now': timezone.now(),
+        'title': 'New Arrivals',
+        'product_count': new_arrivals.count(),
+        'sort_by': sort_by
+    }
+    
+    # Handle AJAX requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'products_html': render_to_string(
+                'core/new_arrivals.html',
+                context,
+                request=request
+            ),
+            'product_count': new_arrivals.count()
+        })
 
-   # Handle sorting if AJAX request
-   if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-       sort_by = request.GET.get('sort_by', '')
-       
-       if sort_by == 'price_low_high':
-           new_arrivals = new_arrivals.order_by('price')
-       elif sort_by == 'price_high_low':
-           new_arrivals = new_arrivals.order_by('-price')
-       elif sort_by == 'oldest':
-           new_arrivals = new_arrivals.order_by('date')
-       # Default is newest first
-       
-       context['products'] = new_arrivals
-       context['product_count'] = new_arrivals.count()
-       
-       return render(request, 'core/partials/product_grid.html', context)
-
-   return render(request, 'core/new_arrivals.html', context)
+    return render(request, 'core/new_arrivals.html', context)
 
 
 
