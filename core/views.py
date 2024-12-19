@@ -1429,46 +1429,63 @@ def special_offers_view(request):
     special_offers = Product.objects.filter(
         is_special_offer=True,
         special_offer_ends__gt=timezone.now()
-    ).select_related('category')  # Optimize database queries
+    ).select_related('category')
+    
+    # Convert queryset to list for adding calculated fields
+    special_offers = list(special_offers)
+    total_savings = 0
     
     # Calculate savings for each product
-    for offer in special_offers:
-        offer.saving_amount = offer.price - offer.special_offer_price
-        offer.saving_percentage = (offer.saving_amount / offer.price) * 100
+    for product in special_offers:
+        # Calculate saving amount and percentage if special offer is active
+        if hasattr(product, 'special_offer_price') and product.special_offer_price:
+            saving_amount = float(product.price) - float(product.special_offer_price)
+            saving_percentage = (saving_amount / float(product.price)) * 100
+            # Store as instance attributes
+            product.saving_amount = saving_amount
+            product.saving_percentage = saving_percentage
+            total_savings += saving_amount
     
     # Get offers ending soon (within 24 hours)
-    ending_soon = special_offers.filter(
-        special_offer_ends__lte=timezone.now() + timezone.timedelta(days=1)
-    )
+    ending_soon = [p for p in special_offers 
+                  if p.special_offer_ends <= timezone.now() + timezone.timedelta(days=1)]
+    
+    # Add sorting functionality
+    sort_by = request.GET.get('sort_by', 'ending_soon')
+    
+    # Apply sorting
+    if sort_by == 'price_low_high':
+        special_offers.sort(key=lambda x: float(x.special_offer_price))
+    elif sort_by == 'price_high_low':
+        special_offers.sort(key=lambda x: float(x.special_offer_price), reverse=True)
+    elif sort_by == 'biggest_savings':
+        special_offers.sort(key=lambda x: getattr(x, 'saving_percentage', 0), reverse=True)
+    else:  # ending_soon
+        special_offers.sort(key=lambda x: x.special_offer_ends)
     
     context = {
         'products': special_offers,
         'now': timezone.now(),
         'title': 'Special Offers',
-        'product_count': special_offers.count(),
-        'ending_soon_count': ending_soon.count(),
-        'total_savings': sum(offer.saving_amount for offer in special_offers),
+        'product_count': len(special_offers),
+        'ending_soon_count': len(ending_soon),
+        'total_savings': total_savings,
+        'sort_by': sort_by
     }
     
-    # Add sorting functionality
-    sort_by = request.GET.get('sort_by', 'ending_soon')
-    
-    if sort_by == 'price_low_high':
-        special_offers = special_offers.order_by('special_offer_price')
-    elif sort_by == 'price_high_low':
-        special_offers = special_offers.order_by('-special_offer_price')
-    elif sort_by == 'biggest_savings':
-        special_offers = sorted(special_offers, key=lambda x: x.saving_percentage, reverse=True)
-    else:  # ending_soon
-        special_offers = special_offers.order_by('special_offer_ends')
-    
-    context['products'] = special_offers
-    context['sort_by'] = sort_by
-    
+    # Handle AJAX requests
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render(request, 'core/partials/product_grid.html', context)
+        return JsonResponse({
+            'products_html': render_to_string(
+                'core/special_offers.html',
+                context,
+                request=request
+            ),
+            'product_count': len(special_offers)
+        })
     
     return render(request, 'core/special_offers.html', context)
+
 
 
 def new_arrivals_view(request):
