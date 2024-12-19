@@ -101,16 +101,7 @@ class Product(models.Model):
     is_new_arrival = models.BooleanField(default=False)
     new_arrival_ends = models.DateTimeField(null=True, blank=True)
     
-    stock_status = models.CharField(
-        max_length=20,
-        choices=[
-            ('in_stock', 'In Stock'),
-            ('new_stock', 'New Stock'),
-            ('low_stock', 'Low Stock'),
-            ('out_of_stock', 'Out of Stock'),
-        ],
-        default='in_stock'
-    )
+    
     
 
     class Meta:

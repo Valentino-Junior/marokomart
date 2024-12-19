@@ -181,7 +181,6 @@ def add_product(request):
             elif product_type == 'new_arrival':
                 new_product.is_new_arrival = True
                 new_product.new_arrival_ends = form.cleaned_data.get('new_arrival_ends')
-                new_product.stock_status = form.cleaned_data.get('stock_status')
                 new_product.is_special_offer = False
             else:
                 new_product.is_special_offer = False
@@ -242,7 +241,7 @@ def edit_product(request, pid):
             elif product_type == 'new_arrival':
                 new_form.is_new_arrival = True
                 new_form.new_arrival_ends = form.cleaned_data.get('new_arrival_ends')
-                new_form.stock_status = form.cleaned_data.get('stock_status')
+                
             
             new_form.save()
             form.save_m2m()

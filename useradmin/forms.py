@@ -180,17 +180,7 @@ class AddProductForm(forms.ModelForm):
             'type': 'datetime-local'
         })
     )
-    stock_status = forms.ChoiceField(
-        required=False,
-        choices=[
-            ('in_stock', 'In Stock'),
-            ('new_stock', 'New Stock'),
-            ('low_stock', 'Low Stock'),
-            ('out_of_stock', 'Out of Stock')
-        ],
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
+    
     class Meta:
         model = Product
         fields = [
@@ -207,5 +197,4 @@ class AddProductForm(forms.ModelForm):
             'special_offer_ends',
             'is_new_arrival',
             'new_arrival_ends',
-            'stock_status',
         ]

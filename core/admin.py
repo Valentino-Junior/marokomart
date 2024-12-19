@@ -9,7 +9,7 @@ class ProductImagesAdmin(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImagesAdmin]
     list_editable = ['title', 'price', 'product_status', 'low_stock_threshold']
-    list_display = ['user', 'title', 'product_image', 'price', 'category', 'product_status', 'pid', 'stock_count', 'low_stock_threshold', 'stock_status', 'is_special_offer', 'special_offer_price', 'special_offer_ends', 'is_new_arrival', 'new_arrival_ends']
+    list_display = ['user', 'title', 'product_image', 'price', 'category', 'product_status', 'pid', 'stock_count', 'low_stock_threshold', 'is_special_offer', 'special_offer_price', 'special_offer_ends', 'is_new_arrival', 'new_arrival_ends']
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['title', 'category_image']
