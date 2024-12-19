@@ -19,6 +19,7 @@ from decimal import Decimal
 from collections import defaultdict
 import json
 from core.views import update_product_stock 
+from django.db.models import Sum, F
 
 
 
@@ -27,24 +28,41 @@ def dashboard(request):
     # Get all orders
     all_orders = CartOrder.objects.all()
     
-    # Initialize revenue and order counts
-    total_revenue = Decimal('0.00')
-    monthly_revenue = Decimal('0.00')
+    # Initialize sales and profit variables
+    total_sales = Decimal('0.00')
+    total_profit = Decimal('0.00')
+    monthly_sales = Decimal('0.00')
+    monthly_profit = Decimal('0.00')
     paid_orders_count = 0
     total_orders = len(all_orders)
     
     # Get current month
     current_month = datetime.datetime.now().month
     
-    # Calculate revenues from paid orders
+    # Calculate sales and profits from paid orders
     for order in all_orders:
         if order.paid_status:
             paid_orders_count += 1
-            total_revenue += order.price
             
-            # Add to monthly revenue if order is from current month
+            # Calculate sales and profit for each order
+            order_products = CartOrderProducts.objects.filter(order=order)
+            order_sales = order_products.aggregate(total_sales=Sum('total'))['total_sales'] or Decimal('0.00')
+            
+            order_profit = Decimal('0.00')
+            for order_product in order_products:
+                try:
+                    product = Product.objects.get(title=order_product.item)
+                    order_profit += (order_product.price - product.buying_price) * order_product.qty
+                except Product.DoesNotExist:
+                    continue
+            
+            total_sales += order_sales
+            total_profit += order_profit
+            
+            # Add to monthly sales and profit if order is from current month
             if order.order_date.month == current_month:
-                monthly_revenue += order.price
+                monthly_sales += order_sales
+                monthly_profit += order_profit
     
     # Get products data and check for low stock
     all_products = Product.objects.all()
@@ -61,7 +79,7 @@ def dashboard(request):
                 })
         except (ValueError, TypeError):
             continue
-
+    
     # Get other data
     all_categories = Category.objects.all()
     new_customers = User.objects.all().order_by("-id")[:6]
@@ -71,11 +89,17 @@ def dashboard(request):
     payment_rate = (paid_orders_count / total_orders * 100) if total_orders > 0 else 0
     
     context = {
-        "revenue": {
-            "price": "{:,.2f}".format(total_revenue)
+        "total_sales": {
+            "price": "{:,.2f}".format(total_sales)
         },
-        "monthly_revenue": {
-            "price": "{:,.2f}".format(monthly_revenue)
+        "total_profit": {
+            "price": "{:,.2f}".format(total_profit)
+        },
+        "monthly_sales": {
+            "price": "{:,.2f}".format(monthly_sales)
+        },
+        "monthly_profit": {
+            "price": "{:,.2f}".format(monthly_profit)
         },
         "orders_summary": {
             "total_count": total_orders,
