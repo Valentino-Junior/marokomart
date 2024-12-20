@@ -14,65 +14,78 @@
                     class="text-muted material-icons md-post_add"></i>Create Product</a>
         </div>
     </div>
-    <div class="row">
-        <div class="col-lg-3">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-primary-light">
-                        <i class="text-primary material-icons md-monetization_on"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1 card-title">Total Sales</h6>
-                        <span style="font-size: 18px;">Ksh{{ total_sales.price }}</span>
-                    </div>
-                </article>
+
+    <div class="mb-4">
+        <label for="time_period">Select Time Period:</label>
+        <select name="time_period" id="time_period" class="form-control" onchange="location = this.value;">
+            <option value="{% url 'useradmin:dashboard' %}?time_period=day" {% if time_period == 'day' %}selected{% endif %}>Today</option>
+            <option value="{% url 'useradmin:dashboard' %}?time_period=week" {% if time_period == 'week' %}selected{% endif %}>This Week</option>
+            <option value="{% url 'useradmin:dashboard' %}?time_period=month" {% if time_period == 'month' %}selected{% endif %}>This Month</option>
+            <option value="{% url 'useradmin:dashboard' %}?time_period=previous_month" {% if time_period == 'previous_month' %}selected{% endif %}>Previous Month</option>
+            <option value="{% url 'useradmin:dashboard' %}?time_period=total" {% if time_period == 'total' %}selected{% endif %}>Total</option>
+        </select>
+    </div>
+
+    <div id="dashboard-data">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="card card-body mb-4">
+                    <article class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-primary-light">
+                            <i class="text-primary material-icons md-monetization_on"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Total Sales</h6>
+                            <span id="total-sales" style="font-size: 18px;">Ksh{{ total_sales|floatformat:2 }}</span>
+                        </div>
+                    </article>
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-success-light">
-                        <i class="text-success material-icons md-monetization_on"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1 card-title">Total Profit</h6>
-                        <span style="font-size: 18px;">Ksh{{ total_profit.price }}</span>
-                    </div>
-                </article>
+            <div class="col-lg-3">
+                <div class="card card-body mb-4">
+                    <article class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-success-light">
+                            <i class="text-success material-icons md-monetization_on"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Total Profit</h6>
+                            <span id="total-profit" style="font-size: 18px;">Ksh{{ total_profit|floatformat:2 }}</span>
+                        </div>
+                    </article>
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-warning-light">
-                        <i class="text-warning material-icons md-qr_code"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1 card-title">Monthly Sales</h6>
-                        <span style="font-size: 18px;">Ksh{{ monthly_sales.price }}</span>
-                    </div>
-                </article>
+            <div class="col-lg-3">
+                <div class="card card-body mb-4">
+                    <article class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-warning-light">
+                            <i class="text-warning material-icons md-qr_code"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Products</h6>
+                            <span id="products-count" style="font-size: 18px;">{{ products_count }}</span>
+                        </div>
+                    </article>
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3">
-            <div class="card card-body mb-4">
-                <article class="icontext">
-                    <span class="icon icon-sm rounded-circle bg-info-light">
-                        <i class="text-info material-icons md-shopping_basket"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1 card-title">Monthly Profit</h6>
-                        <span style="font-size: 18px;">Ksh{{ monthly_profit.price }}</span>
-                    </div>
-                </article>
+            <div class="col-lg-3">
+                <div class="card card-body mb-4">
+                    <article class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-info-light">
+                            <i class="text-info material-icons md-shopping_basket"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Total Orders</h6>
+                            <span id="total-orders" style="font-size: 18px;">{{ orders_summary.total_count }}</span>
+                        </div>
+                    </article>
+                </div>
             </div>
         </div>
     </div>
 
-
     <!-- Low Stock Alerts Section -->
     {% if stock_alerts.low_stock_count > 0 %}
-    <div class="row mb-4">
+    <div id="low-stock-alerts" class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-warning">
@@ -136,7 +149,6 @@
     </div>
     {% endif %}
 
-
     <div class="card mb-4">
         <header class="card-header">
             <h4 class="card-title">Latest orders</h4>
@@ -147,7 +159,6 @@
                     <table class="table align-middle table-nowrap mb-0">
                         <thead class="table-light">
                             <tr>
-
                                 <th class="align-middle" scope="col">Order ID</th>
                                 <th class="align-middle" scope="col">Name</th>
                                 <th class="align-middle" scope="col">Email</th>
@@ -159,7 +170,7 @@
                                 <th class="align-middle" scope="col">View Details</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="latest-orders">
                             {% for l in latest_orders %}
                             <tr>
                                 <td><a href="#" class="fw-bold">#{{l.oid}}</a></td>

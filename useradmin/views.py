@@ -23,22 +23,47 @@ from django.db.models import Sum, F
 from django.core.paginator import Paginator
 
 
+from django.utils import timezone
+
+
 
 @admin_required
 def dashboard(request):
-    # Get all orders
-    all_orders = CartOrder.objects.all()
+    time_period = request.GET.get('time_period', 'total')
+    
+    # Get the current date and time
+    current_date = timezone.now().date()
+    
+    # Initialize the date range based on the selected time period
+    if time_period == 'day':
+        start_date = current_date
+        end_date = current_date + datetime.timedelta(days=1)
+    elif time_period == 'week':
+        start_date = current_date - datetime.timedelta(days=current_date.weekday())
+        end_date = start_date + datetime.timedelta(days=7)
+    elif time_period == 'month':
+        start_date = current_date.replace(day=1)
+        end_date = (start_date + datetime.timedelta(days=32)).replace(day=1)
+    elif time_period == 'previous_month':
+        end_date = current_date.replace(day=1)
+        start_date = (end_date - datetime.timedelta(days=1)).replace(day=1)
+    else:  # 'total' or any other value
+        start_date = None
+        end_date = None
+    
+    # Get all orders within the selected date range
+    if start_date and end_date:
+        all_orders = CartOrder.objects.filter(order_date__range=(start_date, end_date))
+        all_paid_orders = all_orders.filter(paid_status=True)
+    else:
+        all_orders = CartOrder.objects.all()
+        all_paid_orders = all_orders.filter(paid_status=True)
     
     # Initialize sales and profit variables
     total_sales = Decimal('0.00')
     total_profit = Decimal('0.00')
-    monthly_sales = Decimal('0.00')
-    monthly_profit = Decimal('0.00')
     paid_orders_count = 0
-    total_orders = len(all_orders)
-    
-    # Get current month
-    current_month = datetime.datetime.now().month
+    total_orders = len(all_paid_orders)
     
     # Calculate sales and profits from paid orders
     for order in all_orders:
@@ -59,11 +84,17 @@ def dashboard(request):
             
             total_sales += order_sales
             total_profit += order_profit
-            
-            # Add to monthly sales and profit if order is from current month
-            if order.order_date.month == current_month:
-                monthly_sales += order_sales
-                monthly_profit += order_profit
+    
+    # Get products count based on items sold within the selected date range
+    if start_date and end_date:
+        products_count = CartOrderProducts.objects.filter(
+            order__order_date__range=(start_date, end_date),
+            order__paid_status=True
+        ).values('item').distinct().count()
+    else:
+        products_count = CartOrderProducts.objects.filter(
+            order__paid_status=True
+        ).values('item').distinct().count()
     
     # Get products data and check for low stock
     all_products = Product.objects.all()
@@ -86,43 +117,26 @@ def dashboard(request):
     new_customers = User.objects.all().order_by("-id")[:6]
     latest_orders = all_orders.select_related('shipping_address').order_by('-order_date')[:10]
     
-    # Calculate payment rate
-    payment_rate = (paid_orders_count / total_orders * 100) if total_orders > 0 else 0
-    
     context = {
-        "total_sales": {
-            "price": "{:,.2f}".format(total_sales)
+        'total_sales': total_sales,
+        'total_profit': total_profit,
+        'products_count': products_count,
+        'orders_summary': {
+            'total_count': total_orders,
+            'paid_count': paid_orders_count,
+            'pending_count': total_orders - paid_orders_count,
         },
-        "total_profit": {
-            "price": "{:,.2f}".format(total_profit)
+        'stock_alerts': {
+            'low_stock_count': len(low_stock_products),
+            'products': low_stock_products,
         },
-        "monthly_sales": {
-            "price": "{:,.2f}".format(monthly_sales)
-        },
-        "monthly_profit": {
-            "price": "{:,.2f}".format(monthly_profit)
-        },
-        "orders_summary": {
-            "total_count": total_orders,
-            "paid_count": paid_orders_count,
-            "pending_count": total_orders - paid_orders_count,
-            "payment_rate": round(payment_rate, 1)
-        },
-        "stock_alerts": {
-            "low_stock_count": len(low_stock_products),
-            "products": low_stock_products,
-        },
-        "inventory": {
-            "total_products": all_products.count(),
-            "total_categories": all_categories.count(),
-        },
-        "all_products": all_products,
-        "all_categories": all_categories,
-        "new_customers": new_customers,
-        "latest_orders": latest_orders,
+        'all_categories': all_categories,
+        'new_customers': new_customers,
+        'latest_orders': latest_orders,
+        'time_period': time_period,
     }
+    
     return render(request, "useradmin/dashboard.html", context)
-
 
 @admin_required
 def update_payment_status(request, oid):
