@@ -95,6 +95,28 @@ def dashboard(request):
         products_count = CartOrderProducts.objects.filter(
             order__paid_status=True
         ).values('item').distinct().count()
+
+    # Get top-selling products within the selected date range
+    if start_date and end_date:
+        top_selling_products = CartOrderProducts.objects.filter(
+            order__order_date__range=(start_date, end_date),
+            order__paid_status=True
+        ).values('item').annotate(total_sold=Sum('qty')).order_by('-total_sold')[:5]
+    else:
+        top_selling_products = CartOrderProducts.objects.filter(
+            order__paid_status=True
+        ).values('item').annotate(total_sold=Sum('qty')).order_by('-total_sold')[:5]
+    
+    # Get the product titles for the top-selling products
+    top_selling_products = [
+        {
+            'title': Product.objects.filter(title=product['item']).first().title,
+            'total_sold': product['total_sold']
+        }
+        for product in top_selling_products
+    ]
+
+
     
     # Get products data and check for low stock
     all_products = Product.objects.all()
@@ -121,6 +143,7 @@ def dashboard(request):
         'total_sales': total_sales,
         'total_profit': total_profit,
         'products_count': products_count,
+        'top_selling_products': top_selling_products,
         'orders_summary': {
             'total_count': total_orders,
             'paid_count': paid_orders_count,

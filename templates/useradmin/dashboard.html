@@ -54,19 +54,45 @@
                     </article>
                 </div>
             </div>
+
+            <!-- start product count -->
             <div class="col-lg-3">
-                <div class="card card-body mb-4">
-                    <article class="icontext">
-                        <span class="icon icon-sm rounded-circle bg-warning-light">
-                            <i class="text-warning material-icons md-qr_code"></i>
-                        </span>
-                        <div class="text">
-                            <h6 class="mb-1 card-title">Products</h6>
-                            <span id="products-count" style="font-size: 18px;">{{ products_count }}</span>
+                <div class="stats-card" data-bs-toggle="modal" data-bs-target="#productsModal">
+                    <div class="card card-body mb-4">
+                        <article class="icontext">
+                            <span class="icon icon-sm rounded-circle bg-warning-light">
+                                <i class="text-warning material-icons md-qr_code"></i>
+                            </span>
+                            <div class="text">
+                                <h6 class="mb-1 card-title">Products</h6>
+                                <span id="products-count">{{ products_count }}</span>
+                            </div>
+                        </article>
+                    </div>
+                    <!-- Hover Modal -->
+                    <div class="hover-modal">
+                        <div class="hover-modal-content">
+                            <div class="hover-modal-header">
+                                <h6>Top 5 Selling Products</h6>
+                            </div>
+                            <div class="hover-modal-body">
+                                {% for product in top_selling_products|slice:":5" %}
+                                <div class="hover-product-item">
+                                    <div class="product-info">
+                                        <span class="product-number">{{ forloop.counter }}.</span>
+                                        <span class="product-name">{{ product.title }}</span>
+                                    </div>
+                                    <span class="product-sales">{{ product.total_sold }} sold</span>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
-                    </article>
+                    </div>
                 </div>
             </div>
+            <!-- end product count -->
+            
+            
             <div class="col-lg-3">
                 <div class="card card-body mb-4">
                     <article class="icontext">
@@ -200,5 +226,155 @@
         </div>
     </div>
 </section>
+
+<!-- start product count styling -->
+<style>
+    /* Original Card Styles */
+    .stats-card {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .stats-card .card {
+        transition: transform 0.2s ease;
+    }
+    
+    .icon-sm {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-warning-light {
+        background-color: rgba(255, 193, 7, 0.2);
+    }
+    
+    .text-warning {
+        color: #ffc107;
+    }
+    
+    .icontext {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    /* Hover Modal Styles */
+    .hover-modal {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        width: 280px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        z-index: 1000;
+    }
+    
+    .stats-card:hover .hover-modal {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .hover-modal::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 20px;
+        width: 12px;
+        height: 12px;
+        background: white;
+        transform: rotate(45deg);
+        box-shadow: -2px -2px 5px rgba(0,0,0,0.06);
+    }
+    
+    .hover-modal-content {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .hover-modal-header {
+        padding: 12px 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .hover-modal-header h6 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .hover-modal-body {
+        padding: 12px 15px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+    
+    .hover-product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .hover-product-item:last-child {
+        border-bottom: none;
+    }
+    
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .product-number {
+        color: #ffc107;
+        font-weight: 600;
+        font-size: 13px;
+        min-width: 20px;
+    }
+    
+    .product-name {
+        font-size: 13px;
+        color: #333;
+    }
+    
+    .product-sales {
+        font-size: 12px;
+        color: #666;
+        background: #f8f9fa;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+    
+    /* Animation for modal appearance */
+    @keyframes modalPop {
+        0% {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stats-card:hover .hover-modal {
+        animation: modalPop 0.2s ease forwards;
+    }
+    </style>
+<!-- end product count styling -->
+
+
 
 {% endblock content %}
