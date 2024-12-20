@@ -26,6 +26,7 @@ urlpatterns = [
     path('support-tickets/', views.support_tickets, name='support_tickets'),
     path('support-ticket/<int:ticket_id>/', views.get_ticket_details, name='get_ticket_details'),
     path('support-ticket/<int:ticket_id>/respond/', views.respond_to_ticket, name='respond_to_ticket'),
+    path('unread-tickets-count/', views.get_unread_tickets_count, name='unread_tickets_count'),
 
 
     path('categories/', views.category_list, name='category_list'),

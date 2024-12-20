@@ -1434,7 +1434,8 @@ def submit_support_ticket(request):
                 user=request.user,
                 order=order,
                 issue_type=issue_type,
-                message=message
+                message=message,
+                is_viewed=False
             )
             
             return JsonResponse({'success': True})

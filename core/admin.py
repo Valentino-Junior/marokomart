@@ -28,14 +28,14 @@ class OrderReviewAdmin(admin.ModelAdmin):
 
 @admin.register(SupportTicket)
 class SupportTicketAdmin(admin.ModelAdmin):
-    list_display = ('user', 'order', 'issue_type', 'status','admin_response', 'created_at')
+    list_display = ('user', 'order', 'issue_type', 'status','admin_response', 'is_viewed', 'created_at')
     list_filter = ('issue_type', 'status', 'created_at')
     search_fields = ('user__username', 'order__oid', 'message')
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
     
-    list_editable = ('status', 'admin_response')  # Allow quick status updates from the list view
+    list_editable = ('status', 'is_viewed', 'admin_response')  # Allow quick status updates from the list view
     
     fieldsets = (
         ('Ticket Information', {

@@ -426,9 +426,16 @@ class SupportTicket(models.Model):
     issue_type = models.CharField(max_length=20, choices=ISSUE_CHOICES)
     message = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    is_viewed = models.BooleanField(default=False)
     admin_response = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+    @classmethod
+    def get_unread_count(cls):
+        return cls.objects.filter(is_viewed=False).count()
+
 
     def __str__(self):
         return f"Support Ticket #{self.id} - {self.order.oid}"

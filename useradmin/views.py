@@ -581,8 +581,14 @@ def contact_messages(request):
     return render(request, 'useradmin/contact_messages.html', {'messagez': messages})
 
 
+def get_unread_tickets_count(request):
+    count = SupportTicket.get_unread_count()
+    return JsonResponse({'count': count})
+
 
 def support_tickets(request):
+    # Mark all unread tickets as viewed
+    SupportTicket.objects.filter(is_viewed=False).update(is_viewed=True)
     tickets = SupportTicket.objects.all().order_by('-created_at')
     return render(request, 'useradmin/support_ticket.html', {'tickets': tickets})
 
