@@ -1448,6 +1448,36 @@ def submit_support_ticket(request):
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
+
+@login_required
+def get_support_tickets(request, order_id):
+    try:
+        order = CartOrder.objects.get(oid=order_id, user=request.user)
+        tickets = SupportTicket.objects.filter(order=order).order_by('-created_at')
+        
+        tickets_data = []
+        for ticket in tickets:
+            tickets_data.append({
+                'id': ticket.id,
+                'issue_type': ticket.get_issue_type_display(),
+                'message': ticket.message,
+                'status': ticket.status,
+                'admin_response': ticket.admin_response,
+                'created_at': ticket.created_at.strftime('%B %d, %Y %I:%M %p')
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'tickets': tickets_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+
+
+
 @login_required
 def my_orders_view(request):
     orders = CartOrder.objects.filter(user=request.user).order_by('-order_date')
