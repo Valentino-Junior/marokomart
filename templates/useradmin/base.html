@@ -139,63 +139,15 @@
                             <span class="text">Order Reviews</span>
                         </a>
                     </li>
-                    <!-- In your base.html -->
-<li class="menu-item">
-    <a class="menu-link" href="{% url 'useradmin:support_tickets' %}">
-        <i class="icon material-icons md-comment"></i>
-        <span class="text">Support Tickets</span>
-        <span id="unreadTicketsCount" class="nav-badge" style="display: none;"></span>
-    </a>
-</li>
+                   
+                    <li class="menu-item">
+                        <a class="menu-link" href="{% url 'useradmin:support_tickets' %}">
+                            <i class="icon material-icons md-comment"></i>
+                            <span class="text">Support Tickets</span>
+                            <span id="unreadTicketsCount" class="nav-badge" style="display: none;"></span>
+                        </a>
+                    </li>
 
-<!-- Add this style section in your base template -->
-<style>
-.nav-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ff4444;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-    min-width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.menu-link {
-    position: relative;
-}
-</style>
-
-<!-- Add this script section at the end of your base template -->
-<script>
-function fetchUnreadCount() {
-    fetch('{% url "useradmin:unread_tickets_count" %}')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.getElementById('unreadTicketsCount');
-            if (data.count > 0) {
-                badge.style.display = 'flex';
-                badge.textContent = data.count;
-            } else {
-                badge.style.display = 'none';
-            }
-        })
-        .catch(error => console.error('Error fetching unread count:', error));
-}
-
-// Update count on page load
-document.addEventListener('DOMContentLoaded', function() {
-    fetchUnreadCount();
-    // Update count every 30 seconds
-    setInterval(fetchUnreadCount, 30000);
-});
-</script>
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:contact_messages' %}">
                             <i class="icon material-icons md-comment"></i>
@@ -382,5 +334,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 3000);
             });
         </script>
+
+
+        <!-- start support ticket styling and functionality -->
+        <style>
+            .nav-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #ff4444;
+                color: white;
+                border-radius: 50%;
+                padding: 2px 6px;
+                font-size: 12px;
+                min-width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+
+            .menu-link {
+                position: relative;
+            }
+            </style>
+
+            <!-- Add this script section at the end of your base template -->
+            <script>
+            function fetchUnreadCount() {
+                fetch('{% url "useradmin:unread_tickets_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('unreadTicketsCount');
+                        if (data.count > 0) {
+                            badge.style.display = 'flex';
+                            badge.textContent = data.count;
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error fetching unread count:', error));
+            }
+
+            // Update count on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchUnreadCount();
+                // Update count every 30 seconds
+                setInterval(fetchUnreadCount, 30000);
+            });
+            </script>
+        <!-- end support ticket styling and functionality -->
+
     </body>
 </html>
