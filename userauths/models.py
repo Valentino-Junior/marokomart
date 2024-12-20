@@ -37,7 +37,12 @@ class ContactUs(models.Model):
     phone = models.CharField(max_length=200, blank=True)
     subject = models.CharField(max_length=200) 
     message = models.TextField()
+    is_viewed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def get_unread_count(cls):
+        return cls.objects.filter(is_viewed=False).count()
 
     class Meta:
         verbose_name = "Contact Message"
@@ -46,6 +51,7 @@ class ContactUs(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.subject}"
+    
 
     
 def create_user_profile(sender, instance, created, **kwargs):

@@ -591,12 +591,21 @@ def coupon_delete(request, pk):
 @admin_required
 def contact_messages(request):
     messages_list = ContactUs.objects.all().order_by('-created_at')
-    paginator = Paginator(messages_list, 10)  # Show 10 messages per page
+    # Mark all as viewed
+    ContactUs.objects.filter(is_viewed=False).update(is_viewed=True)
     
+    paginator = Paginator(messages_list, 10)  # Show 10 messages per page
     page = request.GET.get('page')
     messages = paginator.get_page(page)
     
     return render(request, 'useradmin/contact_messages.html', {'messagez': messages})
+
+
+
+@admin_required
+def get_contact_message_count(request):
+    count = ContactUs.get_unread_count()
+    return JsonResponse({'count': count})
 
 
 @admin_required

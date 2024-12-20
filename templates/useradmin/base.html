@@ -156,10 +156,12 @@
 
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:contact_messages' %}">
-                            <i class="icon material-icons md-comment"></i>
-                            <span class="text">Contact</span>
+                            <i class="icon material-icons md-mail"></i>
+                            <span class="text">Contact Messages</span>
+                            <span id="messageCount" class="count-badge"></span>
                         </a>
                     </li>
+                    
                 </ul>
                 <hr />
                 <ul class="menu-aside">
@@ -497,6 +499,63 @@
             });
             </script>
         <!-- end product review styling and functionality -->
+
+
+        <!-- start messages contact styling and functionality -->
+        <style>
+            .menu-link {
+                position: relative;
+            }
+            
+            .count-badge {
+                position: absolute;
+                top: -6px;
+                right: -10px;
+                background: #ff4444;
+                color: #ffffff;
+                border-radius: 50%;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 5px;
+                font-size: 11px;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .count-badge.show {
+                display: flex;
+            }
+            </style>
+            
+            <script>
+            function updateMessageCount() {
+                fetch('{% url "useradmin:get_contact_message_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('messageCount');
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.add('show');
+                        } else {
+                            badge.textContent = '';
+                            badge.classList.remove('show');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            
+            // Update on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateMessageCount();
+                // Check for new messages every 30 seconds
+                setInterval(updateMessageCount, 30000);
+            });
+            </script>
+        <!-- end messages contact styling and functionality -->
+
 
 
 
