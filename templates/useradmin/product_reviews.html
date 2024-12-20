@@ -1,0 +1,70 @@
+{% extends 'useradmin/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Product Reviews</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">All Reviews</h6>
+            <div class="filter-section">
+                <select id="ratingFilter" class="form-control form-control-sm" style="width: 150px;">
+                    <option value="">All Ratings</option>
+                    {% for rate in "54321" %}
+                    <option value="{{ rate }}">{{ rate }} Stars</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="reviewsTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Customer</th>
+                            <th>Rating</th>
+                            <th>Review</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for review in reviews %}
+                        <tr>
+                            <td>{{ review.product.title }}</td>
+                            <td>{{ review.user.username }}</td>
+                            <td>
+                                <div class="stars">
+                                    {% for i in "12345" %}
+                                    <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>{{ review.review }}</td>
+                            <td>{{ review.date|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Rating filter functionality
+document.getElementById('ratingFilter').addEventListener('change', function() {
+    const rating = this.value;
+    const rows = document.querySelectorAll('#reviewsTable tbody tr');
+    
+    rows.forEach(row => {
+        const stars = row.querySelector('.stars').getElementsByClassName('text-warning').length;
+        row.style.display = 
+            rating === '' || stars.toString() === rating ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

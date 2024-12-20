@@ -161,6 +161,7 @@ def dashboard(request):
     
     return render(request, "useradmin/dashboard.html", context)
 
+
 @admin_required
 def update_payment_status(request, oid):
     if request.method == 'POST':
@@ -270,7 +271,6 @@ def add_product(request):
         'form': form
     }
     return render(request, "useradmin/add-products.html", context)
-
 
 
 
@@ -395,13 +395,19 @@ def shop_page(request):
     }
     return render(request, "useradmin/shop_page.html", context)
 
+
 @admin_required
-def reviews(request):
-    reviews = ProductReview.objects.all()
-    context = {
-        'reviews':reviews,
-    }
-    return render(request, "useradmin/reviews.html", context)
+def product_reviews(request):
+    reviews = ProductReview.objects.select_related('user', 'product').order_by('-date')
+    # Mark all as viewed
+    ProductReview.objects.filter(is_viewed=False).update(is_viewed=True)
+    return render(request, "useradmin/product_reviews.html", {'reviews': reviews})
+
+@admin_required
+def get_product_review_count(request):
+    count = ProductReview.get_unread_count()
+    return JsonResponse({'count': count})
+
 
 @admin_required
 def settings(request):
@@ -433,6 +439,7 @@ def settings(request):
     }
     return render(request, "useradmin/settings.html", context)
 
+
 @admin_required
 def change_password(request):
     user = request.user
@@ -458,11 +465,13 @@ def change_password(request):
     return render(request, "useradmin/change_password.html")
 
 
-
+@admin_required
 def category_list(request):
     categories = Category.objects.all()
     return render(request, 'useradmin/category_management.html', {'categories': categories})
 
+
+@admin_required
 def category_create(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST, request.FILES)
@@ -476,7 +485,8 @@ def category_create(request):
             'success': False,
             'errors': form.errors
         })
-
+    
+@admin_required
 def category_update(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -496,6 +506,8 @@ def category_update(request, pk):
             'errors': form.errors
         })
 
+
+@admin_required
 def category_delete(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -513,11 +525,13 @@ def category_delete(request, pk):
     })
 
 
-
+@admin_required
 def coupon_list(request):
     coupons = Coupon.objects.all().order_by('-created_at')
     return render(request, 'useradmin/coupon_management.html', {'coupons': coupons})
 
+
+@admin_required
 def coupon_create(request):
     if request.method == 'POST':
         form = CouponForm(request.POST)
@@ -541,6 +555,8 @@ def coupon_create(request):
             'errors': form.errors
         })
 
+
+@admin_required
 def coupon_update(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'POST':
@@ -555,7 +571,9 @@ def coupon_update(request, pk):
             'success': False,
             'errors': form.errors
         })
+    
 
+@admin_required
 def coupon_delete(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'POST':
@@ -570,7 +588,7 @@ def coupon_delete(request, pk):
     })
 
 
-
+@admin_required
 def contact_messages(request):
     messages_list = ContactUs.objects.all().order_by('-created_at')
     paginator = Paginator(messages_list, 10)  # Show 10 messages per page
@@ -581,11 +599,13 @@ def contact_messages(request):
     return render(request, 'useradmin/contact_messages.html', {'messagez': messages})
 
 
+@admin_required
 def get_unread_tickets_count(request):
     count = SupportTicket.get_unread_count()
     return JsonResponse({'count': count})
 
 
+@admin_required
 def support_tickets(request):
     # Mark all unread tickets as viewed
     SupportTicket.objects.filter(is_viewed=False).update(is_viewed=True)
@@ -593,6 +613,8 @@ def support_tickets(request):
     return render(request, 'useradmin/support_ticket.html', {'tickets': tickets})
 
 
+
+@admin_required
 def get_ticket_details(request, ticket_id):
     try:
         ticket = get_object_or_404(SupportTicket, id=ticket_id)
@@ -618,7 +640,7 @@ def get_ticket_details(request, ticket_id):
             'message': str(e)
         })
 
-
+@admin_required
 def respond_to_ticket(request, ticket_id):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
@@ -649,7 +671,7 @@ def respond_to_ticket(request, ticket_id):
         })
     
 
-
+@admin_required
 def order_reviews(request):
     reviews = Order_Review.objects.select_related('user', 'order').order_by('-created_at')
     unread_reviews = Order_Review.objects.filter(is_viewed=False).count()
@@ -662,6 +684,7 @@ def order_reviews(request):
     return render(request, 'useradmin/order_reviews.html', context)
 
 
+@admin_required
 def get_order_review_details(request, review_id):
     try:
         review = get_object_or_404(Order_Review, id=review_id)
@@ -683,7 +706,7 @@ def get_order_review_details(request, review_id):
             'message': str(e)
         })
 
-
+@admin_required
 def get_unread_order_reviews_count(request):
     count = Order_Review.objects.filter(is_viewed=False).count()
     return JsonResponse({'count': count})

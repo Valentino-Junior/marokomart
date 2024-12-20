@@ -127,12 +127,16 @@
                             <span class="text">Coupon</span>
                         </a>
                     </li>
+
                     <li class="menu-item">
-                        <a class="menu-link" href="{% url 'useradmin:reviews' %}">
+                        <a class="menu-link" href="{% url 'useradmin:product_reviews' %}">
                             <i class="icon material-icons md-comment"></i>
                             <span class="text">Product Reviews</span>
+                            <span id="productReviewCount" class="count-badge"></span>
                         </a>
                     </li>
+                    
+                
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:order_reviews' %}">
                             <i class="icon material-icons md-comment"></i>
@@ -436,6 +440,64 @@
             });
             </script>
         <!-- end order reviews styling and functionality -->
+
+
+        <!-- start product review styling and functionality -->
+        <style>
+            .menu-link {
+                position: relative;
+            }
+            
+            .count-badge {
+                position: absolute;
+                top: -6px;
+                right: -10px;
+                background: #ff4444;
+                color: #ffffff;
+                border-radius: 50%;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 5px;
+                font-size: 11px;
+                display: none;  /* Hidden by default */
+                align-items: center;
+                justify-content: center;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            /* When badge has content and should be shown */
+            .count-badge.show {
+                display: flex;
+            }
+            </style>
+            
+            <script>
+            function updateProductReviewCount() {
+                fetch('{% url "useradmin:get_product_review_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('productReviewCount');
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.add('show');
+                        } else {
+                            badge.textContent = '';
+                            badge.classList.remove('show');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            
+            // Update on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateProductReviewCount();
+                // Check for new reviews every 30 seconds
+                setInterval(updateProductReviewCount, 30000);
+            });
+            </script>
+        <!-- end product review styling and functionality -->
+
 
 
     </body>

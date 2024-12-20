@@ -84,7 +84,7 @@ class CartOrderProductsAdmin(admin.ModelAdmin):
 
 
 class ProductReviewAdmin(admin.ModelAdmin):
-    list_display = ['user', 'product', 'review', 'rating']
+    list_display = ['user', 'product', 'review', 'is_viewed', 'rating']
 
 
 class wishlistAdmin(admin.ModelAdmin):

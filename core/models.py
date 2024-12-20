@@ -309,16 +309,20 @@ class ProductReview(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name="reviews")
     review = models.TextField()
     rating = models.IntegerField(choices=RATING, default=None)
+    is_viewed = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True)
+    
+
+    @classmethod
+    def get_unread_count(cls):
+        return cls.objects.filter(is_viewed=False).count()
 
     class Meta:
         verbose_name_plural = "Product Reviews"
+        ordering = ['-date']
 
     def __str__(self):
-        if self.product:
-            return self.product.title
-        else:
-            return f"review - {self.pk}"
+        return f"Review for {self.product.title if self.product else 'Unknown Product'}"
 
     def get_rating(self):
         return self.rating
