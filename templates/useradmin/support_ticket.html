@@ -2,7 +2,301 @@
 {% load static %}
 
 {% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Support Tickets</h1>
+    </div>
 
+    <!-- Tickets Table Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">All Support Tickets</h6>
+            <div class="filter-section">
+                <select id="statusFilter" class="form-control form-control-sm" style="width: 150px;">
+                    <option value="">All Status</option>
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="ticketsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Issue Type</th>
+                            <th>Status</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td>#{{ ticket.id }}</td>
+                            <td>{{ ticket.order.oid }}</td>
+                            <td>{{ ticket.user.username }}</td>
+                            <td>{{ ticket.get_issue_type_display }}</td>
+                            <td>
+                                <span class="badge badge-{{ ticket.status }} p-2">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewTicket('{{ ticket.id }}')">
+                                    View Details
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
+<!-- Ticket Details Modal -->
+<div class="modal fade" id="ticketModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Support Ticket Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ticketDetails">
+                    <!-- Ticket details will be loaded here -->
+                </div>
+                <form id="responseForm" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" id="ticketId" name="ticket_id">
+                    <div class="form-group mb-3">
+                        <label for="status" class="form-label">Update Status</label>
+                        <select class="form-control" id="status" name="status" required>
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="adminResponse" class="form-label">Response</label>
+                        <textarea class="form-control" id="adminResponse" name="admin_response" rows="4" required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit Response</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Badge Colors */
+.badge-open {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-in_progress {
+    background-color: #ffc107;
+    color: black;
+}
+
+.badge-resolved {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-closed {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Ticket Details Styling */
+.ticket-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.ticket-message {
+    background: white;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Toast Styling */
+.toast-container {
+    z-index: 1055;
+}
+
+.toast {
+    background-color: white;
+    min-width: 300px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.toast.success {
+    border-left: 4px solid #28a745;
+}
+
+.toast.error {
+    border-left: 4px solid #dc3545;
+}
+
+.toast-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toast-body {
+    padding: 0.75rem;
+}
+</style>
+
+<script>
+function showToast(message, type = 'success') {
+    const toastContainer = document.querySelector('.toast-container');
+    
+    const toastHtml = `
+        <div class="toast ${type}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">
+                    ${type === 'success' ? 
+                        '<i class="fas fa-check-circle text-success"></i> Success' : 
+                        '<i class="fas fa-exclamation-circle text-danger"></i> Error'}
+                </strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = toastContainer.lastElementChild;
+    const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function viewTicket(ticketId) {
+    const detailsDiv = document.getElementById('ticketDetails');
+    detailsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    
+    document.getElementById('ticketId').value = ticketId;
+    
+    fetch(`/useradmin/support-ticket/${ticketId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const ticket = data.ticket;
+                detailsDiv.innerHTML = `
+                    <div class="ticket-info">
+                        <h6>Ticket #${ticket.id}</h6>
+                        <p><strong>Order:</strong> #${ticket.order_id}</p>
+                        <p><strong>Customer:</strong> ${ticket.username}</p>
+                        <p><strong>Issue Type:</strong> ${ticket.issue_type}</p>
+                        <p><strong>Status:</strong> ${ticket.status}</p>
+                        <p><strong>Created:</strong> ${ticket.created_at}</p>
+                    </div>
+                    <div class="ticket-message">
+                        <h6>Customer Message:</h6>
+                        <p>${ticket.message}</p>
+                    </div>
+                    ${ticket.admin_response ? `
+                        <div class="ticket-message">
+                            <h6>Previous Response:</h6>
+                            <p>${ticket.admin_response}</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                document.getElementById('status').value = ticket.status;
+                
+                const modal = new bootstrap.Modal(document.getElementById('ticketModal'));
+                modal.show();
+            } else {
+                showToast('Failed to load ticket details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred while loading ticket details', 'error');
+        });
+}
+
+document.getElementById('responseForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const ticketId = formData.get('ticket_id');
+    
+    fetch(`/useradmin/support-ticket/${ticketId}/respond/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Response submitted successfully');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('ticketModal'));
+            modal.hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.message || 'Failed to submit response', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred while submitting response', 'error');
+    });
+});
+
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const status = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#ticketsTable tbody tr');
+    
+    rows.forEach(row => {
+        const statusCell = row.querySelector('td:nth-child(5)');
+        if (statusCell) {
+            const rowStatus = statusCell.textContent.trim().toLowerCase();
+            row.style.display = 
+                status === '' || rowStatus.includes(status) ? '' : 'none';
+        }
+    });
+});
+
+// Initialize bootstrap tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
 {% endblock content %}

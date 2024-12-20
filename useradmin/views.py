@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 
 
-from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages
+from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages, SupportTicket
 from userauths.models import Profile, User, ContactUs
 from useradmin.forms import AddProductForm, EditProductForm, CategoryForm, CouponForm, Coupon
 from useradmin.decorators import admin_required
@@ -106,7 +106,7 @@ def dashboard(request):
         top_selling_products = CartOrderProducts.objects.filter(
             order__paid_status=True
         ).values('item').annotate(total_sold=Sum('qty')).order_by('-total_sold')[:5]
-    
+
     # Get the product titles for the top-selling products
     top_selling_products = [
         {
@@ -579,3 +579,65 @@ def contact_messages(request):
     messages = paginator.get_page(page)
     
     return render(request, 'useradmin/contact_messages.html', {'messagez': messages})
+
+
+
+def support_tickets(request):
+    tickets = SupportTicket.objects.all().order_by('-created_at')
+    return render(request, 'useradmin/support_ticket.html', {'tickets': tickets})
+
+
+def get_ticket_details(request, ticket_id):
+    try:
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        
+        ticket_data = {
+            'id': ticket.id,
+            'order_id': ticket.order.oid,
+            'username': ticket.user.username,
+            'issue_type': ticket.get_issue_type_display(),
+            'status': ticket.status,
+            'message': ticket.message,
+            'admin_response': ticket.admin_response,
+            'created_at': ticket.created_at.strftime('%B %d, %Y %I:%M %p')
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'ticket': ticket_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+
+
+def respond_to_ticket(request, ticket_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    try:
+        ticket = get_object_or_404(SupportTicket, id=ticket_id)
+        
+        # Update ticket
+        status = request.POST.get('status')
+        admin_response = request.POST.get('admin_response')
+        
+        if not all([status, admin_response]):
+            return JsonResponse({
+                'success': False,
+                'message': 'Both status and response are required'
+            })
+        
+        ticket.status = status
+        ticket.admin_response = admin_response
+        ticket.save()
+        
+        return JsonResponse({'success': True})
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })

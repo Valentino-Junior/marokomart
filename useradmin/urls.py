@@ -23,6 +23,11 @@ urlpatterns = [
     path("change_password/", views.change_password, name="change_password"),
 
 
+    path('support-tickets/', views.support_tickets, name='support_tickets'),
+    path('support-ticket/<int:ticket_id>/', views.get_ticket_details, name='get_ticket_details'),
+    path('support-ticket/<int:ticket_id>/respond/', views.respond_to_ticket, name='respond_to_ticket'),
+
+
     path('categories/', views.category_list, name='category_list'),
     path('categories/create/', views.category_create, name='category_create'),
     path('categories/<int:pk>/update/', views.category_update, name='category_update'),
