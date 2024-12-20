@@ -134,12 +134,14 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a class="menu-link" href="{% url 'useradmin:reviews' %}">
+                        <a class="menu-link" href="{% url 'useradmin:order_reviews' %}">
                             <i class="icon material-icons md-comment"></i>
                             <span class="text">Order Reviews</span>
+                            <span id="reviewCount" class="badge"></span>
                         </a>
                     </li>
-                   
+                    
+                    
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:support_tickets' %}">
                             <i class="icon material-icons md-comment"></i>
@@ -385,6 +387,56 @@
             });
             </script>
         <!-- end support ticket styling and functionality -->
+
+
+        <!-- start order reviews styling and functionality -->
+        <style>
+            .menu-link {
+                position: relative;
+            }
+            
+            .menu-link .badge {
+                position: absolute;
+                top: -8px;
+                right: -10px;
+                background: #ff4444;
+                color: white;
+                border-radius: 50%;
+                padding: 2px 6px;
+                font-size: 12px;
+                min-width: 20px;
+                height: 20px;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            </style>
+            
+            <script>
+            // Add this to your base template
+            function updateReviewCount() {
+                fetch('{% url "useradmin:get_unread_order_reviews_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('reviewCount');
+                        if (data.count > 0) {
+                            badge.style.display = 'flex';
+                            badge.textContent = data.count;
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    });
+            }
+            
+            // Update count when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                updateReviewCount();
+                // Update count every 30 seconds
+                setInterval(updateReviewCount, 30000);
+            });
+            </script>
+        <!-- end order reviews styling and functionality -->
+
 
     </body>
 </html>

@@ -394,8 +394,14 @@ class Order_Review(models.Model):
     order = models.ForeignKey(CartOrder, on_delete=models.CASCADE)
     rating = models.IntegerField(choices=RATING_CHOICES)
     comment = models.TextField()
+    is_viewed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+    @classmethod
+    def get_unread_count(cls):
+        return cls.objects.filter(is_viewed=False).count()
 
     class Meta:
         unique_together = ('user', 'order')  # One review per order

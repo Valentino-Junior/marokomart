@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 
 
-from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages, SupportTicket
+from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages, SupportTicket, Order_Review
 from userauths.models import Profile, User, ContactUs
 from useradmin.forms import AddProductForm, EditProductForm, CategoryForm, CouponForm, Coupon
 from useradmin.decorators import admin_required
@@ -647,3 +647,43 @@ def respond_to_ticket(request, ticket_id):
             'success': False,
             'message': str(e)
         })
+    
+
+
+def order_reviews(request):
+    reviews = Order_Review.objects.select_related('user', 'order').order_by('-created_at')
+    unread_reviews = Order_Review.objects.filter(is_viewed=False).count()
+    context = {
+        'reviews': reviews,
+        'unread_reviews': unread_reviews
+    }
+    # Mark all as viewed
+    Order_Review.objects.filter(is_viewed=False).update(is_viewed=True)
+    return render(request, 'useradmin/order_reviews.html', context)
+
+
+def get_order_review_details(request, review_id):
+    try:
+        review = get_object_or_404(Order_Review, id=review_id)
+        review_data = {
+            'id': review.id,
+            'order_id': review.order.oid,
+            'username': review.user.username,
+            'rating': review.rating,
+            'comment': review.comment,
+            'created_at': review.created_at.strftime('%B %d, %Y %I:%M %p')
+        }
+        return JsonResponse({
+            'success': True,
+            'review': review_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+
+
+def get_unread_order_reviews_count(request):
+    count = Order_Review.objects.filter(is_viewed=False).count()
+    return JsonResponse({'count': count})

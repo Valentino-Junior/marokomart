@@ -6,12 +6,14 @@ from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder,
 
 @admin.register(Order_Review)
 class OrderReviewAdmin(admin.ModelAdmin):
-    list_display = ('user', 'order', 'comment', 'rating', 'created_at')
+    list_display = ('user', 'order', 'comment', 'rating', 'is_viewed', 'created_at')
     list_filter = ('rating', 'created_at')
     search_fields = ('user__username', 'order__oid')
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
+
+    list_editable = ('is_viewed',)
     
     fieldsets = (
         ('Review Information', {

@@ -29,6 +29,11 @@ urlpatterns = [
     path('unread-tickets-count/', views.get_unread_tickets_count, name='unread_tickets_count'),
 
 
+    path('order_reviews/', views.order_reviews, name='order_reviews'),
+    path('order_review/<int:review_id>/', views.get_order_review_details, name='get_order_review_details'),
+    path('unread-order_reviews-count/', views.get_unread_order_reviews_count, name='get_unread_order_reviews_count'),
+
+
     path('categories/', views.category_list, name='category_list'),
     path('categories/create/', views.category_create, name='category_create'),
     path('categories/<int:pk>/update/', views.category_update, name='category_update'),
