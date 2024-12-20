@@ -1,6 +1,61 @@
 from django.contrib import admin
 from .models import Product, LowStockAlert
-from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress, LowStockAlert
+from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress, LowStockAlert, Order_Review, SupportTicket
+
+
+
+@admin.register(Order_Review)
+class OrderReviewAdmin(admin.ModelAdmin):
+    list_display = ('user', 'order', 'comment', 'rating', 'created_at')
+    list_filter = ('rating', 'created_at')
+    search_fields = ('user__username', 'order__oid')
+    readonly_fields = ('created_at', 'updated_at')
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+    
+    fieldsets = (
+        ('Review Information', {
+            'fields': ('user', 'order', 'rating')
+        }),
+        ('Review Content', {
+            'fields': ('comment',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ('user', 'order', 'issue_type', 'status', 'created_at')
+    list_filter = ('issue_type', 'status', 'created_at')
+    search_fields = ('user__username', 'order__oid', 'message')
+    readonly_fields = ('created_at', 'updated_at')
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+    
+    list_editable = ('status',)  # Allow quick status updates from the list view
+    
+    fieldsets = (
+        ('Ticket Information', {
+            'fields': ('user', 'order', 'issue_type', 'status')
+        }),
+        ('Support Message', {
+            'fields': ('message',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # Editing an existing object
+            return self.readonly_fields + ('user', 'order', 'issue_type')
+        return self.readonly_fields
+    
+
 
 
 class ProductImagesAdmin(admin.TabularInline):
@@ -10,6 +65,8 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImagesAdmin]
     list_editable = ['title', 'price', 'product_status', 'low_stock_threshold']
     list_display = ['user', 'title', 'product_image', 'price', 'category', 'product_status', 'pid', 'stock_count', 'low_stock_threshold', 'is_special_offer', 'special_offer_price', 'special_offer_ends', 'is_new_arrival', 'new_arrival_ends']
+
+
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['title', 'category_image']

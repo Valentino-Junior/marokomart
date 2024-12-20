@@ -378,3 +378,54 @@ class Coupon(models.Model):
     def __str__(self):
         return f"{self.code} ({self.discount}% off)"
     
+
+
+
+class Order_Review(models.Model):
+    RATING_CHOICES = (
+        (1, '1 Star'),
+        (2, '2 Stars'),
+        (3, '3 Stars'),
+        (4, '4 Stars'),
+        (5, '5 Stars'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(CartOrder, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'order')  # One review per order
+
+    def __str__(self):
+        return f"Review for Order {self.order.oid} by {self.user.username}"
+
+
+
+        
+class SupportTicket(models.Model):
+    ISSUE_CHOICES = (
+        ('delivery', 'Delivery Issue'),
+        ('product', 'Product Issue'),
+        ('payment', 'Payment Issue'),
+        ('other', 'Other'),
+    )
+    
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('resolved', 'Resolved'),
+        ('closed', 'Closed'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(CartOrder, on_delete=models.CASCADE)
+    issue_type = models.CharField(max_length=20, choices=ISSUE_CHOICES)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    

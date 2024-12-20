@@ -424,11 +424,11 @@
 
                     <div class="order-actions">
                         {% if order.product_status == 'delivered' %}
-                        <a href="#" class="action-button review-button">
+                        <button onclick="openReviewModal('{{ order.oid }}')" class="action-button review-button">
                             <i class="fas fa-star"></i> Write Review
-                        </a>
+                        </button>
                         {% endif %}
-
+                        
                         {% if order.product_status != 'cancelled' and order.product_status != 'delivered' %}
                         <button class="action-button cancel-button" onclick="cancelOrder('{{ order.oid }}')">
                             <i class="fas fa-times"></i> Cancel Order
@@ -455,6 +455,48 @@
             {% endfor %}
         </div>
     </div>
+
+
+      <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content animate__animated animate__fadeInDown">
+            <div class="modal-header">
+                <h3>Write a Review</h3>
+                <button class="close-button" onclick="closeModal('reviewModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="reviewOrderId" name="order_id">
+
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div class="rating-stars">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" name="rating" id="ratingInput" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Your Review</label>
+                        <textarea name="comment" rows="4" required placeholder="Share your experience with this order..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-button">
+                        <i class="fas fa-paper-plane"></i> Submit Review
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
 
     <!-- Support Modal -->
     <div id="supportModal" class="modal">
@@ -1062,32 +1104,33 @@
                 }
             };
 
-            // Support form submission
-            document.getElementById('supportForm').addEventListener('submit', function (e) {
+             // Updated contact support form submission
+            document.getElementById('supportForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
 
-                fetch('/api/support/contact/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showToast('Support request sent successfully', 'success');
-                            closeModal('supportModal');
-                            this.reset();
-                        } else {
-                            showToast(data.message || 'Failed to send support request', 'error');
-                        }
-                    })
-                    .catch(() => {
-                        showToast('An error occurred while sending support request', 'error');
-                    });
+                fetch('/api/support/submit/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Support ticket submitted successfully', 'success');
+                        closeModal('supportModal');
+                        this.reset();
+                    } else {
+                        showToast(data.message || 'Failed to submit support ticket', 'error');
+                    }
+                })
+                .catch(() => {
+                    showToast('An error occurred while submitting support ticket', 'error');
+                });
             });
+
 
             // Toast notification function
             function showToast(message, type = 'success') {
@@ -1128,6 +1171,277 @@
             }
         });
     </script>
+
+
+
+<!-- start styling and script for submit review -->
+<style>
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        margin: 50px auto;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    /* Rating Stars Styles */
+    .rating-stars {
+        display: flex;
+        gap: 10px;
+        font-size: 1.5rem;
+        margin: 10px 0;
+    }
+    
+    .rating-stars i {
+        cursor: pointer;
+        color: #ddd;
+        transition: all 0.2s ease;
+    }
+    
+    .rating-stars i:hover,
+    .rating-stars i.active {
+        transform: scale(1.2);
+    }
+    
+    .rating-stars i.fas {
+        color: #ffd700;
+    }
+    
+    .rating-stars i.far {
+        color: #ddd;
+    }
+    
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #3BB77E;
+    }
+    
+    .submit-button {
+        width: 100%;
+        padding: 12px;
+        background: #3BB77E;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .submit-button:hover {
+        background: #2f9165;
+    }
+    
+    /* Toast Styles */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        background: #333;
+        color: white;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .toast.success {
+        background: #28a745;
+    }
+    
+    .toast.error {
+        background: #dc3545;
+    }
+    </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize star rating system
+        const ratingStars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('ratingInput');
+        
+        ratingStars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                ratingInput.value = rating;
+                
+                // Update star visuals
+                ratingStars.forEach(s => {
+                    if (s.dataset.rating <= rating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            });
+        });
+        
+        // Handle review form submission
+        document.getElementById('reviewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate rating
+            const rating = document.getElementById('ratingInput').value;
+            if (!rating) {
+                showToast('Please select a rating', 'error');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            fetch('/submit-review/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Review submitted successfully', 'success');
+                    closeModal('reviewModal');
+                    this.reset();
+                    // Reset stars
+                    ratingStars.forEach(s => {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    });
+                } else {
+                    showToast(data.message || 'Failed to submit review', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while submitting review', 'error');
+            });
+        });
+    });
+    
+    // Modal Functions
+    function openReviewModal(orderId) {
+        const modal = document.getElementById('reviewModal');
+        document.getElementById('reviewOrderId').value = orderId;
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Utility Functions
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            ${message}
+        `;
+        document.body.appendChild(toast);
+    
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+    </script>
+<!-- end styling and script for submit review -->
+
 
 
 </main>

@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from requests import session
 import stripe
 from taggit.models import Tag
-from core.models import Coupon, Product, Category, CartOrder, CartOrderProducts, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress
+from core.models import Coupon, Product, Category, CartOrder, CartOrderProducts, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress, Order_Review, SupportTicket
 from userauths.models import ContactUs, Profile
 from core.forms import ProductReviewForm
 from userauths.forms import ProfileForm
@@ -41,6 +41,7 @@ from django.views.decorators.http import require_http_methods
 
 
 import uuid
+from django.views.decorators.http import require_POST
 
 
 
@@ -1357,6 +1358,94 @@ def terms_of_service(request):
     return render(request, "core/terms_of_service.html")
 
 
+@login_required
+@require_POST
+def submit_review(request):
+    try:
+        # Get form data
+        order_id = request.POST.get('order_id')
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        
+        # Validate required fields
+        if not all([order_id, rating, comment]):
+            return JsonResponse({
+                'success': False,
+                'message': 'All fields are required'
+            })
+            
+        # Get the order and validate it belongs to the user
+        try:
+            order = CartOrder.objects.get(oid=order_id, user=request.user)
+        except CartOrder.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Order not found'
+            })
+            
+        # Validate order is delivered
+        if order.product_status != 'delivered':
+            return JsonResponse({
+                'success': False,
+                'message': 'Can only review delivered orders'
+            })
+            
+        # Check if review already exists
+        if Order_Review.objects.filter(user=request.user, order=order).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'You have already reviewed this order'
+            })
+            
+        # Create the review
+        Order_Review.objects.create(
+            user=request.user,
+            order=order,
+            rating=int(rating),
+            comment=comment
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review submitted successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error in submit_review: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+
+
+@login_required
+def submit_support_ticket(request):
+    if request.method == 'POST':
+        try:
+            order_id = request.POST.get('order_id')
+            issue_type = request.POST.get('issue_type')
+            message = request.POST.get('message')
+            
+            # Validate the order belongs to user
+            order = get_object_or_404(CartOrder, oid=order_id, user=request.user)
+            
+            # Create support ticket
+            SupportTicket.objects.create(
+                user=request.user,
+                order=order,
+                issue_type=issue_type,
+                message=message
+            )
+            
+            return JsonResponse({'success': True})
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            })
+            
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
 @login_required
@@ -1391,13 +1480,6 @@ def cancel_order(request, order_id):
             })
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
-
-@login_required
-def contact_support(request):
-    if request.method == 'POST':
-        # Handle support request
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
 
