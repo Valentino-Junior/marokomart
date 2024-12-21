@@ -214,14 +214,29 @@ def update_payment_status(request, oid):
 
 @admin_required
 def products(request):
-    all_products = Product.objects.all()
-    all_categories = Category.objects.all()
-    
+    products = Product.objects.all().select_related('category')
+    categories = Category.objects.all()
+
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        products = products.filter(
+            Q(title__icontains=search_query) |
+            Q(sku__icontains=search_query)
+        )
+
+    # Category filter
+    category = request.GET.get('category', '')
+    if category and category != 'all':
+        products = products.filter(category__cid=category)
+
     context = {
-        "all_products": all_products,
-        "all_categories": all_categories,
+        "all_products": products,
+        "all_categories": categories,
+        "selected_category": category,
     }
     return render(request, "useradmin/products.html", context)
+
 
 
 @admin_required
