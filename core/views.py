@@ -945,133 +945,136 @@ def process_payment(request):
 
 
 
+# Email Thread Class
 class EmailThread(Thread):
-    def __init__(self, email):
-        self.email = email
-        Thread.__init__(self)
+   def __init__(self, email):
+       self.email = email
+       Thread.__init__(self)
 
-    def run(self):
-        self.email.send()
+   def run(self):
+       self.email.send()
 
+def send_order_emails(order):
+   """Send emails to both admin and customer using appropriate templates"""
+   try:
+       User = get_user_model()
+       # Get admin emails (superusers and staff)
+       admin_emails = User.objects.filter(
+           Q(is_superuser=True) | Q(is_staff=True)
+       ).values_list('email', flat=True).distinct()
 
-def send_order_notification_email(order):
-    """Send email notification to superusers and staff about new order"""
-    try:
-        User = get_user_model()
-        # Get all superusers and staff emails
-        admin_emails = User.objects.filter(
-            Q(is_superuser=True) | Q(is_staff=True)
-        ).values_list('email', flat=True).distinct()
+       # Get order items
+       order_items = CartOrderProducts.objects.filter(order=order)
 
-        # Get order items
-        order_items = CartOrderProducts.objects.filter(order=order)
+       # Common context
+       context = {
+           'order': order,
+           'order_items': order_items,
+       }
 
-        # Prepare context for email template
-        context = {
-            'order': order,
-            'order_items': order_items,
-        }
+       # Send admin notification
+       admin_html = render_to_string('core/emails/admin_order_notification.html', context)
+       admin_email = EmailMessage(
+           subject=f'New Order Received - #{order.oid}',
+           body=admin_html,
+           from_email=settings.DEFAULT_FROM_EMAIL,
+           to=list(admin_emails)
+       )
+       admin_email.content_subtype = 'html'
+       EmailThread(admin_email).start()
 
-        # Render email template
-        html_content = render_to_string('core/emails/order_notification.html', context)
-        text_content = strip_tags(html_content)
+       # Send customer notification
+       customer_html = render_to_string('core/emails/customer_order_confirmation.html', context)
+       customer_email = EmailMessage(
+           subject=f'Order Confirmation - #{order.oid}',
+           body=customer_html,
+           from_email=settings.DEFAULT_FROM_EMAIL,
+           to=[order.shipping_address.email]
+       )
+       customer_email.content_subtype = 'html'
+       EmailThread(customer_email).start()
 
-        subject = f'New Order Received - #{order.oid}'
-
-        # Create email message
-        email = EmailMessage(
-            subject=subject,
-            body=html_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=list(admin_emails)
-        )
-        email.content_subtype = 'html'  # Set content type to HTML
-
-        # Send email in a separate thread
-        EmailThread(email).start()
-
-        return True
-    except Exception as e:
-        print(f"Failed to send order notification email: {str(e)}")
-        return False
-    
-
+       return True
+   except Exception as e:
+       print(f"Failed to send order emails: {str(e)}")
+       return False
 
 def process_stripe_payment(request, order):
-    try:
-        # Here you'll integrate Stripe API
-        # For now, simulating successful payment
-        order.paid_status = True
-        order.save()
-        
-        update_product_stock(request, order)
-        clear_session_data(request)
-        
-        # Send email notification
-        send_order_notification_email(order)
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'Stripe payment for order {order.oid} successful',
-            'redirect': '/',
-            'cart_count': 0
-        })
-    except Exception as e:
-        order.delete()  # Remove order if payment fails
-        return JsonResponse({
-            'success': False,
-            'message': f'Stripe payment failed: {str(e)}'
-        })
-
+   try:
+       # Set order as paid
+       order.paid_status = True
+       order.save()
+       
+       # Update stock and clear session
+       update_product_stock(request, order)
+       clear_session_data(request)
+       
+       # Send email notifications
+       send_order_emails(order)
+       
+       return JsonResponse({
+           'success': True,
+           'message': f'Stripe payment for order {order.oid} successful',
+           'redirect': '/',
+           'cart_count': 0
+       })
+   except Exception as e:
+       order.delete()  # Remove order if payment fails
+       return JsonResponse({
+           'success': False,
+           'message': f'Stripe payment failed: {str(e)}'
+       })
 
 def process_mpesa_payment(request, order):
-    try:
-        # Here you'll integrate M-Pesa API
-        order.paid_status = True
-        order.save()
-        
-        update_product_stock(request, order)
-        clear_session_data(request)
-        
-        # Send email notification
-        send_order_notification_email(order)
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'M-Pesa payment for order {order.oid} successful',
-            'redirect': '/',
-            'cart_count': 0
-        })
-    except Exception as e:
-        order.delete()
-        return JsonResponse({
-            'success': False,
-            'message': f'M-Pesa payment failed: {str(e)}'
-        })
-
+   try:
+       # Set order as paid
+       order.paid_status = True 
+       order.save()
+       
+       # Update stock and clear session
+       update_product_stock(request, order)
+       clear_session_data(request)
+       
+       # Send email notifications
+       send_order_emails(order)
+       
+       return JsonResponse({
+           'success': True,
+           'message': f'M-Pesa payment for order {order.oid} successful',
+           'redirect': '/',
+           'cart_count': 0
+       })
+   except Exception as e:
+       order.delete()  # Remove order if payment fails
+       return JsonResponse({
+           'success': False,
+           'message': f'M-Pesa payment failed: {str(e)}'
+       })
 
 def process_cash_payment(request, order):
-    try:
-        order.paid_status = False
-        order.save()
-        
-        clear_session_data(request)
-        
-        # Send email notification
-        send_order_notification_email(order)
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'Order {order.oid} placed successfully for cash on delivery',
-            'redirect': '/',
-            'cart_count': 0
-        })
-    except Exception as e:
-        order.delete()
-        return JsonResponse({
-            'success': False,
-            'message': f'Failed to place cash order: {str(e)}'
-        })
+   try:
+       # Cash on delivery - mark as unpaid
+       order.paid_status = False
+       order.save()
+       
+       # Clear the session
+       clear_session_data(request)
+       
+       # Send email notifications
+       send_order_emails(order)
+       
+       return JsonResponse({
+           'success': True,
+           'message': f'Order {order.oid} placed successfully for cash on delivery',
+           'redirect': '/', 
+           'cart_count': 0
+       })
+   except Exception as e:
+       order.delete()
+       return JsonResponse({
+           'success': False,
+           'message': f'Failed to place cash order: {str(e)}'
+       })
 
 
 def clear_session_data(request):
