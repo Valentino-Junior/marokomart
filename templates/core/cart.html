@@ -93,18 +93,44 @@
                                 CART TOTALS</p>
                         </div>
         
-                        <div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <p class="fw-bold">Shipping</p>
-                                <p>Free</p>
+                        <style>
+                            .shipping-info {
+                                background-color: #f8f9fa;
+                                border: 1px solid #e9ecef;
+                                border-radius: 0.25rem;
+                                padding: 10px;
+                                margin-top: 10px;
+                            }
+                        </style>
+                    
+                    <body>
+                        <div class="container mt-5">
+                            <div class="mb-3">
+                                <label for="locationSelect" class="form-label">Select Your Location</label>
+                                <select id="locationSelect" class="form-select">
+                                    <option value="">Choose your location</option>
+                                    <option value="in_migori">In Migori CBD (Free Delivery)</option>
+                                    <option value="out_migori">Outside Migori CBD</option>
+                                </select>
                             </div>
-        
-                            <div class="d-flex justify-content-between mb-2">
-                                <p class="fw-bold">Total</p>
-                                <p class="cart-total">Ksh<span
-                                        id="cart-total-amount">{{cart_total_amount|floatformat:2}}</span></p>
+                    
+                            <div id="shippingInfo" class="shipping-info" style="display:none;">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="fw-bold">Subtotal</p>
+                                    <p>Ksh<span id="cart-subtotal-amount">{{cart_total_amount|floatformat:2}}</span></p>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <p class="fw-bold">Shipping</p>
+                                    <p id="shippingCost">Free</p>
+                                </div>
+                               
+                                <div id="negotiationInfo" class="text-muted mt-2" style="display:none;">
+                                    After successfully placing your order, you will be contacted shortly to negotiate the shipping fee.
+                                </div>
                             </div>
                         </div>
+                    
+                        
                     </div>
         
                     {% if totalcartitems %}
@@ -390,6 +416,57 @@
     });
 </script>
 <!-- end delete from cart functionality -->
+
+
+<!-- start shipping script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const locationSelect = document.getElementById('locationSelect');
+        const shippingInfo = document.getElementById('shippingInfo');
+        const negotiationInfo = document.getElementById('negotiationInfo');
+        const shippingCost = document.getElementById('shippingCost');
+        const subtotalElement = document.getElementById('cart-subtotal-amount');
+        const totalElement = document.getElementById('cart-total-amount');
+
+        // Get the original subtotal/total from the template
+        const originalSubtotal = parseFloat(subtotalElement.textContent);
+
+        locationSelect.addEventListener('change', () => {
+            const selectedLocation = locationSelect.value;
+
+            // Reset visibility and styles
+            shippingInfo.style.display = 'none';
+            negotiationInfo.style.display = 'none';
+
+            switch(selectedLocation) {
+                case 'in_migori':
+                    shippingInfo.style.display = 'block';
+                    shippingCost.textContent = 'Free';
+                    shippingCost.classList.remove('text-danger');
+                    
+                    // Set subtotal and total to original amount
+                    subtotalElement.textContent = originalSubtotal.toFixed(2);
+                    totalElement.textContent = originalSubtotal.toFixed(2);
+                    break;
+                case 'out_migori':
+                    shippingInfo.style.display = 'block';
+                    negotiationInfo.style.display = 'block';
+                    shippingCost.textContent = 'To be negotiated';
+                    shippingCost.classList.add('text-danger');
+                    
+                    // Set subtotal and total to original amount
+                    subtotalElement.textContent = originalSubtotal.toFixed(2);
+                    totalElement.textContent = originalSubtotal.toFixed(2);
+                    break;
+                default:
+                    // No location selected
+                    break;
+            }
+        });
+    });
+</script>
+<!-- end shipping script -->
+
 
 
 
