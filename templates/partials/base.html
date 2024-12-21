@@ -1495,28 +1495,44 @@
 
 
     <footer class="main">
-        <section class="newsletter mb-15">
+
+        <section class="responsible-drinking mb-15">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="position-relative newsletter-inner">
-                            <div class="newsletter-content">
-                                <h2 class="mb-20">
-                                    Stay home & get your daily <br /> needs from our shop
-                                </h2>
-                                <p class="mb-45">Start You'r Daily Shopping with <span class="text-brand">Valor liquor
-                                        store</span></p>
-                                <form class="form-subcriber d-flex">
-                                    <input type="email" placeholder="Your emaill address" />
-                                    <button class="btn" type="submit">Subscribe</button>
-                                </form>
+                        <div class="responsibility-banner animate__animated animate__fadeIn">
+                            <div class="responsibility-content">
+                                <div class="badge-age animate__animated animate__bounceIn">18+</div>
+                                <h2 class="animate__animated animate__slideInLeft">Drink Responsibly</h2>
+                                <div class="responsibility-features">
+                                    <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                                        <i class="fi-rs-shield-check"></i>
+                                        <span>Age Verified Shopping</span>
+                                    </div>
+                                    <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                                        <i class="fi-rs-truck-fast"></i>
+                                        <span>Secure Delivery</span>
+                                    </div>
+                                    <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+                                        <i class="fi-rs-user-check"></i>
+                                        <span>ID Required at Delivery</span>
+                                    </div>
+                                </div>
+                                <p class="commitment-text animate__animated animate__fadeInUp" style="animation-delay: 0.8s">
+                                    We are committed to responsible service of alcohol
+                                </p>
                             </div>
-                            <img src="{% static 'assets/imgs/banner/liquor6.jpg' %}" alt="newsletter" />
+                            <div class="responsibility-image">
+                                <div class="image-overlay"></div>
+                                <img src="{% static 'assets/imgs/banner/liquor6.jpg' %}" alt="responsible drinking" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+         </section>
+         
+         
 
         <!-- start premium spirits -->
         <section class="wakil-features section-spacing">
@@ -2219,6 +2235,205 @@
         }
         </style>
         <!-- end footer styling -->
+
+
+        <!-- start 18 plus section styling -->
+        <style>
+            .responsibility-banner {
+               background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+               border-radius: 15px;
+               overflow: hidden;
+               display: flex;
+               position: relative;
+               box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            }
+            
+            .responsibility-content {
+               padding: 40px;
+               flex: 1;
+               position: relative;
+               z-index: 2;
+            }
+            
+            .badge-age {
+               background: linear-gradient(45deg, #3BB77E, #2d8e61);
+               color: white;
+               width: 70px;
+               height: 70px;
+               border-radius: 50%;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               font-size: 24px;
+               font-weight: bold;
+               margin-bottom: 25px;
+               box-shadow: 0 8px 20px rgba(59, 183, 126, 0.3);
+               position: relative;
+               animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+               0% {
+                   transform: scale(1);
+                   box-shadow: 0 8px 20px rgba(59, 183, 126, 0.3);
+               }
+               50% {
+                   transform: scale(1.05);
+                   box-shadow: 0 12px 25px rgba(59, 183, 126, 0.4);
+               }
+               100% {
+                   transform: scale(1);
+                   box-shadow: 0 8px 20px rgba(59, 183, 126, 0.3);
+               }
+            }
+            
+            .responsibility-content h2 {
+               font-size: 36px;
+               color: #253D4E;
+               margin-bottom: 30px;
+               font-weight: 700;
+               position: relative;
+            }
+            
+            .responsibility-content h2:after {
+               content: '';
+               position: absolute;
+               bottom: -10px;
+               left: 0;
+               width: 60px;
+               height: 3px;
+               background: #3BB77E;
+               transition: width 0.3s ease;
+            }
+            
+            .responsibility-content h2:hover:after {
+               width: 100px;
+            }
+            
+            .responsibility-features {
+               display: flex;
+               gap: 25px;
+               margin-bottom: 30px;
+            }
+            
+            .feature-item {
+               display: flex;
+               align-items: center;
+               gap: 12px;
+               background: white;
+               padding: 15px 20px;
+               border-radius: 12px;
+               box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+               transition: all 0.3s ease;
+               border: 1px solid rgba(0,0,0,0.05);
+            }
+            
+            .feature-item:hover {
+               transform: translateY(-5px);
+               box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+               border-color: #3BB77E;
+            }
+            
+            .feature-item i {
+               color: #3BB77E;
+               font-size: 22px;
+               transition: transform 0.3s ease;
+            }
+            
+            .feature-item:hover i {
+               transform: scale(1.2);
+            }
+            
+            .feature-item span {
+               color: #253D4E;
+               font-weight: 600;
+               font-size: 15px;
+            }
+            
+            .commitment-text {
+               font-size: 16px;
+               color: #666;
+               margin: 0;
+               padding: 15px;
+               background: rgba(59, 183, 126, 0.1);
+               border-radius: 10px;
+               border-left: 4px solid #3BB77E;
+            }
+            
+            .responsibility-image {
+               width: 45%;
+               position: relative;
+               overflow: hidden;
+            }
+            
+           
+            .responsibility-image img {
+               width: 100%;
+               height: 100%;
+               object-fit: cover;
+               transition: transform 0.5s ease;
+            }
+            
+            .responsibility-banner:hover .responsibility-image img {
+               transform: scale(1.1);
+            }
+            
+            @media (max-width: 991px) {
+               .responsibility-banner {
+                   flex-direction: column;
+               }
+            
+               .responsibility-image {
+                   width: 100%;
+                   height: 250px;
+               }
+            
+               .responsibility-content {
+                   padding: 30px;
+               }
+            
+               .responsibility-features {
+                   flex-direction: column;
+                   gap: 15px;
+               }
+            
+               .feature-item {
+                   width: 100%;
+               }
+            
+               .badge-age {
+                   width: 60px;
+                   height: 60px;
+                   font-size: 22px;
+               }
+            
+               .image-overlay {
+                   background: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%);
+               }
+            }
+            
+            @media (max-width: 576px) {
+               .responsibility-content h2 {
+                   font-size: 28px;
+               }
+            
+               .badge-age {
+                   width: 50px;
+                   height: 50px;
+                   font-size: 20px;
+               }
+            
+               .commitment-text {
+                   font-size: 14px;
+               }
+            
+               .responsibility-image {
+                   height: 200px;
+               }
+            }
+            </style>
+        <!-- end 18 plus section styling -->
+
 
 
 </body>
