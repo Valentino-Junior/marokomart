@@ -356,49 +356,52 @@
         <div class="main-container">
             <!-- Info Container Section -->
             <div class="info-container">
-                <h1 class="section-title">Visit Our Store</h1>
-                
-                <div class="info-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-map-marker-alt"></i>
+                <h1 class="section-title">Visit Our Online Store</h1>
+            
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Shop Anytime</h3>
+                            <p>Browse our extensive selection and order online 24/7</p>
+                        </div>
                     </div>
-                    <div class="info-content">
-                        <h3>Our Location</h3>
-                        <p>205 North Michigan Avenue, Suite 810<br>Chicago, 60601, USA</p>
+            
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Fast Delivery</h3>
+                            <p>Quick order processing and speedy shipping to your door</p> 
+                        </div>
                     </div>
-                </div>
-    
-                <div class="info-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-clock"></i>
+            
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Call Us</h3>
+                            <p>0703423696<br>Mon - Fri, 9AM - 5PM</p>
+                        </div>
                     </div>
-                    <div class="info-content">
-                        <h3>Opening Hours</h3>
-                        <p>Monday - Saturday: 10:00 AM - 10:00 PM<br>Sunday: 12:00 PM - 8:00 PM</p>
-                    </div>
-                </div>
-    
-                <div class="info-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-phone"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Phone</h3>
-                        <p>(123) 456-7890</p>
-                    </div>
-                </div>
-    
-                <div class="info-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Email</h3>
-                        <p>contact@Valorliquorstore.com</p>
+            
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Email Support</h3>
+                            <p>support@valorliquorstore.com<br>Replies within 24 hours</p>
+                        </div>
                     </div>
                 </div>
             </div>
-    
+            
+            
             <!-- Contact Form Section -->
             <div class="contact-form">
                 <h2 class="section-title">Get in Touch</h2>
@@ -586,6 +589,109 @@
             }
             </script>
             <!-- start contact submission styling and script -->
+
+
+            <!-- start styling of the contact section -->
+            <style>
+                .info-container {
+                    text-align: center;
+                    padding: 60px 0;
+                    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+                }
+                
+                .section-title {
+                    font-size: 36px;
+                    font-weight: 700;
+                    margin-bottom: 40px;
+                    color: #253D4E;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    position: relative;
+                    display: inline-block;
+                }
+                
+                .section-title:after {
+                    content: '';
+                    position: absolute;
+                    bottom: -10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 80px;
+                    height: 3px;
+                    background: #3BB77E;
+                }
+                
+                .info-cards {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 30px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 0 20px;
+                }
+                
+                .info-card {
+                    background: #fff;
+                    border-radius: 20px;
+                    padding: 40px 30px;
+                    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }
+                
+                .info-card:hover {
+                    transform: translateY(-10px);
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+                }
+                
+                .icon-wrapper {
+                    width: 80px;
+                    height: 80px;
+                    border-radius: 50%;
+                    background: linear-gradient(45deg, #3BB77E, #2d8e61);
+                    margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 32px;
+                    color: white;
+                }
+                
+                .info-content h3 {
+                    font-size: 22px;
+                    font-weight: 600;
+                    margin-bottom: 15px;
+                    color: #253D4E;
+                }
+                
+                .info-content p {
+                    color: #666;
+                    line-height: 1.6;
+                }
+                
+                @media (max-width: 767px) {
+                    .info-container {
+                        padding: 40px 0;
+                    }
+                
+                    .section-title {
+                        font-size: 28px;
+                    }
+                
+                    .info-card {
+                        padding: 30px 20px;
+                    }
+                
+                    .info-content h3 {
+                        font-size: 20px;
+                    }
+                }
+                </style>
+            <!-- end styling of the contact section -->
+
 
         
     </main>
