@@ -103,12 +103,16 @@
                             <span class="text">Products</span>
                         </a>
                     </li>
+
                     <li class="menu-item {% if '/useradmin/orders/' in request.path %}active{% endif %}">
                         <a class="menu-link" href="{% url 'useradmin:orders' %}">
                             <i class="icon material-icons md-shopping_cart"></i>
                             <span class="text">Orders</span>
+                            <span id="orderCount" class="count-badge"></span>
                         </a>
                     </li>
+                    
+                    
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'useradmin:shop_page' %}">
                             <i class="icon material-icons md-store"></i>
@@ -555,6 +559,63 @@
             });
             </script>
         <!-- end messages contact styling and functionality -->
+
+
+        <!-- start orders count -->
+        <style>
+            .menu-link {
+                position: relative;
+            }
+            
+            .count-badge {
+                position: absolute;
+                top: -6px;
+                right: -10px;
+                background: #ff4444;
+                color: #ffffff;
+                border-radius: 50%;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 5px;
+                font-size: 11px;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .count-badge.show {
+                display: flex;
+            }
+            </style>
+            
+            <script>
+            function updateOrderCount() {
+                fetch('{% url "useradmin:get_orders_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('orderCount');
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.add('show');
+                        } else {
+                            badge.textContent = '';
+                            badge.classList.remove('show');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            
+            // Update on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateOrderCount();
+                // Check for new orders every 30 seconds
+                setInterval(updateOrderCount, 30000);
+            });
+            </script>
+        <!-- end orders count -->
+
 
 
 

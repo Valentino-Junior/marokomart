@@ -24,6 +24,7 @@ from django.core.paginator import Paginator
 
 
 from django.utils import timezone
+from django.db.models import Q 
 
 
 
@@ -344,19 +345,53 @@ def delete_product_image(request, pid, image_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
+
+
 @admin_required
 def delete_product(request, pid):
     product = Product.objects.get(pid=pid)
     product.delete()
     return redirect("useradmin:dashboard-products")
 
+
+
 @admin_required
 def orders(request):
-    orders = CartOrder.objects.select_related('shipping_address').all()
+    # Get all orders with related data
+    orders = CartOrder.objects.select_related('shipping_address').order_by('-order_date')
+    
+    # Mark all unviewed orders as viewed
+    CartOrder.objects.filter(is_viewed=False).update(is_viewed=True)
+
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        orders = orders.filter(
+            Q(oid__icontains=search_query) |
+            Q(shipping_address__full_name__icontains=search_query) |
+            Q(shipping_address__email__icontains=search_query)
+        )
+
+    # Status filter
+    status = request.GET.get('status')
+    if status and status != 'all':
+        orders = orders.filter(product_status=status)
+
+    # Pagination
+    items_per_page = int(request.GET.get('show', 20))
+    paginator = Paginator(orders, items_per_page)
+    page = request.GET.get('page')
+    orders = paginator.get_page(page)
+
     context = {
-        'orders':orders,
+        'orders': orders,
+        'search_query': search_query,
+        'current_status': status,
+        'items_per_page': items_per_page,
     }
     return render(request, "useradmin/orders.html", context)
+
+
 
 @admin_required
 def order_detail(request, id):
@@ -367,6 +402,13 @@ def order_detail(request, id):
         'order_items': order_items
     }
     return render(request, "useradmin/order_detail.html", context)
+
+
+
+@admin_required
+def get_orders_count(request):
+    count = CartOrder.get_unread_count()
+    return JsonResponse({'count': count})
 
 
 @admin_required

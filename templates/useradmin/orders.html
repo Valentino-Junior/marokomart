@@ -1,103 +1,128 @@
 {% extends 'useradmin/base.html' %}
 {% load static %}
 {% load humanize %}
-{% block content %}    
 
+{% block content %}    
 <section class="content-main">
     <div class="content-header">
         <div>
             <h2 class="content-title card-title">Order List</h2>
             <p>Manage all your orders from here</p>
         </div>
-        <div>
-            <input type="text" placeholder="Search order ID" class="form-control bg-white" />
-        </div>
     </div>
+
     <div class="card mb-4">
         <header class="card-header">
-            <div class="row gx-3">
+            <form method="get" class="row gx-3">
                 <div class="col-lg-4 col-md-6 me-auto">
-                    <input type="text" placeholder="Search..." class="form-control" />
+                    <input type="text" name="search" value="{{ search_query }}" 
+                           placeholder="Search by Order ID, Name or Email" class="form-control">
                 </div>
                 <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select">
-                        <option>Status</option>
-                        <option>Active</option>
-                        <option>Disabled</option>
-                        <option>Show all</option>
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        <option value="processing" {% if current_status == 'processing' %}selected{% endif %}>Processing</option>
+                        <option value="shipped" {% if current_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                        <option value="delivered" {% if current_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                        <option value="cancelled" {% if current_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
                     </select>
                 </div>
                 <div class="col-lg-2 col-6 col-md-3">
-                    <select class="form-select">
-                        <option>Show 20</option>
-                        <option>Show 30</option>
-                        <option>Show 40</option>
+                    <select name="show" class="form-select" onchange="this.form.submit()">
+                        <option value="20" {% if items_per_page == 20 %}selected{% endif %}>Show 20</option>
+                        <option value="30" {% if items_per_page == 30 %}selected{% endif %}>Show 30</option>
+                        <option value="40" {% if items_per_page == 40 %}selected{% endif %}>Show 40</option>
                     </select>
                 </div>
-            </div>
+            </form>
         </header>
-        <!-- card-header end// -->
+
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
-                            <tr>
+                        <tr>
                             <th>#ID</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Phone</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Order Status</th>
-                            <th scope="col">Payment Method</th>
-                            <th scope="col">Payment Status</th>
-                            <th scope="col">Action</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Total</th>
+                            <th>Order Status</th>
+                            <th>Payment Method</th>
+                            <th>Payment Status</th>
+                            <th>Action</th>
                         </tr>
-                            
                     </thead>
                     <tbody>
-                        {% for c in orders %}
-                            <tr>
-                                <td>#{{c.oid}}</td>
-                                <td><b>{{c.shipping_address.full_name|title}}</b></td>
-                                <td>{{c.shipping_address.email}}</td>
-                                <td>{{c.shipping_address.phone}}</td>
-                                <td>Ksh{{c.price}}</td>
-                                <td>{{c.payment_method|title}}</td>
-                                <td><span class="badge alert-secondary">Pending</span></td>
-                                {% if c.paid_status == True %}
-                                    <td><span class="badge alert-success"></span>Paid</td>
+                        {% for order in orders %}
+                        <tr {% if not order.is_viewed %}class="table-info"{% endif %}>
+                            <td>#{{ order.oid }}</td>
+                            <td><b>{{ order.shipping_address.full_name|title }}</b></td>
+                            <td>{{ order.shipping_address.email }}</td>
+                            <td>{{ order.shipping_address.phone }}</td>
+                            <td>Ksh {{ order.price|floatformat:2 }}</td>
+                            <td>
+                                <span class="badge {% if order.product_status == 'processing' %}bg-warning
+                                               {% elif order.product_status == 'shipped' %}bg-info
+                                               {% elif order.product_status == 'delivered' %}bg-success
+                                               {% elif order.product_status == 'cancelled' %}bg-danger
+                                               {% endif %}">
+                                    {{ order.product_status|title }}
+                                </span>
+                            </td>
+                            <td>{{ order.payment_method|title }}</td>
+                            <td>
+                                {% if order.paid_status %}
+                                    <span class="badge bg-success">Paid</span>
                                 {% else %}
-                                    <td><span class="badge alert-danger">Not Paid</span></td>
+                                    <span class="badge bg-danger">Not Paid</span>
                                 {% endif %}
-                                <td>
-                                    <a href="{% url 'useradmin:order_detail' c.id %}" class="btn btn-md rounded font-sm">View Detail</a>
-                                </td>
-                            </tr>
+                            </td>
+                            <td>
+                                <a href="{% url 'useradmin:order_detail' order.id %}" 
+                                   class="btn btn-sm btn-primary">View Detail</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <i class="material-icons md-shopping_cart text-muted" style="font-size: 48px;"></i>
+                                <p class="mt-2">No orders found</p>
+                            </td>
+                        </tr>
                         {% endfor %}
-                        
                     </tbody>
                 </table>
             </div>
-            <!-- table-responsive //end -->
+
+            {% if orders.has_other_pages %}
+            <nav class="float-end mt-4" aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if orders.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ orders.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if items_per_page %}&show={{ items_per_page }}{% endif %}">
+                            <i class="material-icons md-chevron_left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for i in orders.paginator.page_range %}
+                    <li class="page-item {% if orders.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if items_per_page %}&show={{ items_per_page }}{% endif %}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if orders.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ orders.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if items_per_page %}&show={{ items_per_page }}{% endif %}">
+                            <i class="material-icons md-chevron_right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         </div>
-        <!-- card-body end// -->
     </div>
-    <!-- card end// -->
-    <!-- <div class="pagination-area mt-15 mb-50">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                <li class="page-item"><a class="page-link" href="#">02</a></li>
-                <li class="page-item"><a class="page-link" href="#">03</a></li>
-                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                <li class="page-item"><a class="page-link" href="#">16</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a>
-                </li>
-            </ul>
-        </nav>
-    </div> -->
 </section>
-
-
-{% endblock content %}
+{% endblock %}

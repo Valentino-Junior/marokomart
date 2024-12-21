@@ -162,7 +162,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-CSRF_TRUSTED_ORIGINS = ["https://61db-102-0-11-106.ngrok-free.app"]
+CSRF_TRUSTED_ORIGINS = ["https://8b94-154-159-252-170.ngrok-free.app"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

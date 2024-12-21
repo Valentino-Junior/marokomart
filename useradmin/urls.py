@@ -14,11 +14,16 @@ urlpatterns = [
 
     path('contact_messages/', views.contact_messages, name='contact_messages'),
     path('contact-messages/count/', views.get_contact_message_count, name='get_contact_message_count'),
-    
+
 
     path("delete-products/<pid>/", views.delete_product, name="dashboard-delete-products"),
+
+
     path("orders/", views.orders, name="orders"),
     path("order_detail/<id>/", views.order_detail, name="order_detail"),
+    path("orders/count/", views.get_orders_count, name="get_orders_count"),
+
+
     path("change_order_status/<oid>/", views.change_order_status, name="change_order_status"),
     path("shop_page/", views.shop_page, name="shop_page"),
     path("settings/", views.settings, name="settings"),

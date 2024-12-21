@@ -258,6 +258,12 @@ class CartOrder(models.Model):
     oid = ShortUUIDField(null=True, blank=True, length=8, max_length=20, alphabet="1234567890")
     stripe_payment_intent = models.CharField(max_length=1000, null=True, blank=True)
     date = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    is_viewed = models.BooleanField(default=False)
+
+
+    @classmethod
+    def get_unread_count(cls):
+        return cls.objects.filter(is_viewed=False).count()
     
     class Meta:
         verbose_name_plural = "Cart Order"
