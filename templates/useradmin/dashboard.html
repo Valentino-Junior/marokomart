@@ -15,8 +15,8 @@
         </div>
     </div>
 
-    <div class="mb-4">
-        <label for="time_period">Select Time Period:</label>
+    <div class="time-period-selector mb-4">
+        <label for="time_period" class="time-period-label">Select Time Period:</label>
         <select name="time_period" id="time_period" class="form-control" onchange="location = this.value;">
             <option value="{% url 'useradmin:dashboard' %}?time_period=day" {% if time_period == 'day' %}selected{% endif %}>Today</option>
             <option value="{% url 'useradmin:dashboard' %}?time_period=week" {% if time_period == 'week' %}selected{% endif %}>This Week</option>
@@ -24,8 +24,9 @@
             <option value="{% url 'useradmin:dashboard' %}?time_period=previous_month" {% if time_period == 'previous_month' %}selected{% endif %}>Previous Month</option>
             <option value="{% url 'useradmin:dashboard' %}?time_period=total" {% if time_period == 'total' %}selected{% endif %}>Total</option>
         </select>
-    </div>
-
+     </div>
+     
+     
     <div id="dashboard-data">
         <div class="row">
             <div class="col-lg-3">
@@ -177,54 +178,54 @@
 
     <div class="card mb-4">
         <header class="card-header">
-            <h4 class="card-title">Latest orders</h4>
+            <h4 class="card-title mb-0">Latest orders</h4>
         </header>
         <div class="card-body">
             <div class="table-responsive">
-                <div class="table-responsive">
-                    <table class="table align-middle table-nowrap mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="align-middle" scope="col">Order ID</th>
-                                <th class="align-middle" scope="col">Name</th>
-                                <th class="align-middle" scope="col">Email</th>
-                                <th class="align-middle" scope="col">Phone</th>
-                                <th class="align-middle" scope="col">Date</th>
-                                <th class="align-middle" scope="col">Total</th>
-                                <th class="align-middle" scope="col">Payment Method</th>
-                                <th class="align-middle" scope="col">Payment Status</th>
-                                <th class="align-middle" scope="col">View Details</th>
-                            </tr>
-                        </thead>
-                        <tbody id="latest-orders">
-                            {% for l in latest_orders %}
-                            <tr>
-                                <td><a href="#" class="fw-bold">#{{l.oid}}</a></td>
-                                <td>{{l.shipping_address.full_name|title}}</td>
-                                <td>{{l.shipping_address.email}}</td>
-                                <td>{{l.shipping_address.phone}}</td>
-                                <td>{{l.order_date}}</td>
-                                <td>Ksh{{l.price}}</td>
-                                <td>{{l.payment_method|title}}</td>
-                                <td>
-                                    {% if l.paid_status == True %}
-                                    <span class="badge badge-pill badge-soft-success">Paid</span>
-                                    {% else %}
-                                    <span class="badge badge-pill badge-soft-danger">Not Paid</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{% url 'useradmin:order_detail' l.id %}" class="btn btn-xs"> View
-                                        details</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table align-middle table-nowrap mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="align-middle" scope="col">Order ID</th>
+                            <th class="align-middle" scope="col">Name</th>
+                            <th class="align-middle" scope="col">Email</th>
+                            <th class="align-middle" scope="col">Phone</th>
+                            <th class="align-middle" scope="col">Date</th>
+                            <th class="align-middle" scope="col">Total</th>
+                            <th class="align-middle" scope="col">Payment Method</th>
+                            <th class="align-middle" scope="col">Payment Status</th>
+                            <th class="align-middle" scope="col">View Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="latest-orders">
+                        {% for l in latest_orders %}
+                        <tr>
+                            <td><a href="#" class="fw-bold text-dark">#{{l.oid}}</a></td>
+                            <td>{{l.shipping_address.full_name|title}}</td>
+                            <td>{{l.shipping_address.email}}</td>
+                            <td>{{l.shipping_address.phone}}</td>
+                            <td>{{l.order_date|date:"M d, Y H:i"}}</td>
+                            <td>Ksh {{l.price|floatformat:2}}</td>
+                            <td>{{l.payment_method|title}}</td>
+                            <td>
+                                {% if l.paid_status == True %}
+                                <span class="badge bg-soft-success text-success">Paid</span>
+                                {% else %}
+                                <span class="badge bg-soft-danger text-danger">Not Paid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'useradmin:order_detail' l.id %}" class="btn btn-primary btn-sm">
+                                    View details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+    
 </section>
 
 <!-- start product count styling -->
@@ -374,6 +375,236 @@
     }
     </style>
 <!-- end product count styling -->
+
+
+<!-- start order list -->
+<style>
+    /* Card Styles */
+    .card {
+        border: none;
+        box-shadow: 0 0 10px rgba(0,0,0,.03);
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        padding: 1.5rem;
+    }
+    
+    .card-title {
+        color: #495057;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Table Styles */
+    .table {
+        margin-bottom: 0;
+        color: #495057;
+        border-color: #f1f1f1;
+    }
+    
+    .table-light {
+        background-color: #f8f9fa;
+    }
+    
+    .table > :not(:first-child) {
+        border-top: 0;
+    }
+    
+    .table th {
+        font-weight: 600;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+    
+    .table td {
+        font-size: 0.875rem;
+        vertical-align: middle;
+    }
+    
+    /* Badge Styles */
+    .badge {
+        padding: 0.5em 0.75em;
+        font-weight: 500;
+        border-radius: 30px;
+        font-size: 0.75rem;
+    }
+    
+    .bg-soft-success {
+        background-color: rgba(59, 183, 126, 0.1);
+    }
+    
+    .bg-soft-danger {
+        background-color: rgba(240, 101, 72, 0.1);
+    }
+    
+    .text-success {
+        color: #3bb77e !important;
+    }
+    
+    .text-danger {
+        color: #f06548 !important;
+    }
+    
+    /* Button Styles */
+    .btn-primary {
+        background-color: #3BB77E;
+        border-color: #3BB77E;
+        padding: 0.45rem 0.9rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2f9165;
+        border-color: #2f9165;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 0.2rem;
+    }
+    
+    /* Links */
+    a {
+        text-decoration: none;
+    }
+    
+    .fw-bold {
+        font-weight: 600;
+    }
+    
+    /* Responsive Table */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Hover Effects */
+    tbody tr:hover {
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    /* Status Badge Animations */
+    .badge {
+        transition: all 0.3s ease;
+    }
+    
+    .badge:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* Button Transition */
+    .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+    }
+    
+    /* Custom Scrollbar for Table */
+    .table-responsive::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .table th,
+        .table td {
+            white-space: nowrap;
+        }
+    }
+    </style>
+<!-- end order list -->
+
+
+<!-- start select time period -->
+<style>
+    .time-period-selector {
+       max-width: 300px;
+       padding: 15px;
+       background: #fff;
+       border-radius: 8px;
+       box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    
+    .time-period-label {
+       display: block;
+       margin-bottom: 8px;
+       color: #333;
+       font-weight: 500;
+       font-size: 0.95rem;
+    }
+    
+    .time-period-selector select {
+       display: block;
+       width: 100%;
+       padding: 8px 12px;
+       font-size: 0.95rem;
+       line-height: 1.5;
+       color: #495057;
+       background-color: #fff;
+       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+       background-repeat: no-repeat;
+       background-position: right 0.75rem center;
+       background-size: 16px 12px;
+       border: 1px solid #ced4da;
+       border-radius: 6px;
+       appearance: none;
+       transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+    
+    .time-period-selector select:focus {
+       border-color: #3BB77E;
+       outline: 0;
+       box-shadow: 0 0 0 0.2rem rgba(59, 183, 126, 0.25);
+    }
+    
+    .time-period-selector select:hover {
+       border-color: #3BB77E;
+       cursor: pointer;
+    }
+    
+    .time-period-selector select option {
+       padding: 10px;
+    }
+    
+    .time-period-selector select option:hover {
+       background-color: #f8f9fa;
+    }
+    
+    @media (max-width: 768px) {
+       .time-period-selector {
+           max-width: 100%;
+       }
+    }
+    </style>
+<!-- end select time period -->
 
 
 
