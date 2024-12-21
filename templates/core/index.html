@@ -378,37 +378,60 @@
                 <section class="home-slider position-relative mb-30">
                     <div class="home-slide-cover mt-30">
                         <div class="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
+                            <!-- First Slide -->
                             <div class="single-hero-slider single-animation-wrap"
                                 style="background-image: url({% static 'assets/imgs/slider/david-straight-VZY6o3Q0EEI-unsplash.jpg' %})">
                                 <div class="slider-content">
-                                    <h1 class="display-2 mb-40">
+                                    <span class="new-tag animate__animated animate__fadeInDown">Premium Selection</span>
+                                    <h1 class="display-2 mb-40 animate__animated animate__fadeInUp">
                                         Discover Amazing<br /> Spirit Deals
                                     </h1>
-                                    <p class="mb-65">Sign up for exclusive offers and updates</p>
-                                    <form class="form-subcriber d-flex">
-                                        <input type="email" placeholder="Your email address" />
-                                        <button class="btn" type="submit">Subscribe</button>
-                                    </form>
+                                    <div class="feature-highlights animate__animated animate__fadeIn">
+                                        <div class="highlight-item">
+                                            <i class="fi-rs-crown"></i>
+                                            <span>Premium Quality</span>
+                                        </div>
+                                        <div class="highlight-item">
+                                            <i class="fi-rs-shield-check"></i>
+                                            <span>100% Authentic</span>
+                                        </div>
+                                        <div class="highlight-item">
+                                            <i class="fi-rs-truck"></i>
+                                            <span>Fast Delivery</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <!-- Second Slide -->
                             <div class="single-hero-slider single-animation-wrap"
                                 style="background-image: url({% static 'assets/imgs/slider/sal-media-oIxo9I98Rcs-unsplash.jpg' %})">
                                 <div class="slider-content">
-                                    <h1 class="display-2 mb-40">
-                                        Premium Wines<br /> Special Discounts
+                                    <span class="special-tag animate__animated animate__fadeInDown">Limited Time</span>
+                                    <h1 class="display-2 mb-40 animate__animated animate__fadeInUp">
+                                        Premium Wines<br /> Special Offers
                                     </h1>
-                                    <p class="mb-65">Save up to 15% off on select premium bottles</p>
-                                    <form class="form-subcriber d-flex">
-                                        <input type="email" placeholder="Your email address" />
-                                        <button class="btn" type="submit">Subscribe</button>
-                                    </form>
+                                    <div class="offer-highlights animate__animated animate__fadeIn">
+                                        
+                                        <div class="offer-features">
+                                            <div class="offer-feature">
+                                                <i class="fi-rs-star"></i>
+                                                <span>Premium Selection</span>
+                                            </div>
+                                            <div class="offer-feature">
+                                                <i class="fi-rs-home"></i>
+                                                <span>Home Delivery</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="slider-arrow hero-slider-1-arrow"></div>
                     </div>
                 </section>
-
+                
+                
                 <!--start Deals-->
 
                 <div class="section-title">
@@ -870,6 +893,136 @@
     });
     </script>
 <!-- end sorting styling and script -->
+
+
+<!-- start styling for slider -->
+<style>
+    /* Tags Styling */
+    .new-tag, .special-tag {
+        display: inline-block;
+        background: rgba(59, 183, 126, 0.9);
+        color: #fff;
+        padding: 8px 20px;
+        border-radius: 25px;
+        margin-bottom: 20px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+    
+    .special-tag {
+        background: rgba(255, 99, 71, 0.9);
+    }
+    
+    /* Feature Highlights */
+    .feature-highlights {
+        display: flex;
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .highlight-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 12px 20px;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+    }
+    
+    .highlight-item i {
+        font-size: 24px;
+        color: #3BB77E;
+    }
+    
+    .highlight-item span {
+        color: #253D4E;
+        font-weight: 500;
+    }
+    
+    /* Offer Styling */
+    .offer-highlights {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        margin-top: 30px;
+    }
+    
+    .offer-badge {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .offer-amount {
+        font-size: 32px;
+        font-weight: 700;
+        color: #FF6347;
+        line-height: 1;
+    }
+    
+    .offer-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: #253D4E;
+    }
+    
+    .offer-features {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .offer-feature {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px 20px;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+    }
+    
+    .offer-feature i {
+        color: #FF6347;
+        font-size: 20px;
+    }
+    
+    .offer-feature span {
+        color: #253D4E;
+        font-weight: 500;
+    }
+    
+    /* Animation Classes */
+    .animate__animated {
+        animation-duration: 1s;
+        animation-fill-mode: both;
+    }
+    
+    @media (max-width: 768px) {
+        .feature-highlights, .offer-highlights {
+            flex-direction: column;
+            gap: 15px;
+        }
+    
+        .highlight-item, .offer-feature {
+            width: 100%;
+        }
+    
+        .offer-badge {
+            margin: 0 auto;
+        }
+    }
+    </style>
+<!-- end styling for slider -->
 
 
 
