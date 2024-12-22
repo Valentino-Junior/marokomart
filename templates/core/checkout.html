@@ -49,7 +49,6 @@
                     <h4 class="mb-30">Shipping Address</h4>
                     
                     <div id="addressSelectionSection">
-                        
                         <div class="mb-4">
                             <div class="row">
                                 {% for address in shipping_addresses %}
@@ -62,17 +61,22 @@
                                                            name="address_selection" value="{{ address.id }}"
                                                            {% if address.is_default %}checked{% endif %}>
                                                 </div>
-                                                {% if address.is_default %}
-                                                <span class="badge bg-success">Default</span>
-                                                {% endif %}
+                                                <div class="d-flex align-items-center">
+                                                    <button class="btn btn-sm btn-outline-secondary edit-address-btn me-2">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                    {% if address.is_default %}
+                                                    <span class="badge bg-success">Default</span>
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                             <div class="address-details">
-                                                <p class="mb-1"><strong>{{ address.full_name }}</strong></p>
-                                                <p class="mb-1">{{ address.region }}</p>
-                                                <p class="mb-1">Phone: {{ address.phone }}</p>
-                                                <p class="mb-1">Email: {{ address.email }}</p>
+                                                <p class="mb-1"><strong data-field="full_name">{{ address.full_name }}</strong></p>
+                                                <p class="mb-1" data-field="region">{{ address.region }}</p>
+                                                <p class="mb-1" data-field="phone">Phone: {{ address.phone }}</p>
+                                                <p class="mb-1" data-field="email">Email: {{ address.email }}</p>
                                                 {% if address.shipping_instructions %}
-                                                <p class="mb-1"><small>Instructions: {{ address.shipping_instructions }}</small></p>
+                                                <p class="mb-1"><small data-field="instructions">Instructions: {{ address.shipping_instructions }}</small></p>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -85,9 +89,9 @@
                             </button>
                         </div>
                         
-                
-                        <!-- New address form - Hidden by default -->
+                        <!-- Address form - Used for both new and edit -->
                         <div id="newAddressForm" style="display: none;">
+                            <h5 id="addressFormTitle" class="mb-3">Add New Address</h5>
                             <form id="shippingAddressForm" class="needs-validation">
                                 {% csrf_token %}
                                 <div class="row">
@@ -641,94 +645,143 @@
 <!-- Start shipping address -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const newAddressBtn = document.getElementById('newAddressBtn');
-        const newAddressForm = document.getElementById('newAddressForm');
-        const cancelNewAddress = document.getElementById('cancelNewAddress');
-        const addressSelectionSection = document.getElementById('addressSelectionSection');
-        const shippingAddressForm = document.getElementById('shippingAddressForm');
+    const newAddressBtn = document.getElementById('newAddressBtn');
+    const newAddressForm = document.getElementById('newAddressForm');
+    const cancelNewAddress = document.getElementById('cancelNewAddress');
+    const addressSelectionSection = document.getElementById('addressSelectionSection');
+    const shippingAddressForm = document.getElementById('shippingAddressForm');
     
-        // Toggle new address form
-        if (newAddressBtn) {
-            newAddressBtn.addEventListener('click', function() {
-                newAddressForm.style.display = 'block';
-                newAddressBtn.style.display = 'none';
-            });
-        }
-    
-        if (cancelNewAddress) {
-            cancelNewAddress.addEventListener('click', function() {
-                newAddressForm.style.display = 'none';
-                newAddressBtn.style.display = 'block';
-                shippingAddressForm.reset();
-            });
-        }
-    
-        // Handle address selection and set as default
-        document.querySelectorAll('.address-select').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const addressId = this.value;
-                
-                // Set as default via AJAX
-                fetch(`/make-address-default/${addressId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        'X-Requested-With': 'XMLHttpRequest'
+    // Toggle new address form
+    if (newAddressBtn) {
+        newAddressBtn.addEventListener('click', function() {
+            newAddressForm.style.display = 'block';
+            newAddressBtn.style.display = 'none';
+            // Reset form and remove edit mode when adding new address
+            shippingAddressForm.reset();
+            shippingAddressForm.removeAttribute('data-edit-mode');
+            shippingAddressForm.removeAttribute('data-address-id');
+            document.getElementById('addressFormTitle').textContent = 'Add New Address';
+        });
+    }
+
+    if (cancelNewAddress) {
+        cancelNewAddress.addEventListener('click', function() {
+            newAddressForm.style.display = 'none';
+            newAddressBtn.style.display = 'block';
+            shippingAddressForm.reset();
+            shippingAddressForm.removeAttribute('data-edit-mode');
+            shippingAddressForm.removeAttribute('data-address-id');
+        });
+    }
+
+    // Handle edit address button clicks
+    document.querySelectorAll('.edit-address-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const addressCard = this.closest('.address-card');
+            const addressId = addressCard.dataset.addressId;
+            
+            // Populate form with existing address data
+            const addressDetails = addressCard.querySelector('.address-details');
+            const fullName = addressDetails.querySelector('[data-field="full_name"]').textContent;
+            const phone = addressDetails.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '');
+            const email = addressDetails.querySelector('[data-field="email"]').textContent.replace('Email: ', '');
+            const region = addressDetails.querySelector('[data-field="region"]').textContent;
+            const instructions = addressDetails.querySelector('[data-field="instructions"]')?.textContent.replace('Instructions: ', '') || '';
+
+            // Set form values
+            const form = document.getElementById('shippingAddressForm');
+            form.querySelector('[name="full_name"]').value = fullName;
+            form.querySelector('[name="phone"]').value = phone;
+            form.querySelector('[name="email"]').value = email;
+            form.querySelector('[name="region"]').value = region;
+            form.querySelector('[name="shipping_instructions"]').value = instructions;
+
+            // Show form in edit mode
+            newAddressForm.style.display = 'block';
+            newAddressBtn.style.display = 'none';
+            form.setAttribute('data-edit-mode', 'true');
+            form.setAttribute('data-address-id', addressId);
+            document.getElementById('addressFormTitle').textContent = 'Edit Address';
+        });
+    });
+
+    // Handle address selection and set as default
+    document.querySelectorAll('.address-select').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const addressId = this.value;
+            
+            // Set as default via AJAX
+            fetch(`/make-address-default/${addressId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update UI to reflect new default address
+                    document.querySelectorAll('.address-card').forEach(card => {
+                        card.classList.remove('border-success');
+                        const badge = card.querySelector('.badge');
+                        if (badge) badge.remove();
+                    });
+
+                    const selectedCard = this.closest('.address-card');
+                    selectedCard.classList.add('border-success');
+                    const cardBody = selectedCard.querySelector('.card-body');
+                    const cardHeader = cardBody.querySelector('.d-flex');
+                    if (!cardHeader.querySelector('.badge')) {
+                        cardHeader.insertAdjacentHTML('beforeend', '<span class="badge bg-success">Default</span>');
                     }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Update UI to reflect new default address
-                        document.querySelectorAll('.address-card').forEach(card => {
-                            card.classList.remove('border-success');
-                            const badge = card.querySelector('.badge');
-                            if (badge) badge.remove();
-                        });
-    
-                        const selectedCard = this.closest('.address-card');
-                        selectedCard.classList.add('border-success');
-                        const cardBody = selectedCard.querySelector('.card-body');
-                        const cardHeader = cardBody.querySelector('.d-flex');
-                        if (!cardHeader.querySelector('.badge')) {
-                            cardHeader.insertAdjacentHTML('beforeend', '<span class="badge bg-success">Default</span>');
-                        }
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Handle address form submission (both new and edit)
+    if (shippingAddressForm) {
+        shippingAddressForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const isEditMode = this.hasAttribute('data-edit-mode');
+            const addressId = this.getAttribute('data-address-id');
+            
+            // Set the address as default if it's a new address
+            if (!isEditMode) {
+                formData.append('is_default', 'true');
+            }
+
+            const url = isEditMode 
+                ? `/edit-shipping-address/${addressId}/`
+                : '/save-shipping-address/';
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error saving address');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
             });
         });
-    
-        // Handle new address form submission
-        if (shippingAddressForm) {
-            shippingAddressForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                formData.append('is_default', 'true'); // Always set new address as default
-    
-                fetch('/save-shipping-address/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.reload(); // Reload to show new address
-                    } else {
-                        alert(data.message || 'Error saving address');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
-        }
-    });
+    }
+});
     </script>
 <!-- end shipping address -->
 

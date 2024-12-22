@@ -838,6 +838,31 @@ def checkout(request, oid):
 
     
 
+@login_required
+def edit_shipping_address(request, address_id):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            address = ShippingAddress.objects.get(id=address_id, user=request.user)
+            
+            # Update address fields
+            address.full_name = request.POST.get('full_name')
+            address.phone = request.POST.get('phone')
+            address.email = request.POST.get('email')
+            address.region = request.POST.get('region')
+            address.shipping_instructions = request.POST.get('shipping_instructions')
+            
+            address.save()
+            
+            return JsonResponse({'status': 'success'})
+        except ShippingAddress.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Address not found'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+
 # New helper function to clear cart
 def clear_cart(request):
     """Helper function to clear the cart session data"""
