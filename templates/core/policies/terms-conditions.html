@@ -1,0 +1,211 @@
+
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Terms and Conditions</h1>
+            <div class="card">
+                <div class="card-body">
+                    <h2>Valor Liquor Store Terms and Conditions</h2>
+                    <p class="text-muted">Last Updated: {% now "F j, Y" %}</p>
+
+                    <div class="alert-warning">
+                        <strong>Important:</strong> By using our website and services, you agree to these terms and conditions. Please read them carefully before making a purchase.
+                    </div>
+
+                    <section class="mb-4">
+                        <h3>1. Age Verification and Legal Requirements</h3>
+                        <div class="ms-3">
+                            <h4>1.1 Age Requirement</h4>
+                            <p>You must be of legal drinking age (18 years or older) to:</p>
+                            <ul>
+                                <li>Create an account</li>
+                                <li>Purchase alcohol</li>
+                                <li>Accept alcohol deliveries</li>
+                            </ul>
+
+                            <h4>1.2 Verification Process</h4>
+                            <p>We require:</p>
+                            <ul>
+                                <li>Valid government-issued photo ID</li>
+                                <li>Age verification at checkout</li>
+                                <li>ID verification upon delivery</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>2. Account Registration</h3>
+                        <div class="ms-3">
+                            <p>When creating an account, you must:</p>
+                            <ul>
+                                <li>Provide accurate and complete information</li>
+                                <li>Maintain the security of your account</li>
+                                <li>Update your information as needed</li>
+                                <li>Not share your account credentials</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>3. Ordering and Payment</h3>
+                        <div class="ms-3">
+                            <h4>3.1 Order Acceptance</h4>
+                            <ul>
+                                <li>All orders are subject to availability</li>
+                                <li>We reserve the right to refuse service</li>
+                                <li>Prices are subject to change without notice</li>
+                            </ul>
+
+                            <h4>3.2 Payment Terms</h4>
+                            <ul>
+                                <li>All prices are in local currency</li>
+                                <li>Payment is required at time of purchase</li>
+                                <li>We accept major credit cards and selected payment methods</li>
+                                <li>Orders may be subject to verification checks</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>4. Delivery and Shipping</h3>
+                        <div class="ms-3">
+                            <h4>4.1 Delivery Requirements</h4>
+                            <ul>
+                                <li>Valid ID required for all deliveries</li>
+                                <li>No delivery to visibly intoxicated persons</li>
+                            </ul>
+
+                            <h4>4.2 Shipping Restrictions</h4>
+                            <ul>
+                                <li>Delivery only to approved jurisdictions</li>
+                                <li>No shipping to PO boxes</li>
+                                <li>Local delivery laws must be followed</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>5. Product Information</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>Product images are for illustration only</li>
+                                <li>We strive for accurate descriptions</li>
+                                <li>Actual products may vary from images</li>
+                                <li>Vintage and label changes may occur</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>6. Responsible Service</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>We reserve the right to refuse service to anyone</li>
+                                <li>No sales to intoxicated persons</li>
+                                <li>Quantity limitations may apply</li>
+                                <li>We promote responsible drinking</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>7. Product Quality and Safety</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>All products are sourced from authorized distributors</li>
+                                <li>Products are stored in temperature-controlled environments</li>
+                                <li>Quality standards are regularly monitored</li>
+                                <li>Proper handling procedures are followed</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>8. Returns and Refunds</h3>
+                        <div class="ms-3">
+                            <p>Please refer to our separate <a href="{% url 'core:refund-policy' %}">Refund Policy</a> for detailed information about:</p>
+                            <ul>
+                                <li>Return eligibility</li>
+                                <li>Return process</li>
+                                <li>Refund terms</li>
+                                <li>Special conditions</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>9. Privacy and Data Protection</h3>
+                        <div class="ms-3">
+                            <p>Your privacy is important to us. Please review our <a href="{% url 'core:privacy-policy' %}">Privacy Policy</a> for information about:</p>
+                            <ul>
+                                <li>Data collection and usage</li>
+                                <li>Information security</li>
+                                <li>Your privacy rights</li>
+                                <li>Cookie policies</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>10. Intellectual Property</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>All content is protected by copyright</li>
+                                <li>Trademarks are property of their respective owners</li>
+                                <li>No reproduction without permission</li>
+                                <li>Brand names are used for identification only</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>11. Limitation of Liability</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>We are not liable for misuse of products</li>
+                                <li>Compliance with local laws is user's responsibility</li>
+                                <li>Service interruptions may occur</li>
+                                <li>Website errors may exist and will be corrected when found</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>12. Dispute Resolution</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>All disputes will be resolved through negotiation</li>
+                                <li>Mandatory arbitration if negotiation fails</li>
+                                <li>Applicable law is the jurisdiction of our main office</li>
+                                <li>Legal fees may be recovered from losing party</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="mb-4">
+                        <h3>13. Changes to Terms</h3>
+                        <div class="ms-3">
+                            <ul>
+                                <li>Terms may be updated without notice</li>
+                                <li>Continued use constitutes acceptance</li>
+                                <li>Major changes will be notified</li>
+                                <li>Regular review of terms is recommended</li>
+                            </ul>
+                        </div>
+                    </section>
+
+
+                    <div class="alert-info mt-4">
+                        <strong>Note:</strong> These terms and conditions are binding upon acceptance. By using our services, you acknowledge that you have read, understood, and agree to be bound by these terms.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

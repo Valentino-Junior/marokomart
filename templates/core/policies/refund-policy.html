@@ -1,0 +1,569 @@
+{% extends 'partials/base.html' %} {% load static %} {% block extra_css %}
+<style>
+  /* Hero Section */
+  .refund-hero {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    padding: 6rem 0;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+
+  .refund-hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('{% static "img/pattern.png" %}') repeat;
+    opacity: 0.1;
+    animation: moveBackground 20s linear infinite;
+  }
+
+  @keyframes moveBackground {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 100px 100px;
+    }
+  }
+
+  /* Main Card Styling */
+  .policy-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideUp 0.8s ease forwards;
+  }
+
+  @keyframes slideUp {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Section Styling */
+  .policy-section {
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    background: #fff;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .policy-section.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .policy-section:hover {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transform: translateY(-5px);
+  }
+
+  /* Headings */
+  .section-title {
+    color: #1e3c72;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .section-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: #1e3c72;
+    border-radius: 2px;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+
+  .policy-section:hover .section-title::before {
+    transform: scaleY(1);
+  }
+
+  /* Lists */
+  .policy-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .policy-list li {
+    padding: 0.75rem 0;
+    padding-left: 2rem;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .policy-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #1e3c72;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+  }
+
+  .policy-list li:hover {
+    padding-left: 2.5rem;
+    color: #1e3c72;
+  }
+
+  .policy-list li:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Alerts */
+  .alert {
+    border: none;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .alert::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+  }
+
+  .alert-info::before {
+    background: #2a5298;
+  }
+
+  .alert-warning::before {
+    background: #ffc107;
+  }
+
+  /* Timeline */
+  .process-timeline {
+    position: relative;
+    padding-left: 3rem;
+  }
+
+  .process-timeline::before {
+    content: "";
+    position: absolute;
+    left: 0.85rem;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: #e0e0e0;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.3s ease;
+  }
+
+  .timeline-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -2.15rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #1e3c72;
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.2);
+  }
+
+  /* Quality Guarantee Box */
+  .guarantee-box {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 2rem;
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+  }
+
+  .guarantee-box:hover {
+    transform: scale(1);
+    box-shadow: 0 10px 30px rgba(30, 60, 114, 0.2);
+  }
+
+  /* Contact Section */
+  .contact-section {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 3rem;
+    text-align: center;
+  }
+
+  .contact-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Update Badge */
+  .update-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(30, 60, 114, 0.1);
+    border-radius: 25px;
+    color: #1e3c72;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 0.5s;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Hero Section -->
+<div class="refund-hero">
+  <div class="container">
+    <h1 class="display-4 mb-3">Return & Refund Policy</h1>
+    <p class="lead mb-0">Your satisfaction is our priority</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="policy-card">
+        <div class="card-body p-4 p-lg-5">
+          <span class="update-badge">
+            <i class="fas fa-clock me-2"></i>
+            Last Updated: {% now "F j, Y" %}
+          </span>
+
+          <div class="alert-info">
+            <strong>Important Notice:</strong> Due to the nature of our products
+            and legal requirements, we have strict policies regarding returns
+            and refunds. Please read carefully.
+          </div>
+
+          <!-- General Policy -->
+          <section class="policy-section" data-section="general">
+            <h3 class="section-title">1. General Policy</h3>
+            <p>
+              For safety and legal reasons, we cannot accept returns of opened
+              alcoholic beverages. Our return policy is strictly limited to
+              specific circumstances outlined below.
+            </p>
+          </section>
+
+          <!-- Eligible Returns -->
+          <section class="policy-section" data-section="eligible">
+            <h3 class="section-title">2. Eligible Returns</h3>
+            <p>Returns are only accepted in the following cases:</p>
+            <ul class="policy-list">
+              <li>
+                Damaged products (must be reported within 24 hours of delivery)
+              </li>
+              <li>Incorrect items delivered</li>
+              <li>Unopened products with manufacturing defects</li>
+              <li>Orders cancelled before shipping</li>
+            </ul>
+          </section>
+
+          <!-- Non-Returnable Items -->
+          <section class="policy-section" data-section="non-returnable">
+            <h3 class="section-title">3. Non-Returnable Items</h3>
+            <ul class="policy-list">
+              <li>Opened bottles or containers</li>
+              <li>Products without original seals intact</li>
+              <li>Special order items</li>
+              <li>Gift cards/coupons</li>
+            </ul>
+          </section>
+
+          <!-- Return Process -->
+          <section class="policy-section" data-section="process">
+            <h3 class="section-title">4. Return Process</h3>
+
+            <div class="process-timeline">
+              <div class="timeline-item">
+                <h4>4.1 Damaged or Incorrect Items</h4>
+                <ol class="policy-list">
+                  <li>Contact customer service within 24 hours of delivery</li>
+                  <li>Provide order number and photos of damaged items</li>
+                  <li>Wait for return authorization</li>
+                  <li>Package items securely in original packaging</li>
+                </ol>
+              </div>
+
+              <div class="timeline-item">
+                <h4>4.2 Cancellations</h4>
+                <ul class="policy-list">
+                  <li>Orders can be cancelled within 1 hour of placement</li>
+                  <li>Cancellation fees may apply after shipping</li>
+                  <li>
+                    Contact customer service immediately for cancellations
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- Refund Information -->
+          <section class="policy-section" data-section="refunds">
+            <h3 class="section-title">5. Refund Information</h3>
+
+            <div class="row g-4">
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <h4>5.1 Refund Methods</h4>
+                    <ul class="policy-list">
+                      <li>Original payment method (for eligible returns)</li>
+                      <li>Store credit (preferred method)</li>
+                      <li>No cash refunds available</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <h4>5.2 Refund Timeline</h4>
+                    <ul class="policy-list">
+                      <li>Processing time: 3-5 business days</li>
+                      <li>Credit card refunds: 5-10 business days</li>
+                      <li>Store credit: Immediate upon approval</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <h4>5.3 Additional Fees</h4>
+                    <ul class="policy-list">
+                      <li>Restocking fee: 10% for unopened returns</li>
+                      <li>Shipping costs are non-refundable</li>
+                      <li>Return shipping costs are customer responsibility</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Quality Guarantee -->
+
+          <section class="quality-section" data-section="quality">
+            <h3 class="section-title">6. Quality Guarantee</h3>
+
+            <div class="guarantee-box">
+              <h4>Our Quality Promise</h4>
+              <p class="lead mb-4">
+                We stand behind the quality of our products. If you receive a
+                defective product:
+              </p>
+              <ul class="guarantee-list">
+                <li>Document the issue with photos</li>
+                <li>Contact us within 24 hours</li>
+                <li>Keep the original packaging</li>
+                <li>Do not open the product</li>
+              </ul>
+              <div class="guarantee-seal mt-4">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-medal fa-2x me-3" style="color: #ffd700"></i>
+                  <p class="mb-0">100% Satisfaction Guaranteed</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="alert-warning mt-4">
+            <strong>Legal Notice:</strong> All returns must comply with local
+            and federal laws regarding alcohol transportation. We reserve the
+            right to refuse any return that violates applicable laws or our
+            policies.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- start guarentee styling -->
+<style>
+  .quality-section {
+    margin: 3rem 0;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .guarantee-box {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .guarantee-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 0L13.09 6.58L20 7.64L15 12.76L16.18 20L10 16.58L3.82 20L5 12.76L0 7.64L6.91 6.58L10 0Z" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.1;
+  }
+
+  .guarantee-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .guarantee-box h4 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .guarantee-box h4::before {
+    content: "★";
+    position: absolute;
+    left: 0;
+    color: #ffd700;
+  }
+
+  .guarantee-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .guarantee-list li {
+    padding: 0.75rem 0;
+    padding-left: 2rem;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .guarantee-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #ffd700;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+  }
+
+  .guarantee-list li:hover {
+    padding-left: 2.5rem;
+  }
+
+  .guarantee-list li:hover::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Intersection Observer for the quality section
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+            observer.unobserve(entry.target);
+
+            // Animate list items with delay
+            const items = entry.target.querySelectorAll(".guarantee-list li");
+            items.forEach((item, index) => {
+              setTimeout(() => {
+                item.style.opacity = "1";
+                item.style.transform = "translateX(0)";
+              }, index * 200);
+            });
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+      }
+    );
+
+    // Observe the quality section
+    const qualitySection = document.querySelector(".quality-section");
+    if (qualitySection) {
+      observer.observe(qualitySection);
+    }
+
+    // Add hover effect to the guarantee box
+    const guaranteeBox = document.querySelector(".guarantee-box");
+    if (guaranteeBox) {
+      guaranteeBox.addEventListener("mouseenter", function () {
+        this.style.transform = "translateY(-10px)";
+      });
+
+      guaranteeBox.addEventListener("mouseleave", function () {
+        this.style.transform = "translateY(0)";
+      });
+    }
+  });
+</script>
+<!-- end guarentee styling -->
+
+{% endblock %}

@@ -1,0 +1,421 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .privacy-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+        padding: 3rem 0;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .policy-card {
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+
+    .policy-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .policy-section {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .policy-section h3 {
+        color: #2c3e50;
+        border-bottom: 2px solid #e74c3c;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    .policy-list {
+        padding-left: 20px;
+    }
+
+    .policy-list li {
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 25px;
+        transition: transform 0.3s ease;
+    }
+
+    .policy-list li:before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: #e74c3c;
+        transition: transform 0.3s ease;
+    }
+
+    .policy-list li:hover {
+        transform: translateX(5px);
+    }
+
+    .policy-list li:hover:before {
+        transform: translateX(3px);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-subtitle {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .last-updated {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .contact-section {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+    }
+
+    .important-notice {
+        background: rgba(231, 76, 60, 0.1);
+        border-left: 4px solid #e74c3c;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 8px 8px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="privacy-header">
+    <div class="container">
+        <h1 class="display-4 mb-3">Privacy Policy</h1>
+        <p class="lead">Your privacy is our priority</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card policy-card">
+                <div class="card-body p-4 p-lg-5">
+                    <h2 class="h3 mb-4">Valor Liquor Store Privacy Policy</h2>
+                    <div class="last-updated">
+                        <i class="fas fa-clock me-2"></i>
+                        Last Updated: {% now "F j, Y" %}
+                    </div>
+
+                    <section class="policy-section mb-5" style="animation-delay: 0.1s;">
+                        <h3>1. Introduction</h3>
+                        <div class="important-notice">
+                            <p class="mb-0">Valor Liquor Store ("we," "our," or "us") respects your privacy and is committed to protecting your personal information. This privacy policy explains how we collect, use, and safeguard your information when you use our website and services.</p>
+                        </div>
+                    </section>
+
+                    <section class="policy-section mb-5" style="animation-delay: 0.2s;">
+                        <h3>2. Age Verification</h3>
+                        <p class="section-subtitle">Legal Compliance Requirements</p>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p>Due to the nature of our business, we are required by law to verify that all users are of legal drinking age. We collect and verify age-related information through:</p>
+                                <ul class="policy-list">
+                                    <li>Government-issued ID verification during account creation</li>
+                                    <li>Age verification upon delivery</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="policy-section mb-5" style="animation-delay: 0.3s;">
+                        <h3>3. Information We Collect</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="h5 mb-3">3.1 Personal Information</h4>
+                                <ul class="policy-list">
+                                    <li>Name and contact information</li>
+                                    <li>Date of birth</li>
+                                    <li>Billing and shipping addresses</li>
+                                    <li>Payment information</li>
+                                    <li>Purchase history</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="h5 mb-3">3.2 Automatically Collected Information</h4>
+                                <ul class="policy-list">
+                                    <li>Shopping behavior and preferences</li>
+                                    <li>Browser and device information</li>
+                                    <li>Website usage statistics</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="policy-section mb-5" style="animation-delay: 0.4s;">
+                        <h3>4. How We Use Your Information</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100 bg-light">
+                                    <div class="card-body">
+                                        <h4 class="h5 mb-3">4.1 Order Processing</h4>
+                                        <ul class="policy-list">
+                                            <li>Process and fulfill your orders</li>
+                                            <li>Verify your age and identity</li>
+                                            <li>Send order confirmations and updates</li>
+                                            <li>Process payments and prevent fraud</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 bg-light">
+                                    <div class="card-body">
+                                        <h4 class="h5 mb-3">4.2 Customer Service</h4>
+                                        <ul class="policy-list">
+                                            <li>Provide customer support</li>
+                                            <li>Respond to inquiries and requests</li>
+                                            <li>Process returns and refunds</li>
+                                            <li>Handle complaints and feedback</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 bg-light">
+                                    <div class="card-body">
+                                        <h4 class="h5 mb-3">4.3 Marketing</h4>
+                                        <ul class="policy-list">
+                                            <li>Send promotional emails (with consent)</li>
+                                            <li>Personalize your shopping experience</li>
+                                            <li>Analyze shopping patterns</li>
+                                            <li>Improve our services</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 bg-light">
+                                    <div class="card-body">
+                                        <h4 class="h5 mb-3">4.4 Legal Compliance</h4>
+                                        <ul class="policy-list">
+                                            <li>Verify legal drinking age</li>
+                                            <li>Comply with regulations</li>
+                                            <li>Prevent underage sales</li>
+                                            <li>Maintain required records</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="policy-section mb-5" style="animation-delay: 0.5s;">
+                        <h3>5. Information Sharing</h3>
+                        <div class="important-notice mb-4">
+                            <p class="mb-0">We maintain strict control over shared information and only share with trusted partners essential for our services.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h4 class="h5 mb-3">5.1 Service Providers</h4>
+                                <ul class="policy-list">
+                                    <li>Delivery partners for order fulfillment</li>
+                                    <li>Payment processors for transactions</li>
+                                    <li>Age verification services</li>
+                                    <li>Customer support systems</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="h5 mb-3">5.2 Legal Requirements</h4>
+                                <ul class="policy-list">
+                                    <li>Law enforcement when required</li>
+                                    <li>Regulatory compliance requests</li>
+                                    <li>Court orders and subpoenas</li>
+                                    <li>Protection against fraud</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="policy-section mb-5" style="animation-delay: 0.6s;">
+                        <h3>6. Data Security</h3>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h4 class="h5 mb-3">6.1 Security Measures</h4>
+                                        <ul class="policy-list">
+                                            <li>SSL/TLS encryption for data transmission</li>
+                                            <li>Secure payment processing</li>
+                                            <li>Regular security assessments</li>
+                                            <li>Access control and authentication</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h4 class="h5 mb-3">6.2 Data Protection</h4>
+                                        <ul class="policy-list">
+                                            <li>Encrypted data storage</li>
+                                            <li>Regular backups</li>
+                                            <li>Employee training on security</li>
+                                            <li>Incident response planning</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="policy-section mb-5" style="animation-delay: 0.7s;">
+                        <h3>7. Your Privacy Rights</h3>
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h4 class="h5 mb-3">Your Rights Include:</h4>
+                                        <ul class="policy-list">
+                                            <li>Access your personal information</li>
+                                            <li>Request data correction or deletion</li>
+                                            <li>Opt-out of marketing communications</li>
+                                            <li>Request data portability</li>
+                                            <li>Withdraw consent at any time</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-shield fa-3x text-primary mb-3"></i>
+                                        <h4 class="h5 mb-3">Exercise Your Rights</h4>
+                                        <p class="mb-3">Contact our Privacy Team to exercise any of your rights or ask questions.</p>
+                                        <a href="mailto:support@valorliquorstore.com" class="btn btn-primary">Contact Privacy Team</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="policy-section mb-5" style="animation-delay: 0.8s;">
+                        <h3>8. Children's Privacy</h3>
+                        <div class="alert-warning">
+                            <div class="d-flex">
+                                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                                <div>
+                                    <h4 class="h5">Age Restriction Notice</h4>
+                                    <p class="mb-0">Our services are strictly for individuals aged 18 and older. We do not knowingly collect or maintain information from persons under 18 years of age.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-light mt-4">
+                            <div class="card-body">
+                                <h4 class="h5 mb-3">Our Commitment:</h4>
+                                <ul class="policy-list">
+                                    <li>Strict age verification at registration</li>
+                                    <li>No marketing to underage individuals</li>
+                                    <li>Immediate deletion of underage user data</li>
+                                    <li>Cooperation with parents/guardians</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="policy-section mb-5" style="animation-delay: 0.9s;">
+                        <h3>9. Updates to Privacy Policy</h3>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <p class="mb-3">We may update this privacy policy periodically to reflect:</p>
+                                        <ul class="policy-list">
+                                            <li>Changes in our practices</li>
+                                            <li>Legal requirements</li>
+                                            <li>New features and services</li>
+                                            <li>User feedback and concerns</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <i class="fas fa-bell fa-3x text-primary mb-3"></i>
+                                        <p class="mb-0"><small>We'll notify you of any material changes to this policy.</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add animation classes to sections as they come into view
+    const sections = document.querySelectorAll('.policy-section');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationDelay = '0s';
+                entry.target.style.opacity = '1';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.2
+    });
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+
+    // Hover effect for policy lists
+    const listItems = document.querySelectorAll('.policy-list li');
+    listItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.color = '#e74c3c';
+        });
+        item.addEventListener('mouseleave', function() {
+            this.style.color = '';
+        });
+    });
+});
+</script>
+
+<script>
+    // Add to your existing DOMContentLoaded event listener
+    const resourceLinks = document.querySelectorAll('.contact-section a');
+    resourceLinks.forEach(link => {
+        link.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        link.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+    </script>
+{% endblock %}

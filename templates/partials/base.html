@@ -1632,8 +1632,19 @@
                             <ul class="footer-links">
                                 <li><a href="{% url 'core:about_us' %}">About Us</a></li>
                                 <li><a href="{% url 'core:contact' %}">Contact Us</a></li>
-                                <li><a href="#">Privacy Policy</a></li>
-                                <li><a href="#">Terms & Conditions</a></li>
+
+                                <li> 
+                                <a href="{% url 'core:privacy-policy' %}">Privacy Policy</a>
+                                </li>
+
+                                <li>
+                                 <a href="{% url 'core:refund-policy' %}">Refund Policy</a>
+                                </li>
+
+                                <li>
+                                <a href="{% url 'core:terms-conditions' %}">Terms & Conditions</a>
+                                </li>
+
                             </ul>
                         </div>
                         <div class="links-column">

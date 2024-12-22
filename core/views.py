@@ -1444,11 +1444,19 @@ def about_us(request):
 def purchase_guide(request):
     return render(request, "core/purchase_guide.html")
 
-def privacy_policy(request):
-    return render(request, "core/privacy_policy.html")
 
-def terms_of_service(request):
-    return render(request, "core/terms_of_service.html")
+
+def privacy_policy(request):
+    return render(request, 'core/policies/privacy-policy.html')
+
+
+def refund_policy(request): 
+    return render(request, 'core/policies/refund-policy.html')
+
+
+def terms_conditions(request):
+    return render(request, 'core/policies/terms-conditions.html')
+
 
 
 @login_required
