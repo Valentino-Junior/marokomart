@@ -177,22 +177,43 @@
                         </form>
                     </div>
                 </div>
+
+
+                <!-- start terms and condition and refund policy -->
+                <div class="terms-section">
+                    <div class="terms-check">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="{% url 'core:terms-conditions' %}" target="_blank">Terms & Conditions</a>
+                                and <a href="{% url 'core:refund-policy' %}" target="_blank">Refund Policy</a>
+                            </label>
+                        </div>
+                        <div class="terms-error" id="terms-error">
+                            You must agree to the Terms & Conditions and Refund Policy to proceed
+                        </div>
+                    </div>
+                </div>
+                <!-- end terms and condition and refund policy -->
+
+
             
                 <div class="payment-options">
                     <form id="payment-form" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="oid" value="{{ oid }}">
                         <input type="hidden" name="shipping_address_id" id="selected_address_id">
-            
-                        <button type="button" onclick="submitPayment('stripe')" class="btn btn-primary w-100 mb-2">
-                            Pay With Stripe (Credit or Debit Card)
+                             
+                        <button type="button" onclick="validateAndSubmitPayment('stripe')" class="btn btn-primary w-100 mb-2 payment-button">
+                            Pay With Stripe
                         </button>
-                        <button type="button" onclick="submitPayment('mpesa')" class="btn btn-success w-100 mb-2">
+                        <button type="button" onclick="validateAndSubmitPayment('mpesa')" class="btn btn-success w-100 mb-2 payment-button">
                             Pay With M-Pesa
                         </button>
-                        <button type="button" onclick="submitPayment('cash')" class="btn btn-secondary w-100">
+                        <button type="button" onclick="validateAndSubmitPayment('cash')" class="btn btn-secondary w-100 payment-button">
                             Cash On Delivery
                         </button>
+
                     </form>
             
                     <p id="payment-message" class="animate__animated animate__fadeInUp text-center mt-4"></p>
@@ -564,6 +585,132 @@
         font-size: 1rem;
     }
 </style>
+
+
+<!-- start terms and condition and refund policy -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const termsCheckbox = document.getElementById('terms');
+    const termsError = document.getElementById('terms-error');
+    const paymentButtons = document.querySelectorAll('.payment-button');
+
+    // Initial check for terms
+    checkTermsAndTogglePayment();
+
+    // Add listener for terms checkbox
+    termsCheckbox.addEventListener('change', function() {
+        checkTermsAndTogglePayment();
+        // Clear notification if user checks the box
+        if (termsCheckbox.checked) {
+            const existingNotification = document.querySelector('.terms-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+        }
+    });
+
+    function checkTermsAndTogglePayment() {
+        if (termsCheckbox.checked) {
+            paymentButtons.forEach(btn => {
+                btn.classList.remove('payment-button-disabled');
+            });
+            termsError.style.display = 'none';
+        } else {
+            paymentButtons.forEach(btn => {
+                btn.classList.add('payment-button-disabled');
+            });
+        }
+    }
+});
+
+function validateAndSubmitPayment(method) {
+    const termsCheckbox = document.getElementById('terms');
+    const termsError = document.getElementById('terms-error');
+
+    if (!termsCheckbox.checked) {
+        // Show error message
+        termsError.style.display = 'block';
+        termsError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Create and show notification
+        const notification = document.createElement('div');
+        notification.className = 'terms-notification alert alert-warning animate__animated animate__fadeInDown';
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '1000';
+        notification.style.padding = '15px 25px';
+        notification.style.borderRadius = '8px';
+        notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        notification.style.backgroundColor = '#ffc107';
+        notification.style.color = '#000';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Please accept the Terms & Conditions and Refund Policy to proceed with payment</span>
+            </div>
+        `;
+
+        // Remove any existing notification
+        const existingNotification = document.querySelector('.terms-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        // Add new notification
+        document.body.appendChild(notification);
+
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+            notification.classList.add('animate__fadeOutUp');
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }, 5000);
+
+        return;
+    }
+    submitPayment(method);
+}
+</script>
+
+<style>
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes fadeOutUp {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+    }
+}
+
+.animate__animated {
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+}
+
+.animate__fadeInDown {
+    animation-name: fadeInDown;
+}
+
+.animate__fadeOutUp {
+    animation-name: fadeOutUp;
+}
+</style>
+<!-- end terms and condition and refund policy -->
 
 
 <!-- start payment -->
