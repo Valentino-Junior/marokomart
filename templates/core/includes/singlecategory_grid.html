@@ -56,10 +56,12 @@
 
                 <div class="product-card-bottom">
                     <div class="product-price">
-                        <span>Ksh{{ p.price }}</span>
-                        {% if p.old_price > p.price %}
+                        <span>Ksh{{ p.get_actual_price }}</span>
+                        
+                        {% if p.old_price > p.get_actual_price %}
                         <span class="old-price">Ksh{{ p.old_price }}</span>
                         {% endif %}
+                        
                     </div>
 
                     <div class="add-cart">
