@@ -1274,10 +1274,10 @@
         <div class="header-bottom header-bottom-bg-color sticky-bar">
             <div class="container">
                 <div class="header-wrap header-space-between position-relative">
-                    <div class="logo logo-width-1 d-block d-lg-none">
+                    <!-- <div class="logo logo-width-1 d-block d-lg-none">
                         <a href="{% url 'core:index' %}"><img
                                 src="https://clipground.com/images/ecommerce-logo-png-11.png" alt="logo" /></a>
-                    </div>
+                    </div> -->
                     <div class="header-nav d-none d-lg-flex">
                         <div class="main-categori-wrap d-none d-lg-block">
                             <a class="categories-button-active" href="{% url 'core:category-list' %}"
@@ -1387,7 +1387,6 @@
             <div class="mobile-header-content-area">
 
                 <!-- start mobile search -->
-
                 <div id="wakil-mobile-search">
                     <form action="{% url 'core:search' %}" method="GET" class="wakil-search-form">
                         <div class="wakil-search-container">
@@ -1397,6 +1396,7 @@
                                 placeholder="Search for drinks..." 
                                 name="q" 
                                 autocomplete="off"
+                                style="color: black;" 
                             />
                             <button type="submit" class="wakil-search-btn">
                                 <span class="material-symbols-outlined">search</span>
@@ -1406,6 +1406,7 @@
                 </div>
                 <!-- end mobile search -->
 
+                
               
                 <div class="mobile-menu-wrap mobile-header-border">
                     <!-- mobile menu start -->
@@ -2491,6 +2492,16 @@
             </style>
 
         <!-- end mobile contact styling -->
+
+
+        <!-- start mobile search input -->
+        <style>
+            .wakil-search-input {
+            color: black;
+        }
+        
+        </style>
+        <!-- end mobile search input -->
 
 
 
