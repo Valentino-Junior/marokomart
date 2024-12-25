@@ -1465,15 +1465,18 @@
                     <!-- mobile menu end -->
                 </div>
 
-                <div class="mobile-header-info-wrap">
-                    <div class="single-mobile-header-info">
-                        <a href="#"><i class="fi-rs-marker"></i> Our location </a>
+                
+                    <div class="mobile-header-info-wrap">
+                        <div class="single-mobile-header-info">
+                            <a href="tel:0703432696">
+                                <i class="fa fa-phone"></i>
+                                0703432696
+                            </a>
+                            <span class="support-text">24-Hour Support Center</span>
+                        </div>
                     </div>
 
-                    <div class="single-mobile-header-info">
-                        <a href="#"><i class="fi-rs-headphones"></i>(+01) - 2345 - 6789 </a>
-                    </div>
-                </div>
+                   
                 <div class="mobile-social-icon mb-50">
                     <h6 class="mb-15">Follow Us</h6>
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
@@ -2442,6 +2445,52 @@
             }
             </style>
         <!-- end 18 plus section styling -->
+
+
+         <!-- start mobile contact styling -->
+
+         <style>
+            .mobile-header-info-wrap {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 10px;
+                background-color: #f8f9fa;
+            }
+            
+            .single-mobile-header-info {
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                color: #333;
+            }
+            
+            .single-mobile-header-info a {
+                text-decoration: none;
+                color: inherit;
+                display: flex;
+                align-items: center;
+                gap: 8px; /* Spacing between icon and text */
+            }
+            
+            .single-mobile-header-info a:hover {
+                color: #007bff;
+            }
+            
+            .single-mobile-header-info i {
+                font-size: 18px; /* Adjust the size of the icon */
+                color: #007bff;
+            }
+            
+            .support-text {
+                font-size: 12px;
+                color: #555;
+                margin-left: 8px;
+            }
+            </style>
+
+        <!-- end mobile contact styling -->
 
 
 
