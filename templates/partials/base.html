@@ -567,7 +567,7 @@
             margin: 0;
             padding: 0;
         }
-
+    
         .mobile-promotion {
             width: 100%;
             overflow: hidden;
@@ -575,16 +575,16 @@
             height: 50px;
             background: #27AE60;
         }
-
+    
         .promotion-container {
             display: flex;
             position: absolute;
             white-space: nowrap;
             animation: initialPosition 0s forwards,
-                startScroll 45s linear infinite;
+                startScroll 90s linear infinite; /* Adjusted to make the scroll slower */
             animation-delay: 0s, 3s;
         }
-
+    
         .promotion-container span {
             display: inline-flex;
             align-items: center;
@@ -595,31 +595,31 @@
             letter-spacing: 0.5px;
             word-spacing: 4px;
         }
-
+    
         .promotion-container strong {
             color: #ffffff;
             font-weight: bold;
             margin: 0 4px;
         }
-
+    
         @keyframes initialPosition {
-
             0%,
             100% {
                 transform: translateX(10px);
             }
         }
-
+    
         @keyframes startScroll {
             0% {
                 transform: translateX(10px);
             }
-
+    
             100% {
                 transform: translateX(-100%);
             }
         }
     </style>
+    
     <!-- end promotion -->
 
 
