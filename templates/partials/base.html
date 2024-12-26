@@ -1319,10 +1319,19 @@
                             </nav>
                         </div>
                     </div>
+                    
                     <div class="hotline d-none d-lg-flex">
-                        <img src="{% static 'assets/imgs/theme/icons/icon-headphone.svg' %}" alt="hotline" />
-                        <p>0703432696/0708394297<span>24/7 Support Center</span></p>
+                        <img src="{% static 'assets/imgs/theme/icons/icon-headphone.svg' %}" alt="hotline" class="pulse-icon" />
+                        <div class="hotline-info">
+                            <div class="phone-numbers">
+                                <a href="tel:0703432696" class="phone-link">0703432696</a>
+                                <a href="tel:0708394297" class="phone-link">0708394297</a>
+                            </div>
+                            <span>24/7 Support Center</span>
+                        </div>
                     </div>
+                    
+
                     <div class="header-action-icon-2 d-block d-lg-none">
                         <div class="burger-icon burger-icon-white">
                             <span class="burger-icon-top"></span>
@@ -2555,6 +2564,104 @@
             }
             </style>
             <!-- end mobile support center styling -->
+
+
+            <!-- start web support center styling -->
+            <style>
+                .hotline {
+                    align-items: center;
+                    gap: 12px;
+                    padding: 10px 15px;
+                    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+                    border-radius: 12px;
+                    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                }
+                
+                .hotline:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 7px 7px 20px rgba(0, 0, 0, 0.15);
+                }
+                
+                .hotline img {
+                    width: 32px;
+                    height: 32px;
+                    filter: invert(45%) sepia(80%) saturate(2476%) hue-rotate(330deg);
+                }
+                
+                .pulse-icon {
+                    animation: pulse 2s infinite;
+                }
+                
+                .hotline-info {
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .phone-numbers {
+                    display: flex;
+                    gap: 12px;
+                }
+                
+                .phone-link {
+                    font-size: 15px;
+                    font-weight: 600;
+                    background: linear-gradient(to right, #e44d26, #f16529);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    transition: all 0.3s ease;
+                    position: relative;
+                    text-decoration: none;
+                }
+                
+                .phone-link:hover {
+                    transform: scale(1.05);
+                    background: linear-gradient(to right, #f16529, #ff7f50);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                
+                .phone-link::after {
+                    content: '';
+                    position: absolute;
+                    width: 0;
+                    height: 2px;
+                    bottom: -2px;
+                    left: 0;
+                    background: linear-gradient(to right, #4facfe, #00f2fe);
+                    transition: width 0.3s ease;
+                }
+                
+                .phone-link:hover::after {
+                    width: 100%;
+                }
+                
+                .hotline-info span {
+                    font-size: 12px;
+                    color: #4a5568;
+                    margin-top: 4px;
+                    font-weight: 500;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                }
+                
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                        filter: brightness(100%);
+                    }
+                    50% {
+                        transform: scale(1.1);
+                        filter: brightness(120%);
+                    }
+                    100% {
+                        transform: scale(1);
+                        filter: brightness(100%);
+                    }
+                }
+                </style>
+                <!-- end web support center styling -->
 
             
 </body>
