@@ -1321,7 +1321,7 @@
                     </div>
                     <div class="hotline d-none d-lg-flex">
                         <img src="{% static 'assets/imgs/theme/icons/icon-headphone.svg' %}" alt="hotline" />
-                        <p>0703432696<span>24/7 Support Center</span></p>
+                        <p>0703432696/0708394297<span>24/7 Support Center</span></p>
                     </div>
                     <div class="header-action-icon-2 d-block d-lg-none">
                         <div class="burger-icon burger-icon-white">
@@ -1468,17 +1468,23 @@
                 </div>
 
                 
-                    <div class="mobile-header-info-wrap">
-                        <div class="single-mobile-header-info">
-                            <a href="tel:0703432696">
+                <div class="mobile-header-info-wrap">
+                    <div class="single-mobile-header-info">
+                        <div class="phone-numbers">
+                            <a href="tel:0703432696" class="phone-link">
                                 <i class="fa fa-phone"></i>
                                 0703432696
                             </a>
-                            <span class="support-text">24-Hour Support Center</span>
+                            <a href="tel:0708394297" class="phone-link">
+                                <i class="fa fa-phone"></i>
+                                0708394297
+                            </a>
                         </div>
+                        <span class="support-text">24-Hour Support Center</span>
                     </div>
+                </div>
 
-                   
+                                  
                 <div class="mobile-social-icon mb-50">
                     <h6 class="mb-15">Follow Us</h6>
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
@@ -2505,7 +2511,52 @@
         <!-- end mobile search input -->
 
 
+        <!-- start mobile support center styling -->
+        <style>
+            .mobile-header-info-wrap {
+                padding: 10px;
+            }
+            
+            .single-mobile-header-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .phone-numbers {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 5px;
+            }
+            
+            .phone-link {
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                font-size: 14px;
+            }
+            
+            .phone-link i {
+                margin-right: 5px;
+            }
+            
+            .support-text {
+                font-size: 12px;
+                color: #666;
+            }
+            
+            @media (max-width: 480px) {
+                .phone-numbers {
+                    flex-direction: column;
+                    gap: 5px;
+                    align-items: center;
+                }
+            }
+            </style>
+            <!-- end mobile support center styling -->
 
+            
 </body>
 
 </html>
