@@ -109,6 +109,7 @@ class Product(models.Model):
 
     class Meta:
         verbose_name_plural = "Products"
+        ordering = ['-date'] 
 
     def has_active_offer(self):
         return self.is_special_offer and self.special_offer_ends and self.special_offer_ends > timezone.now()
