@@ -367,6 +367,199 @@
 </style>
 
 
+<!-- start slider styling -->
+<style>
+    .single-hero-slider {
+        background-size: cover;
+        background-position: center;
+        padding: 80px 0;
+        position: relative;
+    }
+    
+    .single-hero-slider::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 1;
+    }
+    
+    .slider-content {
+        position: relative;
+        z-index: 2;
+        color: #fff;
+        max-width: 600px;
+        padding: 0 20px;
+    }
+    
+    .new-tag, .special-tag {
+        display: inline-block;
+        padding: 8px 20px;
+        background: #ff7007;
+        color: #fff;
+        border-radius: 25px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    .feature-highlights, .offer-highlights {
+        display: flex;
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .highlight-item, .offer-feature {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.1);
+        padding: 10px 20px;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+    }
+    
+    .highlight-item i, .offer-feature i {
+        font-size: 24px;
+        color: #ff7007;
+    }
+    
+    .highlight-item span, .offer-feature span {
+        font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+        .single-hero-slider {
+            padding: 60px 0;
+        }
+    
+        .feature-highlights, .offer-highlights {
+            flex-direction: column;
+            gap: 15px;
+        }
+    
+        .display-2 {
+            font-size: 32px;
+        }
+    }
+    </style>
+<!-- end slider styling -->
+
+
+<!-- start banner styling -->
+<style>
+    .banners {
+        padding: 20px 0;
+    }
+    
+    .banner-img {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 260px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .banner-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .banner-img:hover img {
+        transform: scale(1.05);
+    }
+    
+    .banner-text {
+        position: absolute;
+        top: 50%;
+        left: 25px;
+        transform: translateY(-50%);
+        z-index: 2;
+        max-width: 80%;
+    }
+    
+    .banner-text h4 {
+        color: #fff;
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        line-height: 1.3;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .banner-img::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1));
+        z-index: 1;
+    }
+    
+    .btn-xs {
+        padding: 8px 20px;
+        background: #fff;
+        color: #333;
+        border-radius: 25px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-xs:hover {
+        background: #3BB77E;
+        color: #fff;
+        transform: translateX(5px);
+    }
+    
+    .btn-xs i {
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-xs:hover i {
+        transform: translateX(3px);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .banner-img {
+            height: 240px;
+        }
+        .banner-text h4 {
+            font-size: 20px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .banner-img {
+            height: 200px;
+            margin-bottom: 0;
+        }
+        .banner-text h4 {
+            font-size: 18px;
+        }
+        .btn-xs {
+            padding: 6px 15px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .banner-text {
+            left: 15px;
+        }
+    }
+    </style>
+<!-- end banner styling -->
+
+
 
 
 <main class="main">
@@ -378,22 +571,24 @@
                 <section class="home-slider position-relative mb-30">
                     <div class="home-slide-cover mt-30">
                         <div class="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
+
+
                             <!-- First Slide -->
                             <div class="single-hero-slider single-animation-wrap"
-                                style="background-image: url({% static 'assets/imgs/slider/david-straight-VZY6o3Q0EEI-unsplash.jpg' %})">
+                                style="background-image: url({% static 'assets/imgs/slider/shopping-banner.jpg' %})">
                                 <div class="slider-content">
-                                    <span class="new-tag animate__animated animate__fadeInDown">Premium Selection</span>
+                                    <span class="new-tag animate__animated animate__fadeInDown">Top Deals</span>
                                     <h1 class="display-2 mb-40 animate__animated animate__fadeInUp">
-                                        Discover Amazing<br /> Spirit Deals
+                                        Discover Amazing<br /> Shopping Deals
                                     </h1>
                                     <div class="feature-highlights animate__animated animate__fadeIn">
                                         <div class="highlight-item">
                                             <i class="fi-rs-crown"></i>
-                                            <span>Premium Quality</span>
+                                            <span>Quality Products</span>
                                         </div>
                                         <div class="highlight-item">
                                             <i class="fi-rs-shield-check"></i>
-                                            <span>100% Authentic</span>
+                                            <span>Secure Shopping</span>
                                         </div>
                                         <div class="highlight-item">
                                             <i class="fi-rs-truck"></i>
@@ -405,22 +600,44 @@
                             
                             <!-- Second Slide -->
                             <div class="single-hero-slider single-animation-wrap"
-                                style="background-image: url({% static 'assets/imgs/slider/sal-media-oIxo9I98Rcs-unsplash.jpg' %})">
+                                style="background-image: url({% static 'assets/imgs/slider/modern-shopping.jpg' %})">
                                 <div class="slider-content">
-                                    <span class="special-tag animate__animated animate__fadeInDown">Limited Time</span>
+                                    <span class="special-tag animate__animated animate__fadeInDown">Flash Sales</span>
                                     <h1 class="display-2 mb-40 animate__animated animate__fadeInUp">
-                                        Premium Wines<br /> Special Offers
+                                        Best Prices<br /> Special Offers
                                     </h1>
                                     <div class="offer-highlights animate__animated animate__fadeIn">
-                                        
                                         <div class="offer-features">
                                             <div class="offer-feature">
                                                 <i class="fi-rs-star"></i>
-                                                <span>Premium Selection</span>
+                                                <span>Top Brands</span>
                                             </div>
                                             <div class="offer-feature">
-                                                <i class="fi-rs-home"></i>
-                                                <span>Home Delivery</span>
+                                                <i class="fi-rs-headset"></i>
+                                                <span>24/7 Support</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            <!-- Third Slide -->
+                            <div class="single-hero-slider single-animation-wrap"
+                                style="background-image: url({% static 'assets/imgs/slider/tech-shopping.jpg' %})">
+                                <div class="slider-content">
+                                    <span class="special-tag animate__animated animate__fadeInDown">New Arrivals</span>
+                                    <h1 class="display-2 mb-40 animate__animated animate__fadeInUp">
+                                        Trending Products<br /> Latest Collections
+                                    </h1>
+                                    <div class="offer-highlights animate__animated animate__fadeIn">
+                                        <div class="offer-features">
+                                            <div class="offer-feature">
+                                                <i class="fi-rs-diamond"></i>
+                                                <span>Premium Quality</span>
+                                            </div>
+                                            <div class="offer-feature">
+                                                <i class="fi-rs-heart"></i>
+                                                <span>Customer Favorites</span>
                                             </div>
                                         </div>
                                     </div>
@@ -430,6 +647,7 @@
                         <div class="slider-arrow hero-slider-1-arrow"></div>
                     </div>
                 </section>
+                
                 
                 
                 <!--start Deals-->
@@ -486,42 +704,46 @@
                 <!--End Deals-->
 
 
-                <section class="banners">
-                    <div class="row">
-                        <div class="col-lg-4 col-md-6">
-                            <div class="banner-img">
-                                <img src="{% static 'assets/imgs/banner/liquor2.jpeg' %}"
-                                    alt="Premium Spirits Collection" />
-                                <div class="banner-text">
-                                    <h4>Premium Spirits<br />Curated with<br />Excellence</h4>
-                                    <a href="/products/" class="btn btn-xs">Shop Now <i
-                                            class="fi-rs-arrow-small-right"></i></a>
+                <section class="banners mb-25">
+                    <div class="container">
+                        <div class="row g-3">
+                            <!-- Electronics Banner -->
+                            <div class="col-lg-4 col-md-6 col-12">
+                                <div class="banner-img banner-1">
+                                    <img src="{% static 'assets/imgs/banner/electronics-banner.jpg' %}" alt="Electronics Collection" />
+                                    <div class="banner-text">
+                                        <h4>Latest Tech &<br />Electronics<br />Deals</h4>
+                                        <a href="/category/electronics/" class="btn btn-xs">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6">
-                            <div class="banner-img">
-                                <img src="{% static 'assets/imgs/banner/wine1.jpeg' %}"
-                                    alt="Fine Wine Selection" />
-                                <div class="banner-text">
-                                    <h4>Discover Our<br />Fine Wine Collection</h4>
-                                    <a href="/products/" class="btn btn-xs">Shop Now <i
-                                            class="fi-rs-arrow-small-right"></i></a>
+                            
+                            <!-- Fashion Banner -->
+                            <div class="col-lg-4 col-md-6 col-12">
+                                <div class="banner-img banner-2">
+                                    <img src="{% static 'assets/imgs/banner/fashion-banner.jpg' %}" alt="Fashion Collection" />
+                                    <div class="banner-text">
+                                        <h4>Trending Fashion<br />New Arrivals</h4>
+                                        <a href="/category/fashion/" class="btn btn-xs">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-lg-4 d-md-none d-lg-flex">
-                            <div class="banner-img mb-sm-0">
-                                <img src="{% static 'assets/imgs/banner/liquor1.jpeg' %}" alt="Craft Beer Selection" />
-                                <div class="banner-text">
-                                    <h4>Craft Beer &<br />Local Brews</h4>
-                                    <a href="/products/" class="btn btn-xs">Shop Now <i
-                                            class="fi-rs-arrow-small-right"></i></a>
+                            
+                            <!-- Home & Living Banner -->
+                            <div class="col-lg-4 col-md-6 col-12">
+                                <div class="banner-img banner-3">
+                                    <img src="{% static 'assets/imgs/banner/home-decor-banner.jpg' %}" alt="Home & Living Collection" />
+                                    <div class="banner-text">
+                                        <h4>Home & Living<br />Best Deals</h4>
+                                        <a href="/category/home-living/" class="btn btn-xs">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
+                
+                
                 <!--End banners-->
 
             </div>
