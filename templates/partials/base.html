@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Valor liquor store</title>
+    <title>Maroko mart</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="description" content="Valor Liquor Store offers a curated selection of fine wines, craft beers, and premium spirits. Shop online 24/7 with fast delivery, enjoy exclusive offers, and benefit from expert advice and exceptional service. Visit us for a trusted, family-owned experience." />
 
@@ -1112,6 +1112,40 @@
         <!-- end search web -->
 
 
+        <!-- start nav web styling -->
+        <style>
+            .nav-menu {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .nav-menu li {
+                margin: 10px 0;
+            }
+            
+            .nav-menu a {
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .hot-icon, .new-icon {
+                transition: transform 0.3s ease;
+            }
+            
+            .special-link:hover .hot-icon {
+                transform: scale(1.2);
+            }
+            
+            .new-link:hover .new-icon {
+                transform: rotate(45deg);
+            }
+            </style>
+        <!-- end nav web styling -->
+
+
+
 </head>
 
 <body>
@@ -1212,40 +1246,48 @@
         <div class="header-bottom header-bottom-bg-color sticky-bar">
             <div class="container">
                 <div class="header-wrap header-space-between position-relative">
-                    <!-- <div class="logo logo-width-1 d-block d-lg-none">
-                        <a href="{% url 'core:index' %}"><img
-                                src="https://clipground.com/images/ecommerce-logo-png-11.png" alt="logo" /></a>
-                    </div> -->
+                    
                     <div class="header-nav d-none d-lg-flex">
                     
 
                         <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block font-heading">
                             <nav>
-                                <ul>
-
+                                <ul class="nav-menu">
                                     <li>
                                         <a class="active" href="{% url 'core:index' %}">Home</a>
-
                                     </li>
-
                                     <li>
-                                        <a href="{% url 'core:product-list'  %}">Shop</a>
+                                        <a href="{% url 'core:product-list' %}">Shop</a>
                                     </li>
-
-                                    <li><a href="{% url 'core:my_orders' %}">My orders</a></li>
-
-
-                                    <li><a href="{% url 'core:special_offers' %}">Special offers</a></li>
-
-                                    <li><a href="{% url 'core:new_arrivals' %}">New arrivals</a></li>
-
-
-                                    <li><a href="{% url 'core:about_us' %}">About Us</a></li>
-
+                                    <li>
+                                        <a href="{% url 'core:my_orders' %}">My orders</a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'core:special_offers' %}" class="special-link">
+                                            Special offers
+                                            <svg class="hot-icon" viewBox="0 0 24 24" width="20" height="20">
+                                                <path fill="currentColor" d="M12 23c-4.41 0-8-3.59-8-8 0-2.52 1.17-4.77 3-6.24V7c0-3.31 2.69-6 6-6s6 2.69 6 6v1.76c1.83 1.47 3 3.72 3 6.24 0 4.41-3.59 8-8 8zM12 3c-2.21 0-4 1.79-4 4v3.17l-.59.48C5.88 12.1 5 13.51 5 15c0 3.31 2.69 6 6 6s6-2.69 6-6c0-1.49-.88-2.9-2.41-3.35l-.59-.48V7c0-2.21-1.79-4-4-4z"/>
+                                                <path fill="#FF4B4B" d="M12 21c-2.21 0-4-1.79-4-4 0-1.24.57-2.39 1.56-3.14l.44-.38V11c0-1.1.9-2 2-2s2 .9 2 2v2.47l.44.38C15.43 14.61 16 15.76 16 17c0 2.21-1.79 4-4 4z"/>
+                                            </svg>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'core:new_arrivals' %}" class="new-link">
+                                            New arrivals
+                                            <svg class="new-icon" viewBox="0 0 24 24" width="16" height="16">
+                                                <path fill="#FFD700" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                            </svg>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'core:about_us' %}">About Us</a>
+                                    </li>
                                     <li>
                                         <a href="{% url 'core:contact' %}">Contact Us</a>
                                     </li>
                                 </ul>
+                                
+                                
                             </nav>
                         </div>
                     </div>
