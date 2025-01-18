@@ -31,6 +31,97 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
+        <!-- start web nav contact styling -->
+        <style>
+            .hotline {
+                padding: 10px 15px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            }
+            
+            .hotline-container {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .icon-wrapper {
+                position: relative;
+                width: 45px;
+                height: 45px;
+                background: rgba(0, 123, 255, 0.1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .support-icon {
+                width: 24px;
+                height: 24px;
+                filter: invert(31%) sepia(98%) saturate(1936%) hue-rotate(201deg) brightness(96%) contrast(107%);
+                animation: pulse 2s infinite;
+            }
+            
+            .contact-info {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .support-label {
+                font-size: 13px;
+                color: #333;
+                font-weight: 500;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+            
+            .phone-container {
+                display: flex;
+                gap: 15px;
+            }
+            
+            .primary-phone, .secondary-phone {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                color: blue;
+                font-weight: 600;
+                font-size: 15px;
+                transition: all 0.3s ease;
+            }
+            
+            .primary-phone:hover, .secondary-phone:hover {
+                color: blue;
+                transform: translateX(3px);
+            }
+            
+            .fi-rs-phone-call {
+                font-size: 12px;
+            }
+            
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            
+            /* Separator between phone numbers */
+            .phone-container a:first-child::after {
+                content: '|';
+                color: #ddd;
+                margin-left: 15px;
+            }
+            </style>
+            <!-- end web nav contact styling -->
+
 
         <!-- start shop with confidence section -->
         <style>
@@ -1442,17 +1533,27 @@
                     </div>
                     
                     <div class="hotline d-none d-lg-flex">
-                        <img src="{% static 'assets/imgs/theme/icons/icon-headphone.svg' %}" alt="hotline" class="pulse-icon" />
-                        <div class="hotline-info">
-                            <div class="phone-numbers">
-                                <a href="tel:0717867545" class="phone-link">0717867545</a>
-                                <a href="tel:0717867545" class="phone-link">0717867545</a>
+                        <div class="hotline-container">
+                            <div class="icon-wrapper">
+                                <img src="{% static 'assets/imgs/theme/icons/icon-headphone.svg' %}" alt="Customer Support" class="support-icon" />
                             </div>
-                            <span>24/7 Support Center</span>
+                            <div class="contact-info">
+                                <span class="support-label">24/7 Customer Support</span>
+                                <div class="phone-container">
+                                    <a href="tel:0717867545" class="primary-phone">
+                                        <i class="fi-rs-phone-call"></i>
+                                        0717867545
+                                    </a>
+                                    <a href="tel:0717867545" class="secondary-phone">
+                                        <i class="fi-rs-phone-call"></i>
+                                        0717867545
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-
+               
                     <div class="header-action-icon-2 d-block d-lg-none">
                         <div class="burger-icon burger-icon-white">
                             <span class="burger-icon-top"></span>
