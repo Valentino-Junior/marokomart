@@ -31,6 +31,120 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
+
+        <!-- start shop with confidence section -->
+        <style>
+            .shopping-features {
+                padding: 40px 0;
+            }
+            
+            .features-banner {
+                position: relative;
+                display: flex;
+                background: #f8f9fa;
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+            
+            .features-content {
+                flex: 1;
+                padding: 40px;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .features-content h2 {
+                font-size: 32px;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 30px;
+            }
+            
+            .features-list {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .feature-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .feature-item i {
+                font-size: 24px;
+                color: #3498db;  /* You can adjust this to match your brand color */
+            }
+            
+            .feature-item span {
+                font-size: 16px;
+                color: #555;
+                font-weight: 500;
+            }
+            
+            .commitment-text {
+                font-size: 18px;
+                color: #666;
+                font-weight: 500;
+            }
+            
+            .features-image {
+                flex: 1;
+                position: relative;
+                min-height: 300px;
+            }
+            
+            .features-image img {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .image-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
+                z-index: 1;
+            }
+            
+            /* Animation durations */
+            .animate__fadeIn { animation-duration: 1s; }
+            .animate__slideInLeft { animation-duration: 1s; }
+            .animate__fadeInUp { animation-duration: 0.8s; }
+            
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .features-banner {
+                    flex-direction: column;
+                }
+                
+                .features-content {
+                    padding: 30px;
+                }
+                
+                .features-list {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+                
+                .features-image {
+                    min-height: 200px;
+                }
+            
+                .features-content h2 {
+                    font-size: 24px;
+                }
+            }
+            </style>
+            <!-- end shop with confidence section -->
+
         <!-- start mobile search -->
         <style>
             #wakil-mobile-search {
@@ -1145,6 +1259,41 @@
         <!-- end nav web styling -->
 
 
+        <style>
+            .menu-item-has-children {
+                position: relative;
+            }
+            
+            .menu-item-has-children a {
+                text-decoration: none;
+                color: #000; /* adjust to match your design */
+                transition: color 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .hot-icon, .new-icon {
+                transition: transform 0.3s ease;
+            }
+            
+            .special-link:hover .hot-icon,
+            .special-link.active .hot-icon {
+                transform: scale(1.2);
+            }
+            
+            .new-link:hover .new-icon,
+            .new-link.active .new-icon {
+                transform: rotate(45deg);
+            }
+            
+            .menu-item-has-children a:hover,
+            .menu-item-has-children a.active {
+                color: #007bff; /* adjust to match your design */
+            }
+            </style>
+
+
 
 </head>
 
@@ -1169,7 +1318,7 @@
                                     <input 
                                         type="text" 
                                         class="wakil-search-input" 
-                                        placeholder="Search for drinks..." 
+                                        placeholder="Search for products, brands and categories..." 
                                         name="q" 
                                         autocomplete="off"
                                     />
@@ -1406,15 +1555,30 @@
                             <li class="menu-item-has-children"><a href="{% url 'core:my_orders' %}">My orders</a></li>
 
 
-                                    <li class="menu-item-has-children">
-                                        <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="New arrivals" />
-                                        <a href="{% url 'core:new_arrivals' %}">New Arrivals</a>
-                                    </li>
-                            
-                                    <li class="menu-item-has-children">
-                                        <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="Special offers" />
-                                        <a href="{% url 'core:special_offers' %}">Special offers</a>
-                                    </li>
+                            <!-- New Arrivals Menu Item -->
+                            <li class="menu-item-has-children">
+                                <a href="{% url 'core:new_arrivals' %}" class="new-link {% if request.resolver_match.url_name == 'new_arrivals' %}active{% endif %}">
+                                    <span>New Arrivals</span>
+                                
+                                    <svg class="new-icon" viewBox="0 0 24 24" width="20" height="20">
+                                        <path fill="#FFD700" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                    </svg>
+                                </a>
+                            </li>
+
+                            <!-- Special Offers Menu Item -->
+                            <li class="menu-item-has-children">
+                                <a href="{% url 'core:special_offers' %}" class="special-link {% if request.resolver_match.url_name == 'special_offers' %}active{% endif %}">
+                                    <span>Special offers</span>
+                                
+                                    <svg class="hot-icon" viewBox="0 0 24 24" width="20" height="20">
+                                        <path fill="currentColor" d="M12 23c-4.41 0-8-3.59-8-8 0-2.52 1.17-4.77 3-6.24V7c0-3.31 2.69-6 6-6s6 2.69 6 6v1.76c1.83 1.47 3 3.72 3 6.24 0 4.41-3.59 8-8 8zM12 3c-2.21 0-4 1.79-4 4v3.17l-.59.48C5.88 12.1 5 13.51 5 15c0 3.31 2.69 6 6 6s6-2.69 6-6c0-1.49-.88-2.9-2.41-3.35l-.59-.48V7c0-2.21-1.79-4-4-4z"/>
+                                        <path fill="#FF4B4B" d="M12 21c-2.21 0-4-1.79-4-4 0-1.24.57-2.39 1.56-3.14l.44-.38V11c0-1.1.9-2 2-2s2 .9 2 2v2.47l.44.38C15.43 14.61 16 15.76 16 17c0 2.21-1.79 4-4 4z"/>
+                                    </svg>
+                                </a>
+                            </li>
+
+
 
                             <li class="menu-item-has-children"><a href="{% url 'core:about_us' %}">About Us</a></li>
 
@@ -1451,11 +1615,11 @@
                         <div class="phone-numbers">
                             <a href="tel:0703432696" class="phone-link">
                                 <i class="fa fa-phone"></i>
-                                0703432696
+                                0717867545
                             </a>
                             <a href="tel:0708394297" class="phone-link">
                                 <i class="fa fa-phone"></i>
-                                0708394297
+                                0717867545
                             </a>
                         </div>
                         <span class="support-text">24-Hour Support Center</span>
@@ -1485,44 +1649,47 @@
 
     <footer class="main">
 
-        <section class="responsible-drinking mb-15">
+        <section class="shopping-features mb-15">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="responsibility-banner animate__animated animate__fadeIn">
-                            <div class="responsibility-content">
-                                <div class="badge-age animate__animated animate__bounceIn">18+</div>
-                                <h2 class="animate__animated animate__slideInLeft">Drink Responsibly</h2>
-                                <div class="responsibility-features">
+                        <div class="features-banner animate__animated animate__fadeIn">
+                            <div class="features-content">
+                                <h2 class="animate__animated animate__slideInLeft">Shop with Confidence at Maroko Mart</h2>
+                                <div class="features-list">
                                     <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
                                         <i class="fi-rs-shield-check"></i>
-                                        <span>Age Verified Shopping</span>
+                                        <span>Secure Shopping</span>
                                     </div>
                                     <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
                                         <i class="fi-rs-truck-fast"></i>
-                                        <span>Secure Delivery</span>
+                                        <span>Fast Delivery</span>
                                     </div>
                                     <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
-                                        <i class="fi-rs-user-check"></i>
-                                        <span>ID Required at Delivery</span>
+                                        <i class="fi-rs-star"></i>
+                                        <span>Quality Products</span>
+                                    </div>
+                                    <div class="feature-item animate__animated animate__fadeInUp" style="animation-delay: 0.8s">
+                                        <i class="fi-rs-headset"></i>
+                                        <span>24/7 Support</span>
                                     </div>
                                 </div>
-                                <p class="commitment-text animate__animated animate__fadeInUp" style="animation-delay: 0.8s">
-                                    We are committed to responsible service of alcohol
+                                <p class="commitment-text animate__animated animate__fadeInUp" style="animation-delay: 1s">
+                                    Your one-stop shop for quality products at the best prices
                                 </p>
                             </div>
-                            <div class="responsibility-image">
+                            <div class="features-image">
                                 <div class="image-overlay"></div>
-                                <img src="{% static 'assets/imgs/banner/liquor6.jpg' %}" alt="responsible drinking" />
+                                <img src="{% static 'assets/imgs/banner/shopping.jpg' %}" alt="Maroko Mart Shopping Experience" />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-         </section>
-         
-         
-
+        </section>
+        
+        
+        
         <!-- start premium spirits -->
         <section class="wakil-features section-spacing">
             <div class="container">
