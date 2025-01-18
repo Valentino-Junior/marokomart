@@ -1117,70 +1117,7 @@
 <body>
 
     <header class="header-area header-style-1 header-height-2">
-        <div class="mobile-promotion">
-            <div class="promotion-container">
-                <span>Exclusive Launch <strong>Offer!</strong> Enjoy up to <strong>15% OFF</strong> on Premium
-                    Selections</span>
-                <span>VIP Home Delivery Service - Experience Luxury at Your Doorstep</span>
-                <span>Discover Our <strong>Elite</strong> Collection - Handpicked Premium Selections</span>
-                <span>Wine <strong>Enthusiasts:</strong> Save <strong>35%</strong> on Premium Vintage Bottles</span>
-                <!-- Duplicate spans for seamless loop -->
-                <span>Exclusive Launch <strong>Offer!</strong> Enjoy up to <strong>15% OFF</strong> on Premium
-                    Selections</span>
-                <span>VIP Home Delivery Service - Experience Luxury at Your Doorstep</span>
-                <span>Discover Our <strong>Elite</strong> Collection - Handpicked Premium Selections</span>
-                <span>Wine <strong>Enthusiasts:</strong> Save <strong>35%</strong> on Premium Vintage Bottles</span>
-            </div>
-        </div>
-
-
-    <!-- start special offer and new arrivals -->
-        <div class="promo-header-banner">
-            <div class="promo-header-container">
-                <div class="promo-header-row">
-                    <div class="promo-header-col-side">
-                        <div class="promo-info">
-                            <ul class="promo-info-list">
-                                <li class="promo-hot-deal-item">
-                                    <div class="promo-icon-wrapper">
-                                        <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="special offers" />
-                                    </div>
-                                    <a href="{% url 'core:special_offers' %}" class="promo-link">Special Offers</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="promo-header-col-center">
-                        <div class="text-center">
-                            <div class="promo-news-ticker">
-                                <ul class="promo-news-list">
-                                    <li class="promo-news-item">VIP Home Delivery Service - Experience Luxury at Your Doorstep</li>
-                                    <li class="promo-news-item">Discover Our Elite Collection - Handpicked Premium Selections</li>
-                                    <li class="promo-news-item">Wine Enthusiasts: Save 35% on Premium Vintage Bottles</li>
-                                    <li class="promo-news-item">VIP Home Delivery Service - Experience Luxury at Your Doorstep</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="promo-header-col-side">
-                        <div class="promo-info">
-                            <ul class="promo-info-list">
-                                <li class="promo-hot-deal-item">
-                                    <div class="promo-icon-wrapper">
-                                        <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="New arrivals" />
-                                    </div>
-                                    <a href="{% url 'core:new_arrivals' %}" class="promo-link">New Arrivals</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <!-- end special offer and new arrivals -->
-
-
-
+    
         <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="header-wrap">
@@ -1280,16 +1217,7 @@
                                 src="https://clipground.com/images/ecommerce-logo-png-11.png" alt="logo" /></a>
                     </div> -->
                     <div class="header-nav d-none d-lg-flex">
-                        <div class="main-categori-wrap d-none d-lg-block">
-                            <a class="categories-button-active" href="{% url 'core:category-list' %}"
-                                onclick="window.location.href=this.href; return false;">
-                                <span class="fi-rs-apps"></span>
-                                <span class="et">Explore</span> All Categories
-                                <i class="fi-rs-angle-down"></i>
-                            </a>
-                        </div>
-
-
+                    
 
                         <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block font-heading">
                             <nav>
@@ -1307,7 +1235,9 @@
                                     <li><a href="{% url 'core:my_orders' %}">My orders</a></li>
 
 
-                                    <!-- <li><a href="{% url 'core:order_tracking' %}">Order Tracking</a></li> -->
+                                    <li><a href="{% url 'core:special_offers' %}">Special offers</a></li>
+
+                                    <li><a href="{% url 'core:new_arrivals' %}">New arrivals</a></li>
 
 
                                     <li><a href="{% url 'core:about_us' %}">About Us</a></li>
@@ -1433,9 +1363,6 @@
 
                             <li class="menu-item-has-children"><a href="{% url 'core:my_orders' %}">My orders</a></li>
 
-
-                            <!-- <li class="menu-item-has-children"><a href="{% url 'core:order_tracking' %}">Order
-                                    Tracking</a></li> -->
 
                                     <li class="menu-item-has-children">
                                         <img src="{% static 'assets/imgs/theme/icons/icon-hot.svg' %}" alt="New arrivals" />
