@@ -19,7 +19,7 @@
         font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    
+
 
     .main-container {
         max-width: 1200px;
@@ -34,7 +34,7 @@
         padding: 3rem;
         background: var(--card);
         border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         margin-bottom: 3rem;
         animation: floatIn 1s ease-out;
         position: relative;
@@ -54,8 +54,13 @@
     }
 
     @keyframes gradientSlide {
-        0% { background-position: 100% 0; }
-        100% { background-position: -100% 0; }
+        0% {
+            background-position: 100% 0;
+        }
+
+        100% {
+            background-position: -100% 0;
+        }
     }
 
     @keyframes floatIn {
@@ -63,6 +68,7 @@
             opacity: 0;
             transform: rotateX(20deg) translateY(50px);
         }
+
         100% {
             opacity: 1;
             transform: rotateX(0) translateY(0);
@@ -91,12 +97,17 @@
     }
 
     @keyframes expandWidth {
-        from { width: 0; }
-        to { width: 100px; }
+        from {
+            width: 0;
+        }
+
+        to {
+            width: 100px;
+        }
     }
 
     .info-card {
-        background: rgba(255,255,255,0.8);
+        background: rgba(255, 255, 255, 0.8);
         padding: 2rem;
         border-radius: 15px;
         transition: all 0.4s ease;
@@ -107,7 +118,7 @@
 
     .info-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
 
     .info-card:hover .icon-wrapper {
@@ -125,6 +136,7 @@
             opacity: 0;
             transform: scale(0.8) translateY(50px);
         }
+
         to {
             opacity: 1;
             transform: scale(1) translateY(0);
@@ -164,18 +176,19 @@
         background: var(--card);
         padding: 3rem;
         border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         animation: formSlideUp 1s ease-out;
         position: relative;
         overflow: hidden;
     }
 
-    
+
     @keyframes slideDown {
         from {
             transform: translateY(-20px);
             opacity: 0;
         }
+
         to {
             transform: translateY(0);
             opacity: 1;
@@ -187,6 +200,7 @@
             opacity: 0;
             transform: translateY(100px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -208,17 +222,19 @@
         grid-column: 1 / -1;
     }
 
-    input, textarea {
+    input,
+    textarea {
         width: 100%;
         padding: 1rem;
         border: 2px solid #e1e1e1;
         border-radius: 10px;
         transition: all 0.3s ease;
-        background: rgba(255,255,255,0.9);
+        background: rgba(255, 255, 255, 0.9);
         font-size: 1rem;
     }
 
-    input:focus, textarea:focus {
+    input:focus,
+    textarea:focus {
         border-color: var(--accent);
         outline: none;
         box-shadow: 0 0 20px rgba(129, 199, 132, 0.2);
@@ -260,7 +276,7 @@
         display: inline-block;
         width: 20px;
         height: 20px;
-        border: 3px solid rgba(255,255,255,0.3);
+        border: 3px solid rgba(255, 255, 255, 0.3);
         border-radius: 50%;
         border-top-color: #fff;
         animation: spin 1s ease-in-out infinite;
@@ -269,8 +285,13 @@
     }
 
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     .submit-button::before {
@@ -280,7 +301,7 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
         transition: 0.5s;
     }
 
@@ -316,18 +337,34 @@
         }
     }
 
-    .info-card:nth-child(2) { animation-delay: 0.2s; }
-    .info-card:nth-child(3) { animation-delay: 0.4s; }
-    .info-card:nth-child(4) { animation-delay: 0.6s; }
+    .info-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .info-card:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    .info-card:nth-child(4) {
+        animation-delay: 0.6s;
+    }
 
     .form-success {
         animation: formSuccess 0.5s ease-out;
     }
 
     @keyframes formSuccess {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-        100% { transform: scale(1); }
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.02);
+        }
+
+        100% {
+            transform: scale(1);
+        }
     }
 
     .input-success {
@@ -335,127 +372,260 @@
     }
 
     @keyframes inputSuccess {
-        0% { border-color: var(--accent); }
-        100% { border-color: #e1e1e1; }
+        0% {
+            border-color: var(--accent);
+        }
+
+        100% {
+            border-color: #e1e1e1;
+        }
     }
 </style>
 
 
+<!-- start maroko mart styling -->
 
-    <main class="main pages">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                    <span></span> Contact
+<style>
+    .mm-info-container {
+        padding: 60px 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .mm-section-title {
+        text-align: center;
+        color: blue;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .mm-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: blue;
+        border-radius: 2px;
+    }
+
+    .mm-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .mm-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .mm-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .mm-icon-box {
+        width: 70px;
+        height: 70px;
+        background: rgba(0, 102, 204, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .mm-info-card:hover .mm-icon-box {
+        background: blue;
+    }
+
+    .mm-icon-box i {
+        font-size: 28px;
+        color: blue;
+        transition: all 0.3s ease;
+    }
+
+    .mm-info-card:hover .mm-icon-box i {
+        color: white;
+    }
+
+    .mm-card-content h3 {
+        color: #333;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .mm-card-content p {
+        color: #666;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .mm-section-title {
+            font-size: 2rem;
+        }
+
+        .mm-info-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 0 15px;
+        }
+
+        .mm-info-card {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .mm-section-title {
+            font-size: 1.75rem;
+        }
+
+        .mm-icon-box {
+            width: 60px;
+            height: 60px;
+        }
+
+        .mm-icon-box i {
+            font-size: 24px;
+        }
+    }
+</style>
+<!-- end maroko mart styling -->
+
+
+<main class="main pages">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> Contact
+            </div>
+        </div>
+    </div>
+
+
+    <div class="main-container">
+        <!-- Info Container Section -->
+        <div class="mm-info-container" id="marokomart-info">
+            <h1 class="mm-section-title">Experience Maroko Mart Shopping</h1>
+
+            <div class="mm-info-grid">
+                <div class="mm-info-card mm-shop-card">
+                    <div class="mm-icon-box">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="mm-card-content">
+                        <h3>Shop Online 24/7</h3>
+                        <p>Explore thousands of products from the comfort of your home</p>
+                    </div>
+                </div>
+
+                <div class="mm-info-card mm-delivery-card">
+                    <div class="mm-icon-box">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="mm-card-content">
+                        <h3>Express Delivery</h3>
+                        <p>Swift processing and reliable nationwide delivery service</p>
+                    </div>
+                </div>
+
+                <div class="mm-info-card mm-support-card">
+                    <div class="mm-icon-box">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="mm-card-content">
+                        <h3>Customer Support</h3>
+                        <p>0717867545<br>0717867545<br>24/7 Customer Service</p>
+                    </div>
+                </div>
+
+                <div class="mm-info-card mm-email-card">
+                    <div class="mm-icon-box">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="mm-card-content">
+                        <h3>Email Us</h3>
+                        <p>support@marokomart.com<br>Quick response within 24 hours</p>
+                    </div>
                 </div>
             </div>
         </div>
 
 
-        <div class="main-container">
-            <!-- Info Container Section -->
-            <div class="info-container">
-                <h1 class="section-title">Visit Our Online Store</h1>
-            
-                <div class="info-cards">
-                    <div class="info-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Shop Anytime</h3>
-                            <p>Browse our extensive selection and order online 24/7</p>
-                        </div>
+
+
+        <!-- Contact Form Section -->
+        <div class="contact-form">
+            <h2 class="section-title">Get in Touch</h2>
+            <form id="contactForm" method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <input type="text" name="full_name" placeholder="Your Name *" required>
                     </div>
-            
-                    <div class="info-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Fast Delivery</h3>
-                            <p>Quick order processing and speedy shipping to your door</p> 
-                        </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Your Email *" required>
                     </div>
-            
-                    <div class="info-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Call Us</h3>
-                            <p>0703432696 <br>0708394297 <br>Mon - Fri, 9AM - 5PM</p>
-                        </div>
+                    <div class="form-group">
+                        <input type="tel" name="phone" placeholder="Your Phone">
                     </div>
-            
-                    <div class="info-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Email Support</h3>
-                            <p>support@valorliquorstore.com<br>Replies within 24 hours</p>
+                    <div class="form-group">
+                        <input type="text" name="subject" placeholder="Subject *" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <textarea name="message" placeholder="Your Message *" required></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <div class="button-container">
+                            <!-- Alert box with inline-block display -->
+                            <div class="notification-wrapper">
+                                <div id="alertBox" class="notification-container"></div>
+                            </div>
+                            <button type="submit" class="submit-button">
+                                <span class="button-text">Send Message</span>
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            
-            <!-- Contact Form Section -->
-            <div class="contact-form">
-                <h2 class="section-title">Get in Touch</h2>
-                <form id="contactForm" method="POST">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <input type="text" name="full_name" placeholder="Your Name *" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" name="email" placeholder="Your Email *" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" name="phone" placeholder="Your Phone">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="subject" placeholder="Subject *" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <textarea name="message" placeholder="Your Message *" required></textarea>
-                        </div>
-                        <div class="form-group full-width">
-                            <div class="button-container">
-                                <!-- Alert box with inline-block display -->
-                                <div class="notification-wrapper">
-                                    <div id="alertBox" class="notification-container"></div>
-                                </div>
-                                <button type="submit" class="submit-button">
-                                    <span class="button-text">Send Message</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
+            </form>
+        </div>
 
-            <!-- start contact submission styling and script -->
-            
-            <style>
+        <!-- start contact submission styling and script -->
+
+        <style>
             .button-container {
                 position: relative;
                 text-align: center;
                 margin-top: 20px;
             }
-            
+
             .notification-wrapper {
                 display: flex;
                 justify-content: center;
                 margin-bottom: 15px;
             }
-            
+
             .notification-container {
                 display: none;
             }
-            
+
             .alert {
                 display: inline-block;
                 padding: 8px 16px;
@@ -463,115 +633,117 @@
                 margin-bottom: 15px;
                 animation: fadeIn 0.3s ease-in-out;
                 white-space: nowrap;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
-            
+
             @keyframes fadeIn {
                 from {
                     opacity: 0;
                     transform: translateY(-10px);
                 }
+
                 to {
                     opacity: 1;
                     transform: translateY(0);
                 }
             }
-            
+
             .alert-success {
                 background-color: blue;
                 color: white;
             }
-            
+
             .alert-error {
                 background-color: #f44336;
                 color: white;
             }
-            
+
             .submit-button:disabled {
                 opacity: 0.7;
                 cursor: not-allowed;
             }
-            
+
             /* Animation for notification dismiss */
             @keyframes fadeOut {
                 from {
                     opacity: 1;
                     transform: translateY(0);
                 }
+
                 to {
                     opacity: 0;
                     transform: translateY(-10px);
                 }
             }
-            
+
             .fade-out {
                 animation: fadeOut 0.3s ease-in-out;
             }
-            </style>
-            
-            <script>
-            document.getElementById('contactForm').addEventListener('submit', function(e) {
+        </style>
+
+        <script>
+            document.getElementById('contactForm').addEventListener('submit', function (e) {
                 e.preventDefault();
-                
+
                 const form = this;
                 const alertBox = document.getElementById('alertBox');
                 const submitButton = form.querySelector('button[type="submit"]');
                 const buttonText = submitButton.querySelector('.button-text');
-                
+
                 // Get form data
                 const formData = new FormData(form);
-                
+
                 // Disable button and show loading state
                 submitButton.disabled = true;
                 buttonText.textContent = 'Sending...';
-                
+
                 // Send AJAX request
                 fetch('/contact/submit/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Clear the form
-                    form.reset();
-                    
-                    // Show success message
-                    alertBox.style.display = 'block';
-                    alertBox.innerHTML = `
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear the form
+                        form.reset();
+
+                        // Show success message
+                        alertBox.style.display = 'block';
+                        alertBox.innerHTML = `
                         <div class="alert alert-success">
                             ✓ Message sent successfully!
                         </div>
                     `;
-                })
-                .catch(error => {
-                    // Show error message
-                    alertBox.style.display = 'block';
-                    alertBox.innerHTML = `
+                    })
+                    .catch(error => {
+                        // Show error message
+                        alertBox.style.display = 'block';
+                        alertBox.innerHTML = `
                         <div class="alert alert-error">
                             ⚠ Error sending message
                         </div>
                     `;
-                })
-                .finally(() => {
-                    // Reset button state
-                    submitButton.disabled = false;
-                    buttonText.textContent = 'Send Message';
-                    
-                    // Hide alert after 5 seconds
-                    setTimeout(() => {
-                        const alert = alertBox.querySelector('.alert');
-                        alert.classList.add('fade-out');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        submitButton.disabled = false;
+                        buttonText.textContent = 'Send Message';
+
+                        // Hide alert after 5 seconds
                         setTimeout(() => {
-                            alertBox.style.display = 'none';
-                            alertBox.innerHTML = '';
-                        }, 300);
-                    }, 5000);
-                });
+                            const alert = alertBox.querySelector('.alert');
+                            alert.classList.add('fade-out');
+                            setTimeout(() => {
+                                alertBox.style.display = 'none';
+                                alertBox.innerHTML = '';
+                            }, 300);
+                        }, 5000);
+                    });
             });
-            
+
             // Function to get CSRF token from cookies
             function getCookie(name) {
                 let cookieValue = null;
@@ -587,12 +759,12 @@
                 }
                 return cookieValue;
             }
-            </script>
-            <!-- start contact submission styling and script -->
+        </script>
+        <!-- start contact submission styling and script -->
 
 
-            <!-- start styling of the contact section -->
-            <style>
+        <!-- start styling of the contact section -->
+        <style>
             /* Responsive container */
             .info-container {
                 padding: 3rem clamp(1rem, 5vw, 3rem);
@@ -664,7 +836,7 @@
                 margin: 2rem auto;
                 background: var(--card);
                 border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             }
 
             /* Improved grid layout */
@@ -695,21 +867,21 @@
                     grid-template-columns: repeat(4, minmax(250px, 1fr));
                     max-width: 1400px;
                 }
-            
+
                 .info-card {
                     max-width: 350px;
                     margin: 0 auto;
                 }
-            
+
                 .icon-wrapper {
                     width: 90px;
                     height: 90px;
                 }
-            
+
                 .info-content h3 {
                     font-size: 1.5rem;
                 }
-            
+
                 .info-content p {
                     font-size: 1.1rem;
                     line-height: 1.6;
@@ -731,9 +903,9 @@
                     max-width: 450px;
                 }
             }
-                </style>
-            <!-- end styling of the contact section -->
+        </style>
+        <!-- end styling of the contact section -->
 
 
-    </main>
+</main>
 {% endblock content %}
