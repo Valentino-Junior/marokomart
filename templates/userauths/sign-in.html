@@ -7,7 +7,7 @@
 
     /* Enhanced link styles */
     .heading_s1 a, .text-muted {
-        color: #3BB77E;
+        color: blue;
         text-decoration: none;
         position: relative;
         transition: color 0.3s ease;
@@ -21,14 +21,14 @@
         height: 2px;
         bottom: -2px;
         left: 0;
-        background-color: #3BB77E;
+        background-color: blue;
         transform: scaleX(0);
         transform-origin: left;
         transition: transform 0.3s ease;
     }
 
     .heading_s1 a:hover, .text-muted:hover {
-        color: #2a8c5e;
+        color: blue;
     }
 
     .heading_s1 a:hover::after, .text-muted:hover::after {
@@ -98,7 +98,7 @@
 
     .toggle-password:focus {
         outline: none;
-        color: #3BB77E;
+        color: blue;
     }
 
     .toggle-password i {
@@ -122,14 +122,14 @@
     }
 
     .form-group input:focus {
-        border-color: #3BB77E;
+        border-color: blue;
         box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
         outline: none;
     }
 
     /* Button styles */
     .btn-heading {
-        background: #3BB77E;
+        background: blue;
         color: white;
         border: none;
         padding: 12px 25px;
@@ -143,7 +143,7 @@
     }
 
     .btn-heading:hover {
-        background: #2a8c5e;
+        background: blue;
         transform: translateY(-2px);
     }
 
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Focus effects
         input.addEventListener('focus', function() {
             this.parentElement.classList.add('focused');
-            this.style.borderColor = '#3BB77E';
+            this.style.borderColor = 'blue';
         });
 
         input.addEventListener('blur', function() {
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Maintain border color for filled inputs
         input.addEventListener('input', function() {
             if (this.value) {
-                this.style.borderColor = '#3BB77E';
+                this.style.borderColor = 'blue';
             }
         });
     });
