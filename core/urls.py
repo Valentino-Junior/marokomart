@@ -1,6 +1,6 @@
 from django import views
 from django.urls import path, include
-from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, order_tracking_view, new_arrivals_view, special_offers_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, process_payment, clear_cart, track_order_ajax, my_orders_view, cancel_order, delete_address, make_address_default, redirect_to_checkout, contact_submit, submit_review, submit_support_ticket, get_support_tickets, edit_shipping_address, refund_policy, terms_conditions
+from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, order_tracking_view, new_arrivals_view, special_offers_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, process_payment, clear_cart, track_order_ajax, my_orders_view, cancel_order, delete_address, make_address_default, redirect_to_checkout, contact_submit, submit_review, submit_support_ticket, get_support_tickets, edit_shipping_address, refund_policy, terms_conditions,mpesa_callback, mpesa_test, mpesa_payment
 
 app_name = "core"
 
@@ -22,7 +22,6 @@ urlpatterns = [
     path("api/create_checkout_session/<oid>/", create_checkout_session, name="api_checkout_session"),
     path("save_checkout_info/", save_checkout_info, name="save_checkout_info"),
     path("checkout/<str:oid>/", checkout, name="checkout"),
-    path("process_payment/", process_payment, name="process_payment"),
     path("clear_cart/", clear_cart, name="clear_cart"),
 
     path("redirect-to-checkout/", redirect_to_checkout, name="redirect_to_checkout"),
@@ -74,7 +73,11 @@ urlpatterns = [
     path('make-address-default/<int:address_id>/', make_address_default, name='make-address-default'),
     path('delete-address/<int:address_id>/', delete_address, name='delete-address'),
 
-    
+    path('process_payment/', process_payment, name='process_payment'),
+    path('mpesa/callback/', mpesa_callback, name='mpesa_callback'),
+    path('mpesa/payment/', mpesa_payment, name='mpesa_payment'),
+
+    path('mpesa-test/', mpesa_test, name='mpesa_test'),
 
 
 ]

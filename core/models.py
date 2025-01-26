@@ -460,3 +460,29 @@ class SupportTicket(models.Model):
     class Meta:
         ordering = ['-created_at']
     
+
+
+
+class PayHeroPayment(models.Model):
+    PAYMENT_STATUS = (
+        ('QUEUED', 'Payment Queued'),
+        ('SUCCESS', 'Payment Successful'), 
+        ('FAILED', 'Payment Failed')
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(CartOrder, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    phone_number = models.CharField(max_length=15)
+    checkout_request_id = models.CharField(max_length=100, blank=True, null=True)
+    mpesa_receipt = models.CharField(max_length=100, blank=True, null=True)
+    external_reference = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='QUEUED')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Payment for Order {self.order.oid} - {self.status}"

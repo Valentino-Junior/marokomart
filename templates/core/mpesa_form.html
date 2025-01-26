@@ -1,0 +1,95 @@
+{% extends 'partials/base_mpesa.html' %}
+{% block content %}
+
+<div class="container py-5">
+   <div class="row justify-content-center">
+       <div class="col-md-6">
+           <div class="card shadow">
+               <div class="card-header bg-success text-white">
+                   <h5 class="mb-0">M-Pesa Payment</h5>
+               </div>
+               <div class="card-body">
+                   <div class="amount-display p-3 bg-light rounded mb-4">
+                       <h6 class="mb-2">Amount Due:</h6>
+                       <h3 class="text-success mb-0">KES {{ final_total|floatformat:2 }}</h3>
+                   </div>
+
+                   <form id="mpesaForm">
+                       {% csrf_token %}
+                       <div class="mb-3">
+                           <label class="form-label">M-Pesa Number</label>
+                           <input type="tel" name="phone_number" class="form-control form-control-lg" 
+                                  placeholder="07XXXXXXXX" maxlength="10" required
+                                  pattern="^0[7][0-9]{8}$">
+                           <div class="form-text">Enter Safaricom number (e.g., 0712345678)</div>
+                       </div>
+
+                       <div id="paymentStatus" class="alert" style="display:none"></div>
+
+                       <button type="submit" class="btn btn-success btn-lg w-100">
+                           Pay Now with M-Pesa
+                       </button>
+                   </form>
+               </div>
+           </div>
+       </div>
+   </div>
+</div>
+
+<script>
+document.getElementById('mpesaForm').addEventListener('submit', function(e) {
+   e.preventDefault();
+   
+   const phone = this.querySelector('[name="phone_number"]').value.trim();
+   const payBtn = this.querySelector('button[type="submit"]');
+   const status = document.getElementById('paymentStatus');
+
+   if (!phone.match(/^0[7][0-9]{8}$/)) {
+       status.textContent = 'Please enter valid Safaricom number';
+       status.className = 'alert alert-danger';
+       status.style.display = 'block';
+       return;
+   }
+
+   payBtn.disabled = true;
+   status.innerHTML = `
+       <div class="d-flex align-items-center">
+           <div class="spinner-border spinner-border-sm me-2"></div>
+           <span>Sending payment request...</span>
+       </div>
+   `;
+   status.className = 'alert alert-info';
+   status.style.display = 'block';
+
+   fetch('/mpesa/payment/', {
+       method: 'POST',
+       body: new FormData(this),
+       headers: {'X-Requested-With': 'XMLHttpRequest'}
+   })
+   .then(r => r.json())
+   .then(data => {
+       console.log('Response:', data);
+       status.innerHTML = data.message;
+       status.className = `alert alert-${data.success ? 'success' : 'danger'}`;
+       if (!data.success) payBtn.disabled = false;
+   })
+   .catch(error => {
+       console.error('Error:', error);
+       status.textContent = 'Payment failed. Please try again.';
+       status.className = 'alert alert-danger';
+       payBtn.disabled = false;
+   });
+});
+</script>
+
+<style>
+.card { border: none; }
+.card-header { border-bottom: none; }
+.amount-display { border-left: 4px solid #198754; }
+.alert { border-left: 4px solid; }
+.alert-info { border-left-color: #0dcaf0; }
+.alert-success { border-left-color: #198754; }
+.alert-danger { border-left-color: #dc3545; }
+</style>
+
+{% endblock %}

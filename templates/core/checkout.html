@@ -1,4 +1,4 @@
-{% extends 'partials/base.html' %}
+{% extends 'partials/base_mpesa.html' %}
 {% load static %}
 {% block content %}
 
@@ -196,6 +196,8 @@
                 </div>
                 <!-- end terms and condition and refund policy -->
 
+                <!-- <a href="/mpesa/payment/" class="btn btn-success w-100 mb-2">Pay with M-Pesa</a> -->
+
 
             
                 <div class="payment-options">
@@ -203,21 +205,253 @@
                         {% csrf_token %}
                         <input type="hidden" name="oid" value="{{ oid }}">
                         <input type="hidden" name="shipping_address_id" id="selected_address_id">
-                             
+                            
                         <button type="button" onclick="validateAndSubmitPayment('stripe')" class="btn btn-primary w-100 mb-2 payment-button">
                             Pay With Stripe
                         </button>
-                        <button type="button" onclick="validateAndSubmitPayment('mpesa')" class="btn btn-success w-100 mb-2 payment-button">
+                        <button type="button" onclick="validateAndShowMpesa()" class="btn btn-success w-100 mb-2 payment-button">
                             Pay With M-Pesa
                         </button>
                         <button type="button" onclick="validateAndSubmitPayment('cash')" class="btn btn-secondary w-100 payment-button">
                             Cash On Delivery
                         </button>
-
                     </form>
-            
+                
                     <p id="payment-message" class="animate__animated animate__fadeInUp text-center mt-4"></p>
                 </div>
+               
+                 
+                 <div id="mpesaModal" class="modal-js">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5><i class="fas fa-mobile-alt me-2"></i>M-Pesa Payment</h5>
+                            <button type="button" class="close-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="selected-address mb-4 p-3 bg-light rounded">
+                                <h6 class="mb-2">Delivery Address:</h6>
+                                <div id="selectedAddressDetails"></div>
+                            </div>
+                 
+                            <div class="payment-amount mb-4 p-3 bg-light rounded">
+                                <h6 class="mb-2">Amount Due:</h6>
+                                <h4 class="text-success mb-0">
+                                    KES {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
+                                </h4>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">M-Pesa Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="tel" id="mpesa_phone" class="form-control form-control-lg"
+                                           placeholder="07XXXXXXXX" maxlength="10">
+                                </div>
+                                <small class="text-muted">Enter Safaricom number (e.g., 0712345678)</small>
+                            </div>
+                 
+                            <div id="mpesa_status" class="alert mt-3" style="display: none"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary close-modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="processMpesaPayment()">
+                                <i class="fas fa-money-bill-wave me-2"></i>Pay Now
+                            </button>
+                        </div>
+                    </div>
+                 </div>
+                 
+                 <style>
+                 .modal-js {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 1050;
+                 }
+                 
+                 .modal-js .modal-content {
+                    position: relative;
+                    width: 90%;
+                    max-width: 500px;
+                    margin: 50px auto;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+                 }
+                 
+                 .modal-js .modal-header {
+                    padding: 1rem;
+                    border-radius: 8px 8px 0 0;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                 }
+                 
+                 .close-modal {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 24px;
+                    cursor: pointer;
+                 }
+                 
+                 .modal-js .modal-body {
+                    padding: 1rem;
+                 }
+                 
+                 .modal-js .modal-footer {
+                    padding: 1rem;
+                    border-top: 1px solid #dee2e6;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 0.5rem;
+                 }
+                 </style>
+                 
+                 <script>
+                 function validateAndShowMpesa() {
+                    if (!document.getElementById('terms').checked) {
+                        showError('Please accept terms and conditions');
+                        document.getElementById('terms-error').style.display = 'block';
+                        document.getElementById('terms-error').scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                 
+                    const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
+                    if (!selectedRadio) {
+                        showError('Please select shipping address');
+                        document.querySelector('.address-card').scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                 
+                    const addressCard = selectedRadio.closest('.address-card');
+                    const addressDetails = {
+                        fullName: addressCard.querySelector('[data-field="full_name"]').textContent,
+                        region: addressCard.querySelector('[data-field="region"]').textContent,
+                        phone: addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', ''),
+                        email: addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')
+                    };
+                 
+                    document.getElementById('selectedAddressDetails').innerHTML = `
+                        <p class="mb-1"><strong>${addressDetails.fullName}</strong></p>
+                        <p class="mb-1">${addressDetails.region}</p>
+                        <p class="mb-1">Phone: ${addressDetails.phone}</p>
+                        <p class="mb-0">Email: ${addressDetails.email}</p>
+                    `;
+                 
+                    document.getElementById('selected_address_id').value = selectedRadio.value;
+                 
+                    const phoneInput = document.getElementById('mpesa_phone');
+                    if (addressDetails.phone.startsWith('07')) {
+                        phoneInput.value = addressDetails.phone;
+                    }
+                 
+                    document.getElementById('mpesaModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                 }
+                 
+                 function hideModal() {
+                    document.getElementById('mpesaModal').style.display = 'none';
+                    document.body.style.overflow = '';
+                 }
+                 
+                 function processMpesaPayment() {
+                    const phoneInput = document.getElementById('mpesa_phone');
+                    let phone = phoneInput.value.trim();
+                    
+                    if (!phone.match(/^0[7][0-9]{8}$/)) {
+                        showError('Please enter valid Safaricom number');
+                        return;
+                    }
+                 
+                    phone = '254' + phone.substring(1);
+                 
+                    const status = document.getElementById('mpesa_status');
+                    status.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2"></div>
+                            Initiating M-Pesa payment...
+                        </div>
+                    `;
+                    status.className = 'alert alert-info mt-3';
+                    status.style.display = 'block';
+                 
+                    const buttons = document.querySelectorAll('#mpesaModal button');
+                    buttons.forEach(btn => btn.disabled = true);
+                 
+                    const formData = new FormData();
+                    formData.append('payment_method', 'mpesa');
+                    formData.append('phone_number', phone);
+                    formData.append('shipping_address_id', document.getElementById('selected_address_id').value);
+                    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                 
+                    fetch('/process_payment/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            status.className = 'alert alert-success mt-3';
+                            status.innerHTML = `
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    ${data.message}
+                                </div>
+                            `;
+                            setTimeout(() => {
+                                hideModal();
+                                window.location.href = data.redirect || '/';
+                            }, 3000);
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        status.className = 'alert alert-danger mt-3';
+                        status.innerHTML = `
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                ${error.message || 'Payment failed. Please try again.'}
+                            </div>
+                        `;
+                        buttons.forEach(btn => btn.disabled = false);
+                    });
+                 }
+                 
+                 document.querySelectorAll('.close-modal').forEach(btn => {
+                    btn.onclick = hideModal;
+                 });
+                 
+                 document.getElementById('mpesaModal').onclick = function(e) {
+                    if (e.target === this) hideModal();
+                 };
+                 
+                 function showError(message) {
+                    const notification = document.createElement('div');
+                    notification.className = 'alert alert-warning animate__animated animate__fadeInDown';
+                    notification.style.position = 'fixed';
+                    notification.style.top = '20px';
+                    notification.style.right = '20px';
+                    notification.style.zIndex = '1050';
+                    notification.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span>${message}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(notification);
+                    setTimeout(() => {
+                        notification.classList.add('animate__fadeOutUp');
+                        setTimeout(() => notification.remove(), 500);
+                    }, 3000);
+                 }
+                 </script>
             </div>
 
 

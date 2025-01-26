@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Product, LowStockAlert
-from core.models import CartOrderProducts, Coupon, Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address, ShippingAddress, LowStockAlert, Order_Review, SupportTicket
+from core.models import *
 
 
 
@@ -111,6 +111,21 @@ class LowStockAlertAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+
+@admin.register(PayHeroPayment)
+class PayHeroPaymentAdmin(admin.ModelAdmin):
+    list_display = ['order', 'user', 'amount', 'phone_number', 'status', 'mpesa_receipt', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['order__oid', 'user__username', 'phone_number', 'mpesa_receipt', 'external_reference']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['-created_at']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'order')
+
+    def has_delete_permission(self, request, obj=None):
+        return False  # Prevent deletion of payment records
+    
 
 admin.site.register(LowStockAlert, LowStockAlertAdmin)
 admin.site.register(Product, ProductAdmin)
