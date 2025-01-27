@@ -1,0 +1,1397 @@
+{% extends 'partials/base_mpesa.html' %}
+{% load static %}
+{% block content %}
+
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> Shop <span></span> Checkout
+            </div>
+        </div>
+    </div>
+    <div class="container mb-80 mt-50">
+        <div class="row">
+            <div class="col-lg-8 mb-40">
+                <h1 class="heading-2 mb-10">Checkout</h1>
+                <div class="d-flex justify-content-between"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="row">
+                    {% for o in order_items %}
+                    <div class="col-lg-6 mb-2">
+                        <div class="card" style="max-width: 540px;">
+                            <div class="row g-0">
+                                <div class="col-sm-4">
+                                    <img src="{{o.image}}" style="width: 100%; height: 100%; object-fit: cover;"
+                                        class="rounded-start" alt="Card image" />
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{o.item}}</h5>
+                                        <p class="card-text fs-sm">Qty: {{ o.qty }}</p>
+                                        <p class="card-text fs-sm">Price: Ksh{{ o.price }}</p>
+                                        <p class="card-text fs-sm">Total: Ksh{{ o.total }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+                <!-- start shipping address -->
+                <div class="row mt-4">
+                    <h4 class="mb-30">Shipping Address</h4>
+                    
+                    <div id="addressSelectionSection">
+                        <div class="mb-4">
+                            <div class="row">
+                                {% for address in shipping_addresses %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card address-card {% if address.is_default %}border-success{% endif %}" data-address-id="{{ address.id }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input address-select" type="radio" 
+                                                           name="address_selection" value="{{ address.id }}"
+                                                           {% if address.is_default %}checked{% endif %}>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <button class="btn btn-sm btn-outline-secondary edit-address-btn me-2">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                    {% if address.is_default %}
+                                                    <span class="badge bg-success">Default</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="address-details">
+                                                <p class="mb-1"><strong data-field="full_name">{{ address.full_name }}</strong></p>
+                                                <p class="mb-1" data-field="region">{{ address.region }}</p>
+                                                <p class="mb-1" data-field="phone">Phone: {{ address.phone }}</p>
+                                                <p class="mb-1" data-field="email">Email: {{ address.email }}</p>
+                                                {% if address.shipping_instructions %}
+                                                <p class="mb-1"><small data-field="instructions">Instructions: {{ address.shipping_instructions }}</small></p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-3" id="newAddressBtn">
+                                Add New Address
+                            </button>
+                        </div>
+                        
+                        <!-- Address form - Used for both new and edit -->
+                        <div id="newAddressForm" style="display: none;">
+                            <h5 id="addressFormTitle" class="mb-3">Add New Address</h5>
+                            <form id="shippingAddressForm" class="needs-validation">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="form-group col-lg-6">
+                                        <input type="text" name="full_name" class="form-control" placeholder="Full Name *" required>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <input type="text" name="phone" class="form-control" placeholder="Phone *" required>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <input type="email" name="email" class="form-control" placeholder="Email *" required>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <input type="text" name="region" class="form-control" placeholder="Specify region and if (In town/out of town) *" required>
+                                    </div>
+                                    <div class="form-group col-lg-12">
+                                        <textarea name="shipping_instructions" class="form-control" 
+                                                  placeholder="Delivery Instructions (Optional)" style="height: 100px;"></textarea>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary">Save Address</button>
+                                        <button type="button" class="btn btn-outline-secondary" id="cancelNewAddress">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- end shipping address -->
+
+                
+            </div>
+
+
+
+            <div class="col-lg-5">
+                <div class="order-summary">
+                    <div class="d-flex align-items-end justify-content-between mb-30">
+                        <h4 class="order-summary-title">Order Summary</h4>
+                    </div>
+            
+                    <div class="summary-item">
+                        <span class="summary-label">Subtotal:</span>
+                        <span class="summary-value">Ksh{{ cart_total|floatformat:2 }}</span>
+                    </div>
+            
+                    {% if coupon_data.applied_coupons %}
+                    <div class="applied-coupons">
+                        {% for coupon in coupon_data.applied_coupons %}
+                        <div class="summary-item text-success">
+                            <span class="summary-label">Coupon Applied ({{ coupon.code }}):</span>
+                            <span class="discount-amount">{{ coupon.discount }}% off</span>
+                        </div>
+                        {% endfor %}
+                        <div class="summary-item text-success fw-bold">
+                            <span class="summary-label">Total Discount:</span>
+                            <span class="total-discount-amount">-Ksh{{ coupon_data.total_discount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+            
+                    <div class="summary-item total">
+                        <span class="summary-label">Final Total:</span>
+                        <span class="final-price">Ksh{{ coupon_data.final_total|default:cart_total|floatformat:2 }}</span>
+                    </div>
+                </div>
+            
+                <div class="row mb-50">
+                    <div class="col-lg-12">
+                        <form id="coupon-form" class="apply-coupon">
+                            {% csrf_token %}
+                            <input type="hidden" name="cart_total" value="{{ cart_total }}">
+                            <div class="input-group">
+                                <input type="text" name="code" id="coupon-code" class="form-control"
+                                    placeholder="Enter Coupon Code..." />
+                                <button class="btn btn-primary" type="submit" id="apply-coupon-btn">
+                                    Apply
+                                    <span class="loading-spinner d-none">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+                <!-- start terms and condition and refund policy -->
+                <div class="terms-section">
+                    <div class="terms-check">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="{% url 'core:terms-conditions' %}" target="_blank">Terms & Conditions</a>
+                                and <a href="{% url 'core:refund-policy' %}" target="_blank">Refund Policy</a>
+                            </label>
+                        </div>
+                        <div class="terms-error" id="terms-error">
+                            You must agree to the Terms & Conditions and Refund Policy to proceed
+                        </div>
+                    </div>
+                </div>
+                <!-- end terms and condition and refund policy -->
+
+                <!-- <a href="/mpesa/payment/" class="btn btn-success w-100 mb-2">Pay with M-Pesa</a> -->
+
+
+            
+                <div class="payment-options">
+                    <form id="payment-form" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="oid" value="{{ oid }}">
+                        <input type="hidden" name="shipping_address_id" id="selected_address_id">
+                            
+                        <button type="button" onclick="validateAndSubmitPayment('stripe')" class="btn btn-primary w-100 mb-2 payment-button">
+                            Pay With Stripe
+                        </button>
+                        <button type="button" onclick="validateAndShowMpesa()" class="btn btn-success w-100 mb-2">
+                            <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
+                        </button>
+                        <button type="button" onclick="validateAndShowCash()" class="btn btn-secondary w-100 mb-2">
+                            <i class="fas fa-money-bill me-2"></i>Cash on Delivery
+                        </button>
+                    </form>
+                
+                    <p id="payment-message" class="animate__animated animate__fadeInUp text-center mt-4"></p>
+                </div>
+
+
+
+                <!-- Cash Payment Modal -->
+<div id="cashModal" class="modal-js">
+    <div class="modal-content">
+        <div class="modal-header bg-secondary text-white">
+            <h5><i class="fas fa-money-bill me-2"></i>Cash on Delivery</h5>
+            <button type="button" class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="amount-display p-3 bg-light rounded mb-4">
+                <h6>Amount Due on Delivery:</h6>
+                <h4 class="text-secondary mb-0">
+                    KES {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
+                </h4>
+            </div>
+            
+            <div class="selected-address mb-4">
+                <h6>Delivery Address:</h6>
+                <div id="cashDeliveryAddress"></div>
+            </div>
+ 
+            <div id="cash_status" class="alert mt-3" style="display: none"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary close-modal">Cancel</button> 
+            <button type="button" class="btn btn-secondary" onclick="processCashPayment()">
+                Confirm Order
+            </button>
+        </div>
+    </div>
+ </div>
+ 
+ <script>
+ function validateAndShowCash() {
+    if (!document.getElementById('terms').checked) {
+        showError('Please accept terms and conditions');
+        return;
+    }
+ 
+    const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
+    if (!selectedRadio) {
+        showError('Please select shipping address');
+        return;
+    }
+ 
+    const addressCard = selectedRadio.closest('.address-card');
+    document.getElementById('cashDeliveryAddress').innerHTML = `
+        <p class="mb-1"><strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
+        <p class="mb-1">${addressCard.querySelector('[data-field="region"]').textContent}</p>
+        <p class="mb-1">Phone: ${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</p>
+    `;
+ 
+    document.getElementById('selected_address_id').value = selectedRadio.value;
+    document.getElementById('cashModal').style.display = 'block';
+ }
+ 
+ function processCashPayment() {
+    const status = document.getElementById('cash_status');
+    status.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Processing...';
+    status.className = 'alert alert-info';
+    status.style.display = 'block';
+ 
+    const formData = new FormData(document.getElementById('payment-form'));
+    formData.append('payment_method', 'cash');
+ 
+    fetch('/cash/payment/', {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Order placed successfully', '#28a745');
+            setTimeout(() => window.location.href = '/', 2000);
+        } else {
+            throw new Error(data.message);
+        }
+    })
+    .catch(error => {
+        status.className = 'alert alert-danger';
+        status.textContent = error.message;
+        showNotification(error.message, '#dc3545');
+    });
+ }
+ </script>
+               
+                 
+                 <div id="mpesaModal" class="modal-js">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5><i class="fas fa-mobile-alt me-2"></i>M-Pesa Payment</h5>
+                            <button type="button" class="close-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="selected-address mb-4 p-3 bg-light rounded">
+                                <h6 class="mb-2">Delivery Address:</h6>
+                                <div id="selectedAddressDetails"></div>
+                            </div>
+                 
+                            <div class="payment-amount mb-4 p-3 bg-light rounded">
+                                <h6 class="mb-2">Amount Due:</h6>
+                                <h4 class="text-success mb-0">
+                                    KES {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
+                                </h4>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">M-Pesa Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="tel" id="mpesa_phone" class="form-control form-control-lg"
+                                           placeholder="07XXXXXXXX" maxlength="10">
+                                </div>
+                                <small class="text-muted">Enter Safaricom number (e.g., 0712345678)</small>
+                            </div>
+                 
+                            <div id="mpesa_status" class="alert mt-3" style="display: none"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary close-modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="processMpesaPayment()">
+                                <i class="fas fa-money-bill-wave me-2"></i>Pay Now
+                            </button>
+                        </div>
+                    </div>
+                 </div>
+                 
+                 <style>
+                 .modal-js {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 1050;
+                 }
+                 
+                 .modal-js .modal-content {
+                    position: relative;
+                    width: 90%;
+                    max-width: 500px;
+                    margin: 50px auto;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+                 }
+                 
+                 .modal-js .modal-header {
+                    padding: 1rem;
+                    border-radius: 8px 8px 0 0;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                 }
+                 
+                 .close-modal {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 24px;
+                    cursor: pointer;
+                 }
+                 
+                 .modal-js .modal-body {
+                    padding: 1rem;
+                 }
+                 
+                 .modal-js .modal-footer {
+                    padding: 1rem;
+                    border-top: 1px solid #dee2e6;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 0.5rem;
+                 }
+                 </style>
+                 
+                 <script>
+                 function validateAndShowMpesa() {
+                    if (!document.getElementById('terms').checked) {
+                        showError('Please accept terms and conditions');
+                        document.getElementById('terms-error').style.display = 'block';
+                        document.getElementById('terms-error').scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                 
+                    const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
+                    if (!selectedRadio) {
+                        showError('Please select shipping address');
+                        document.querySelector('.address-card').scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                 
+                    const addressCard = selectedRadio.closest('.address-card');
+                    const addressDetails = {
+                        fullName: addressCard.querySelector('[data-field="full_name"]').textContent,
+                        region: addressCard.querySelector('[data-field="region"]').textContent,
+                        phone: addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', ''),
+                        email: addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')
+                    };
+                 
+                    document.getElementById('selectedAddressDetails').innerHTML = `
+                        <p class="mb-1"><strong>${addressDetails.fullName}</strong></p>
+                        <p class="mb-1">${addressDetails.region}</p>
+                        <p class="mb-1">Phone: ${addressDetails.phone}</p>
+                        <p class="mb-0">Email: ${addressDetails.email}</p>
+                    `;
+                 
+                    document.getElementById('selected_address_id').value = selectedRadio.value;
+                 
+                    const phoneInput = document.getElementById('mpesa_phone');
+                    if (addressDetails.phone.startsWith('07')) {
+                        phoneInput.value = addressDetails.phone;
+                    }
+                 
+                    document.getElementById('mpesaModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                 }
+                 
+                 function hideModal() {
+                    document.getElementById('mpesaModal').style.display = 'none';
+                    document.body.style.overflow = '';
+                 }
+                 
+                 function processMpesaPayment() {
+   const phoneInput = document.getElementById('mpesa_phone');
+   let phone = phoneInput.value.trim();
+   
+   if (!phone.match(/^0[7][0-9]{8}$/)) {
+       showError('Please enter valid Safaricom number');
+       return;
+   }
+
+   phone = '254' + phone.substring(1);
+
+   const status = document.getElementById('mpesa_status');
+   status.innerHTML = `
+       <div class="d-flex align-items-center">
+           <div class="spinner-border spinner-border-sm me-2"></div>
+           Initiating M-Pesa payment...
+       </div>
+   `;
+   status.className = 'alert alert-info mt-3';
+   status.style.display = 'block';
+
+   const buttons = document.querySelectorAll('#mpesaModal button');
+   buttons.forEach(btn => btn.disabled = true);
+
+   const formData = new FormData();
+   formData.append('payment_method', 'mpesa');
+   formData.append('phone_number', phone);
+   formData.append('shipping_address_id', document.getElementById('selected_address_id').value);
+   formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+   fetch('/mpesa/payment/', {
+       method: 'POST',
+       body: formData,
+       headers: {'X-Requested-With': 'XMLHttpRequest'}
+   })
+   .then(response => response.json())
+   .then(data => {
+       status.className = 'alert alert-' + (data.success ? 'success' : 'danger') + ' mt-3';
+       status.innerHTML = data.message;
+
+       if (data.success) {
+           // Clear cart
+           if('cart_data_obj' in sessionStorage) {
+               sessionStorage.removeItem('cart_data_obj');
+           }
+           
+           
+           
+           
+       } else {
+           buttons.forEach(btn => btn.disabled = false);
+           
+           if (data.message.includes('cancelled')) {
+               showNotification('Transaction Cancelled', '#dc3545');
+           } else {
+               showNotification('Payment Failed', '#dc3545');
+           }
+       }
+   })
+   .catch(error => {
+       status.className = 'alert alert-danger mt-3';
+       status.innerHTML = 'Payment processing failed';
+       buttons.forEach(btn => btn.disabled = false);
+       showNotification('Payment Failed: ' + error.message, '#dc3545');
+   });
+}
+
+function showNotification(message, bgColor) {
+   const notification = document.createElement('div');
+   notification.style.cssText = `
+       position: fixed;
+       top: 20px;
+       right: 20px;
+       padding: 15px 25px;
+       background: ${bgColor};
+       color: white;
+       border-radius: 8px;
+       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+       z-index: 1060;
+       opacity: 0;
+       transform: translateY(-20px);
+       transition: all 0.3s ease;
+   `;
+   notification.textContent = message;
+   document.body.appendChild(notification);
+
+   requestAnimationFrame(() => {
+       notification.style.opacity = '1';
+       notification.style.transform = 'translateY(0)';
+   });
+   
+   setTimeout(() => {
+       notification.style.opacity = '0';
+       notification.style.transform = 'translateY(-20px)';
+       setTimeout(() => notification.remove(), 300);
+   }, 3000);
+}
+
+function validateAndShowMpesa() {
+   if (!document.getElementById('terms').checked) {
+       showNotification('Please accept terms and conditions', '#ffc107');
+       return;
+   }
+
+   const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
+   if (!selectedRadio) {
+       showNotification('Please select shipping address', '#ffc107');
+       return;
+   }
+
+   const addressCard = selectedRadio.closest('.address-card');
+   const addressDetails = {
+       fullName: addressCard.querySelector('[data-field="full_name"]').textContent,
+       region: addressCard.querySelector('[data-field="region"]').textContent,
+       phone: addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', ''),
+       email: addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')
+   };
+
+   document.getElementById('selectedAddressDetails').innerHTML = `
+       <p class="mb-1"><strong>${addressDetails.fullName}</strong></p>
+       <p class="mb-1">${addressDetails.region}</p>
+       <p class="mb-1">Phone: ${addressDetails.phone}</p>
+       <p class="mb-0">Email: ${addressDetails.email}</p>
+   `;
+
+   document.getElementById('selected_address_id').value = selectedRadio.value;
+   
+   if (addressDetails.phone.startsWith('07')) {
+       document.getElementById('mpesa_phone').value = addressDetails.phone;
+   }
+
+   document.getElementById('mpesa_status').style.display = 'none';
+   document.getElementById('mpesaModal').style.display = 'block';
+   document.body.style.overflow = 'hidden';
+}
+                 </script>
+            </div>
+
+
+
+        </div>
+    </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+
+
+
+<!-- <script>
+    var stripe = Stripe("{{stripe_publishable_key}}");
+    var checkoutButton = document.getElementById("checkout-button");
+
+    try {
+        checkoutButton.addEventListener("click", function () {
+            var email = "{{booking.email}}";
+
+            checkoutButton.innerHTML = "Processing <i class='fas fa-spinner fa-spin'></i>";
+
+            fetch("/api/create_checkout_session/{{order.oid}}/", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email: email
+                    }),
+                })
+                .then(function (response) {
+                    console.log(response);
+                    console.log(stripe);
+                    return response.json();
+                })
+                .then(function (session) {
+                    return stripe.redirectToCheckout({
+                        sessionId: session.sessionId
+                    });
+                })
+                .then(function (result) {
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.log("Error: ", error);
+                });
+        });
+
+
+    } catch (error) {
+        console.log(error);
+    }
+</script> -->
+
+
+
+<!-- start coupon application -->
+<script>
+    $(document).ready(function () {
+    const couponForm = $('#coupon-form');
+    const applyBtn = $('#apply-coupon-btn');
+    const spinner = $('.loading-spinner');
+    let currentRequest = null;
+
+    couponForm.on('submit', function (e) {
+        e.preventDefault();
+
+        const couponCode = $('#coupon-code').val().trim();
+        if (!couponCode) {
+            showNotification('error', 'Error', 'Please enter a coupon code');
+            return;
+        }
+
+        applyBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+
+        if (currentRequest) {
+            currentRequest.abort();
+        }
+
+        currentRequest = $.ajax({
+            url: '{% url "core:apply-coupon" %}',
+            type: 'POST',
+            data: {
+                'code': couponCode,
+                'cart_total': '{{ cart_total }}',
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function (response) {
+                if (response.status === 'success') {
+                    // Update subtotal (original price)
+                    $('.summary-value').text(`Ksh${response.subtotal.toFixed(2)}`);
+
+                    // Update or create coupons section
+                    if ($('.applied-coupons').length) {
+                        // Add new coupon to list
+                        const newCouponHtml = `
+                        <div class="summary-item text-success">
+                            <span class="summary-label">Coupon Applied (${response.applied_coupons[response.applied_coupons.length-1].code}):</span>
+                            <span class="discount-amount">${response.applied_coupons[response.applied_coupons.length-1].discount}% off</span>
+                        </div>
+                    `;
+                        $('.total-discount-amount').closest('.summary-item').before(newCouponHtml);
+
+                        // Update total discount amount
+                        $('.total-discount-amount').text(`-Ksh${response.total_saved.toFixed(2)}`);
+                    } else {
+                        // Create new coupons section
+                        const couponsHtml = `
+                        <div class="applied-coupons">
+                            <div class="summary-item text-success">
+                                <span class="summary-label">Coupon Applied (${response.applied_coupons[0].code}):</span>
+                                <span class="discount-amount">${response.applied_coupons[0].discount}% off</span>
+                            </div>
+                            <div class="summary-item text-success fw-bold">
+                                <span class="summary-label">Total Discount:</span>
+                                <span class="total-discount-amount">-Ksh${response.total_saved.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                        $('.summary-item').eq(0).after(couponsHtml);
+                    }
+
+                    // Update final price
+                    $('.final-price').text(`Ksh${response.new_price.toFixed(2)}`);
+
+                    showNotification('success', 'Success', response.message);
+                    $('#coupon-code').val('');
+                } else {
+                    showNotification('error', 'Error', response.message);
+                }
+            },
+            error: function (xhr) {
+                if (xhr.statusText === "abort") {
+                    return;
+                }
+                showNotification('error', 'Error', 'Failed to apply coupon');
+            },
+            complete: function () {
+                currentRequest = null;
+                applyBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+            }
+        });
+    });
+
+    function showNotification(type, title, message) {
+        if (!$('#notification-container').length) {
+            $('body').append('<div id="notification-container"></div>');
+        }
+        const notification = $(`
+        <div class="notification ${type}">
+            <h4 style="margin: 0 0 5px; font-size: 16px;">${title}</h4>
+            <p style="margin: 0; font-size: 14px; color: #666;">${message}</p>
+        </div>
+    `);
+        $('#notification-container').append(notification);
+        notification[0].offsetHeight;
+        notification.addClass('show');
+        setTimeout(() => {
+            notification.removeClass('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    });
+</script>
+
+<style>
+    .order-summary {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .text-success {
+        color: blue;
+    }
+
+    .total {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 2px solid #dee2e6;
+    }
+
+    .apply-coupon {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .apply-coupon input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        transition: border-color 0.3s ease;
+    }
+
+    .apply-coupon input:focus {
+        border-color: blue;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.25);
+    }
+
+    .apply-coupon button {
+        padding: 10px 20px;
+        background: blue;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .apply-coupon button:hover {
+        background: blue;
+        transform: translateY(-1px);
+    }
+
+    .apply-coupon button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    #notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .notification {
+        background: white;
+        border-radius: 8px;
+        padding: 15px 25px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateX(120%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: 350px;
+    }
+
+    .notification.show {
+        transform: translateX(0);
+    }
+
+    .notification.success {
+        border-left: 4px solid blue;
+    }
+
+    .notification.error {
+        border-left: 4px solid #dc3545;
+    }
+</style>
+<!-- end coupon application -->
+
+
+<style>
+    .order-summary {
+        background-color: #f8f9fa;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-summary-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .summary-label {
+        font-weight: 500;
+    }
+
+    .summary-value {
+        font-weight: 600;
+    }
+
+    .total {
+        border-top: 1px solid #dee2e6;
+        padding-top: 10px;
+        font-size: 1.2rem;
+    }
+
+    .discount-amount {
+        color: blue;
+        font-weight: 600;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        transition: background-color 0.3s, color 0.3s, transform 0.3s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-success:hover {
+        background-color: blue;
+    }
+
+    .btn-secondary:hover {
+        background-color: #6c757d;
+    }
+
+    .loading-spinner {
+        margin-left: 10px;
+        font-size: 1rem;
+    }
+</style>
+
+
+<!-- start terms and condition and refund policy -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const termsCheckbox = document.getElementById('terms');
+    const termsError = document.getElementById('terms-error');
+    const paymentButtons = document.querySelectorAll('.payment-button');
+
+    // Initial check for terms
+    checkTermsAndTogglePayment();
+
+    // Add listener for terms checkbox
+    termsCheckbox.addEventListener('change', function() {
+        checkTermsAndTogglePayment();
+        // Clear notification if user checks the box
+        if (termsCheckbox.checked) {
+            const existingNotification = document.querySelector('.terms-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+        }
+    });
+
+    function checkTermsAndTogglePayment() {
+        if (termsCheckbox.checked) {
+            paymentButtons.forEach(btn => {
+                btn.classList.remove('payment-button-disabled');
+            });
+            termsError.style.display = 'none';
+        } else {
+            paymentButtons.forEach(btn => {
+                btn.classList.add('payment-button-disabled');
+            });
+        }
+    }
+});
+
+function validateAndSubmitPayment(method) {
+    const termsCheckbox = document.getElementById('terms');
+    const termsError = document.getElementById('terms-error');
+
+    if (!termsCheckbox.checked) {
+        // Show error message
+        termsError.style.display = 'block';
+        termsError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Create and show notification
+        const notification = document.createElement('div');
+        notification.className = 'terms-notification alert alert-warning animate__animated animate__fadeInDown';
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '1000';
+        notification.style.padding = '15px 25px';
+        notification.style.borderRadius = '8px';
+        notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        notification.style.backgroundColor = '#ffc107';
+        notification.style.color = '#000';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Please accept the Terms & Conditions and Refund Policy to proceed with payment</span>
+            </div>
+        `;
+
+        // Remove any existing notification
+        const existingNotification = document.querySelector('.terms-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        // Add new notification
+        document.body.appendChild(notification);
+
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+            notification.classList.add('animate__fadeOutUp');
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }, 5000);
+
+        return;
+    }
+    submitPayment(method);
+}
+</script>
+
+<style>
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes fadeOutUp {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+    }
+}
+
+.animate__animated {
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+}
+
+.animate__fadeInDown {
+    animation-name: fadeInDown;
+}
+
+.animate__fadeOutUp {
+    animation-name: fadeOutUp;
+}
+</style>
+<!-- end terms and condition and refund policy -->
+
+
+<!-- start payment -->
+<script>
+    function submitPayment(method) {
+        const formData = new FormData(document.getElementById('payment-form'));
+        formData.append('payment_method', method);
+
+        fetch("/process_payment/", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const paymentMessage = document.getElementById('payment-message');
+                paymentMessage.innerText = data.message;
+                paymentMessage.classList.add('animate__animated', 'animate__fadeInUp', 'text-center', 'mt-4');
+
+                if (data.success) {
+                    // Update cart count in UI (assuming you have a cart counter element)
+                    const cartCounter = document.getElementById('cart-counter');
+                    if (cartCounter) {
+                        cartCounter.textContent = '0';
+                    }
+
+                    // Add a success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'alert alert-success animate__animated animate__fadeInDown';
+                    notification.textContent = data.message;
+                    document.body.appendChild(notification);
+
+                    // Remove notification after 2 seconds
+                    setTimeout(() => {
+                        notification.classList.add('animate__fadeOutUp');
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 1000);
+                    }, 2000);
+
+                    // Redirect to home page after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                const paymentMessage = document.getElementById('payment-message');
+                paymentMessage.innerText = 'An error occurred. Please try again.';
+                paymentMessage.classList.add('animate__animated', 'animate__fadeInUp', 'text-center', 'mt-4');
+            });
+    }
+</script>
+<!-- end payment -->
+
+
+
+<!-- Add this CSS for notifications -->
+<style>
+    .alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 15px 30px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-success {
+        background-color: blue;
+        color: white;
+        border: none;
+    }
+</style>
+
+<!-- Start shipping address -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const newAddressBtn = document.getElementById('newAddressBtn');
+    const newAddressForm = document.getElementById('newAddressForm');
+    const cancelNewAddress = document.getElementById('cancelNewAddress');
+    const addressSelectionSection = document.getElementById('addressSelectionSection');
+    const shippingAddressForm = document.getElementById('shippingAddressForm');
+    
+    // Toggle new address form
+    if (newAddressBtn) {
+        newAddressBtn.addEventListener('click', function() {
+            newAddressForm.style.display = 'block';
+            newAddressBtn.style.display = 'none';
+            // Reset form and remove edit mode when adding new address
+            shippingAddressForm.reset();
+            shippingAddressForm.removeAttribute('data-edit-mode');
+            shippingAddressForm.removeAttribute('data-address-id');
+            document.getElementById('addressFormTitle').textContent = 'Add New Address';
+        });
+    }
+
+    if (cancelNewAddress) {
+        cancelNewAddress.addEventListener('click', function() {
+            newAddressForm.style.display = 'none';
+            newAddressBtn.style.display = 'block';
+            shippingAddressForm.reset();
+            shippingAddressForm.removeAttribute('data-edit-mode');
+            shippingAddressForm.removeAttribute('data-address-id');
+        });
+    }
+
+    // Handle edit address button clicks
+    document.querySelectorAll('.edit-address-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const addressCard = this.closest('.address-card');
+            const addressId = addressCard.dataset.addressId;
+            
+            // Populate form with existing address data
+            const addressDetails = addressCard.querySelector('.address-details');
+            const fullName = addressDetails.querySelector('[data-field="full_name"]').textContent;
+            const phone = addressDetails.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '');
+            const email = addressDetails.querySelector('[data-field="email"]').textContent.replace('Email: ', '');
+            const region = addressDetails.querySelector('[data-field="region"]').textContent;
+            const instructions = addressDetails.querySelector('[data-field="instructions"]')?.textContent.replace('Instructions: ', '') || '';
+
+            // Set form values
+            const form = document.getElementById('shippingAddressForm');
+            form.querySelector('[name="full_name"]').value = fullName;
+            form.querySelector('[name="phone"]').value = phone;
+            form.querySelector('[name="email"]').value = email;
+            form.querySelector('[name="region"]').value = region;
+            form.querySelector('[name="shipping_instructions"]').value = instructions;
+
+            // Show form in edit mode
+            newAddressForm.style.display = 'block';
+            newAddressBtn.style.display = 'none';
+            form.setAttribute('data-edit-mode', 'true');
+            form.setAttribute('data-address-id', addressId);
+            document.getElementById('addressFormTitle').textContent = 'Edit Address';
+        });
+    });
+
+    // Handle address selection and set as default
+    document.querySelectorAll('.address-select').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const addressId = this.value;
+            
+            // Set as default via AJAX
+            fetch(`/make-address-default/${addressId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update UI to reflect new default address
+                    document.querySelectorAll('.address-card').forEach(card => {
+                        card.classList.remove('border-success');
+                        const badge = card.querySelector('.badge');
+                        if (badge) badge.remove();
+                    });
+
+                    const selectedCard = this.closest('.address-card');
+                    selectedCard.classList.add('border-success');
+                    const cardBody = selectedCard.querySelector('.card-body');
+                    const cardHeader = cardBody.querySelector('.d-flex');
+                    if (!cardHeader.querySelector('.badge')) {
+                        cardHeader.insertAdjacentHTML('beforeend', '<span class="badge bg-success">Default</span>');
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Handle address form submission (both new and edit)
+    if (shippingAddressForm) {
+        shippingAddressForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const isEditMode = this.hasAttribute('data-edit-mode');
+            const addressId = this.getAttribute('data-address-id');
+            
+            // Set the address as default if it's a new address
+            if (!isEditMode) {
+                formData.append('is_default', 'true');
+            }
+
+            const url = isEditMode 
+                ? `/edit-shipping-address/${addressId}/`
+                : '/save-shipping-address/';
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error saving address');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    }
+});
+    </script>
+<!-- end shipping address -->
+
+<script>
+    // Update the submitPayment function
+function submitPayment(method) {
+    // Get all address radio buttons
+    const addressRadios = document.querySelectorAll('input[name="address_selection"]');
+    let selectedAddress = null;
+
+    // Check for default/selected address
+    for (const radio of addressRadios) {
+        if (radio.checked) {
+            selectedAddress = radio;
+            break;
+        }
+    }
+
+    // If no address is selected, try to use default or show error
+    if (!selectedAddress) {
+        // Try to find and select default address
+        const defaultAddress = document.querySelector('input[name="address_selection"][checked]');
+        if (defaultAddress) {
+            defaultAddress.checked = true;
+            selectedAddress = defaultAddress;
+        } else {
+            alert('Please select a shipping address');
+            return;
+        }
+    }
+
+    // Set selected address in hidden input
+    document.getElementById('selected_address_id').value = selectedAddress.value;
+
+    const formData = new FormData(document.getElementById('payment-form'));
+    formData.append('payment_method', method);
+
+    // Show loading state
+    const paymentMessage = document.getElementById('payment-message');
+    paymentMessage.innerText = 'Processing payment...';
+
+    fetch("/process_payment/", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        paymentMessage.innerText = data.message;
+        
+        if (data.success) {
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success animate__animated animate__fadeInDown';
+            notification.textContent = data.message;
+            document.body.appendChild(notification);
+
+            // Redirect after delay
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 2000);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        paymentMessage.innerText = 'An error occurred. Please try again.';
+    });
+}
+
+// Add this to ensure an address is selected when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Try to select default address if none is selected
+    const addressRadios = document.querySelectorAll('input[name="address_selection"]');
+    let hasSelectedAddress = false;
+
+    addressRadios.forEach(radio => {
+        if (radio.checked) {
+            hasSelectedAddress = true;
+        }
+    });
+
+    // If no address is selected, select the default one
+    if (!hasSelectedAddress && addressRadios.length > 0) {
+        const defaultAddress = document.querySelector('.address-card.border-success input[name="address_selection"]');
+        if (defaultAddress) {
+            defaultAddress.checked = true;
+        } else {
+            // If no default, select the first address
+            addressRadios[0].checked = true;
+        }
+    }
+});
+</script>
+
+
+
+{% endblock content %}

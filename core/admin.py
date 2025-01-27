@@ -114,17 +114,21 @@ class LowStockAlertAdmin(admin.ModelAdmin):
 
 @admin.register(PayHeroPayment)
 class PayHeroPaymentAdmin(admin.ModelAdmin):
-    list_display = ['order', 'user', 'amount', 'phone_number', 'status', 'mpesa_receipt', 'created_at']
-    list_filter = ['status', 'created_at']
-    search_fields = ['order__oid', 'user__username', 'phone_number', 'mpesa_receipt', 'external_reference']
-    readonly_fields = ['created_at', 'updated_at']
-    ordering = ['-created_at']
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'order')
+    list_display = ('id', 'user', 'external_reference', 'mpesa_receipt', 'amount', 'phone_number', 'status', 'created_at', 'updated_at')
+    list_filter = ('status', 'created_at', 'updated_at')
+    search_fields = ('user__username', 'phone_number', 'external_reference', 'mpesa_receipt')
+    readonly_fields = ('created_at', 'updated_at')
+    list_per_page = 20
 
-    def has_delete_permission(self, request, obj=None):
-        return False  # Prevent deletion of payment records
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'amount', 'phone_number', 'checkout_request_id', 'mpesa_receipt', 'external_reference', 'status', 'cart_data')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
     
 
 admin.site.register(LowStockAlert, LowStockAlertAdmin)

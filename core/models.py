@@ -465,19 +465,21 @@ class SupportTicket(models.Model):
 
 class PayHeroPayment(models.Model):
     PAYMENT_STATUS = (
-        ('QUEUED', 'Payment Queued'),
-        ('SUCCESS', 'Payment Successful'), 
-        ('FAILED', 'Payment Failed')
+        ('PENDING', 'Payment Pending'),
+        ('SUCCESS', 'Payment Successful'),
+        ('FAILED', 'Payment Failed'), 
+        ('CANCELLED', 'Payment Cancelled')
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order = models.ForeignKey(CartOrder, on_delete=models.CASCADE)
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=15) 
     checkout_request_id = models.CharField(max_length=100, blank=True, null=True)
     mpesa_receipt = models.CharField(max_length=100, blank=True, null=True)
     external_reference = models.CharField(max_length=100, unique=True)
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='QUEUED')
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='PENDING')
+    cart_data = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -485,4 +487,4 @@ class PayHeroPayment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Payment for Order {self.order.oid} - {self.status}"
+        return f"Payment {self.id} - {self.status}" 

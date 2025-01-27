@@ -1237,6 +1237,61 @@ def process_cash_payment(request, order):
        })
 
 
+
+@login_required
+def cash_payment(request):
+   if request.method == 'POST':
+       cart_data = request.session.get('cart_data_obj', {})
+       coupon_data = request.session.get('coupon_data', {})
+       shipping_address_id = request.POST.get('shipping_address_id')
+
+       try:
+           cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
+           final_total = cart_total - float(coupon_data.get('total_saved', 0))
+
+           order = CartOrder.objects.create(
+               user=request.user,
+               shipping_address_id=shipping_address_id,
+               price=final_total,
+               payment_method='cash',
+               paid_status=False,
+               cart_data=cart_data
+           )
+
+           # Create order items
+           for item in cart_data.values():
+               CartOrderProducts.objects.create(
+                   order=order,
+                   invoice_no=f"INVOICE-{order.id}",
+                   item=item['title'],
+                   image=item['image'],
+                   qty=item['qty'],
+                   price=item['price'],
+                   total=float(item['qty']) * float(item['price'])
+               )
+
+           # Clear cart
+           request.session['cart_data_obj'] = {}
+           request.session['coupon_data'] = {}
+
+           # Send confirmation emails
+           send_order_emails(order)
+
+           return JsonResponse({
+               'success': True,
+               'message': 'Order placed successfully for cash on delivery',
+               'redirect': '/'
+           })
+
+       except Exception as e:
+           return JsonResponse({
+               'success': False,
+               'message': f'Failed to place order: {str(e)}'
+           })
+
+   return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+   
 def clear_session_data(request):
     clear_cart(request)
     if 'coupon_data' in request.session:
