@@ -114,7 +114,7 @@ class LowStockAlertAdmin(admin.ModelAdmin):
 
 @admin.register(PayHeroPayment)
 class PayHeroPaymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'external_reference', 'mpesa_receipt', 'amount', 'phone_number', 'status', 'created_at', 'updated_at')
+    list_display = ('id', 'user', 'external_reference', 'mpesa_receipt', 'amount', 'phone_number', 'shipping_address', 'status', 'created_at', 'updated_at')
     list_filter = ('status', 'created_at', 'updated_at')
     search_fields = ('user__username', 'phone_number', 'external_reference', 'mpesa_receipt')
     readonly_fields = ('created_at', 'updated_at')

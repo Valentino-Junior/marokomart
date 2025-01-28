@@ -897,122 +897,8 @@ def update_product_stock(request, order):
         except Product.DoesNotExist:
             continue
 
-@login_required
-def mpesa_payment(request):
-   cart_data = request.session.get('cart_data_obj', {})
-   coupon_data = request.session.get('coupon_data', {})
-   cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
-   final_total = cart_total - float(coupon_data.get('total_saved', 0))
 
-   if request.method == 'POST':
-       phone = request.POST.get('phone_number')
-       print(f"Phone number: {phone}")  # Debug
 
-       payload = {
-           "amount": final_total,
-           "phone_number": '254' + phone[1:] if phone.startswith('0') else phone,
-           "channel_id": 1351,
-           "provider": "m-pesa",
-           "external_reference": f"TEST-{uuid.uuid4().hex[:8]}",
-           "customer_name": request.user.get_full_name() or request.user.username,
-           
-       }
-
-       print(f"Payload: {payload}")  # Debug
-
-       headers = {
-           'Content-Type': 'application/json',
-           'Authorization': PayHeroConfig.generate_auth_token()
-       }
-
-       response = requests.post(
-           'https://backend.payhero.co.ke/api/v2/payments',
-           json=payload,
-           headers=headers
-       )
-
-       print(f"Response: {response.text}")  # Debug
-       return JsonResponse(response.json())
-
-   return render(request, 'core/mpesa_form.html', {
-       'final_total': final_total
-   })
-
-@login_required
-def process_payment(request):
-    if request.method == 'POST':
-        shipping_address_id = request.POST.get('shipping_address_id')
-        payment_method = request.POST.get('payment_method')
-        cart_data = request.session.get('cart_data_obj', {})
-        coupon_data = request.session.get('coupon_data', {})
-        phone_number = request.POST.get('phone_number')
-
-        try:
-            if not shipping_address_id:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Please select a shipping address'
-                })
-
-            shipping_address = ShippingAddress.objects.get(
-                id=shipping_address_id, 
-                user=request.user
-            )
-            
-            # Calculate final price with discounts
-            cart_total = sum(int(item['qty']) * Decimal(str(item['price'])) for item in cart_data.values())
-            saved_amount = Decimal(coupon_data.get('total_saved', '0'))
-            final_total = cart_total - saved_amount
-
-            # Create initial order
-            order = CartOrder.objects.create(
-                user=request.user,
-                shipping_address=shipping_address,
-                price=final_total,
-                saved=saved_amount,
-                cart_data=cart_data,
-                payment_method=payment_method
-            )
-
-            # Add applied coupons
-            for coupon_info in coupon_data.get('applied_coupons', []):
-                try:
-                    coupon = Coupon.objects.get(code=coupon_info['code'])
-                    order.coupons.add(coupon)
-                    coupon.times_used += 1
-                    coupon.save()
-                except Coupon.DoesNotExist:
-                    continue
-
-            # Create order items
-            for item in cart_data.values():
-                CartOrderProducts.objects.create(
-                    order=order,
-                    invoice_no=f"INVOICE_NO-{order.id}",
-                    item=item['title'],
-                    image=item['image'],
-                    qty=item['qty'],
-                    price=item['price'],
-                    total=Decimal(str(item['qty'])) * Decimal(str(item['price']))
-                )
-
-            # Process payment based on method
-            if payment_method == 'stripe':
-                return process_stripe_payment(request, order)
-            elif payment_method == 'mpesa':
-                return process_mpesa_payment(request, order)
-            elif payment_method == 'cash':
-                return process_cash_payment(request, order)
-            else:
-                raise ValueError("Invalid payment method")
-
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': str(e)
-            })
-
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
 
@@ -1070,172 +956,138 @@ def send_order_emails(order):
        print(f"Failed to send order emails: {str(e)}")
        return False
 
-def process_stripe_payment(request, order):
-   try:
-       # Set order as paid
-       order.paid_status = True
-       order.save()
-       
-       # Update stock and clear session
-       update_product_stock(request, order)
-       clear_session_data(request)
-       
-       # Send email notifications
-       send_order_emails(order)
-       
-       return JsonResponse({
-           'success': True,
-           'message': f'Stripe payment for order {order.oid} successful',
-           'redirect': '/',
-           'cart_count': 0
-       })
-   except Exception as e:
-       order.delete()  # Remove order if payment fails
-       return JsonResponse({
-           'success': False,
-           'message': f'Stripe payment failed: {str(e)}'
-       })
+
 
 # api pswd
 # AQjrk2UH0OC4crhB5UfTO3ZMZZ7OTMcBpUGPEZxW
 
-def process_mpesa_payment(request, order):
-    try:
-        # Generate unique reference
-        external_reference = f"INV-{order.oid}"
-        
-        # Create payment record
-        payment = PayHeroPayment.objects.create(
-            order=order,
-            user=request.user,
-            amount=order.price,
-            phone_number=request.POST.get('phone_number'),
-            external_reference=external_reference
-        )
+@login_required
+def mpesa_payment(request):
+   if request.method == 'POST':
+       phone = request.POST.get('phone_number')
+       shipping_address_id = request.POST.get('shipping_address_id')
+       cart_data = request.session.get('cart_data_obj', {})
+       coupon_data = request.session.get('coupon_data', {})
 
-        payload = {
-            "amount": float(order.price),
-            "phone_number": payment.phone_number.strip(),
-            "channel_id": 1351,
-            "provider": "m-pesa",
-            "external_reference": external_reference,
-            "customer_name": f"{request.user.first_name} {request.user.last_name}",
-            "callback_url": PayHeroConfig.get_callback_url(request)
-        }
+       try:
+           shipping_address = ShippingAddress.objects.get(id=shipping_address_id, user=request.user)
+           
+           cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
+           final_total = cart_total - float(coupon_data.get('total_saved', 0))
+           
+           external_reference = f"PAY-{uuid.uuid4().hex[:8]}"
 
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': PayHeroConfig.generate_auth_token()
-        }
+           payment = PayHeroPayment.objects.create(
+               user=request.user,
+               shipping_address=shipping_address,
+               amount=final_total,
+               phone_number=phone,
+               status='PENDING',
+               cart_data=cart_data,
+               external_reference=external_reference
+           )
 
-        response = requests.post(
-            'https://backend.payhero.co.ke/api/v2/payments',
-            json=payload,
-            headers=headers
-        )
-        
-        if response.status_code == 201:
-            data = response.json()
-            if data.get('success'):
-                payment.checkout_request_id = data.get('CheckoutRequestID')
-                payment.save()
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Please check your phone to complete the M-Pesa payment.',
-                    'redirect': '/'
-                })
+           payload = {
+               "amount": final_total,
+               "phone_number": phone,
+               "channel_id": 1351,
+               "provider": "m-pesa",
+               "external_reference": external_reference,
+               "customer_name": shipping_address.full_name,
+               "callback_url": PayHeroConfig.get_callback_url(request)
+           }
 
-        payment.status = 'FAILED'
-        payment.save()
-        order.delete()
-        return JsonResponse({
-            'success': False,
-            'message': 'Failed to initiate payment. Please try again.'
-        })
+           response = requests.post(
+               'https://backend.payhero.co.ke/api/v2/payments',
+               json=payload,
+               headers={
+                   'Content-Type': 'application/json',
+                   'Authorization': PayHeroConfig.generate_auth_token()
+               }
+           )
 
-    except Exception as e:
-        if order:
-            order.delete()
-        return JsonResponse({
-            'success': False,
-            'message': f'Payment processing failed: {str(e)}'
-        })
+           if response.status_code == 201:
+               data = response.json()
+               if data.get('success'):
+                   payment.checkout_request_id = data.get('CheckoutRequestID')
+                   payment.save()
+                   return JsonResponse({
+                       'success': True,
+                       'message': 'Check your phone to complete payment'
+                   })
+
+           payment.delete()
+           return JsonResponse({
+               'success': False, 
+               'message': 'Failed to initiate payment'
+           })
+
+       except Exception as e:
+           return JsonResponse({'success': False, 'message': str(e)})
+
+   return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 @csrf_exempt
 def mpesa_callback(request):
     if request.method == 'POST':
+        data = json.loads(request.body)
+        print(f"Callback data: {data}")
+
+        response_data = data.get('response', {})
+        result_code = response_data.get('ResultCode')
+        result_desc = response_data.get('ResultDesc')
+        external_ref = response_data.get('ExternalReference')
+        mpesa_receipt = response_data.get('MpesaReceiptNumber')
+        
         try:
-            data = json.loads(request.body)
-            response = data.get('response', {})
+            payment = PayHeroPayment.objects.get(external_reference=external_ref)
+
+            order = CartOrder.objects.create(
+                user=payment.user,
+                shipping_address=payment.shipping_address,
+                price=payment.amount,
+                cart_data=payment.cart_data,
+                payment_method='mpesa',
+                mpesa_receipt=mpesa_receipt,
+                external_reference=external_ref
+            )
             
-            # Get external reference from callback
-            external_ref = response.get('ExternalReference')
-            mpesa_receipt = response.get('MpesaReceiptNumber')
-            result_code = response.get('ResultCode')
-            
-            try:
-                # Find payment by external reference
-                payment = PayHeroPayment.objects.get(
-                    external_reference=external_ref
+            for item in payment.cart_data.values():
+                CartOrderProducts.objects.create(
+                    order=order,
+                    item=item['title'],
+                    image=item['image'],
+                    qty=item['qty'],
+                    price=item['price'],
+                    total=float(item['qty']) * float(item['price'])
                 )
                 
-                if result_code == 0:  # Success
-                    payment.status = 'SUCCESS'
-                    payment.mpesa_receipt = mpesa_receipt
-                    payment.save()
-                    
-                    # Update order status
-                    order = payment.order
-                    order.paid_status = True
-                    order.save()
-                    
-                    # Clear session and update stock
-                    update_product_stock(request, order)
-                    clear_session_data(request)
-                    
-                    # Send confirmation emails
-                    send_order_emails(order)
-                else:
-                    payment.status = 'FAILED'
-                    payment.save()
-                
-                return HttpResponse(status=200)
-                
-            except PayHeroPayment.DoesNotExist:
-                return HttpResponse(status=404)
-                
-        except Exception as e:
-            print(f"Callback Error: {str(e)}")
-            return HttpResponse(status=500)
+                try:
+                    product = Product.objects.get(title=item['title'])
+                    new_stock = max(0, int(product.stock_count) - int(item['qty']))
+                    product.stock_count = str(new_stock)
+                    product.save()
+                except Product.DoesNotExist:
+                    pass
             
+            if result_code == 0:
+                payment.status = 'SUCCESS'
+                order.paid_status = True
+                order.save()
+                clear_session_data(request)
+                send_order_emails(order)
+            else:
+                payment.status = 'FAILED'
+                order.delete()
+            
+            payment.save()
+            
+            return JsonResponse({'success': True})
+
+        except PayHeroPayment.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Payment not found'})
+    
     return HttpResponse(status=400)
-
-
-def process_cash_payment(request, order):
-   try:
-       # Cash on delivery - mark as unpaid
-       order.paid_status = False
-       order.save()
-       
-       # Clear the session
-       clear_session_data(request)
-       
-       # Send email notifications
-       send_order_emails(order)
-       
-       return JsonResponse({
-           'success': True,
-           'message': f'Order {order.oid} placed successfully for cash on delivery',
-           'redirect': '/', 
-           'cart_count': 0
-       })
-   except Exception as e:
-       order.delete()
-       return JsonResponse({
-           'success': False,
-           'message': f'Failed to place cash order: {str(e)}'
-       })
-
 
 
 @login_required
@@ -1291,7 +1143,6 @@ def cash_payment(request):
 
    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
-   
 def clear_session_data(request):
     clear_cart(request)
     if 'coupon_data' in request.session:

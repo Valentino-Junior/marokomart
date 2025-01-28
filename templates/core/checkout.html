@@ -477,7 +477,7 @@
    formData.append('shipping_address_id', document.getElementById('selected_address_id').value);
    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
 
-   fetch('/process_payment/', {
+   fetch('/mpesa/payment/', {
        method: 'POST',
        body: formData,
        headers: {'X-Requested-With': 'XMLHttpRequest'}
