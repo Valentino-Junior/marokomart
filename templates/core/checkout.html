@@ -827,8 +827,8 @@ function processMpesaPayment() {
 
 function pollPaymentStatus(reference) {
     let attempts = 0;
-    const maxAttempts = 60; // Will check for 30 seconds
-    const pollInterval = 500; // Every 0.5 seconds
+    const maxAttempts = 60;
+    const pollInterval = 500;
 
     const checkStatus = () => {
         if (attempts >= maxAttempts) {
@@ -836,19 +836,21 @@ function pollPaymentStatus(reference) {
             status.innerHTML = 'Payment timeout. Please try again or check your M-Pesa messages.';
             status.className = 'alert alert-warning mt-3';
             
-            // Re-enable buttons
             const buttons = document.querySelectorAll('#mpesaModal button');
             buttons.forEach(btn => btn.disabled = false);
             return;
         }
 
-        // Call your backend endpoint that checks PayHero status
         fetch(`/check-payment-status/?reference=${reference}`)
             .then(response => response.json())
             .then(data => {
                 const status = document.getElementById('mpesa_status');
                 
                 if (data.status === 'SUCCESS') {
+                    // Clear any existing content first
+                    status.innerHTML = '';
+                    
+                    // Set success message
                     status.className = 'alert alert-success mt-3';
                     status.innerHTML = `
                         <div class="text-center">
@@ -860,12 +862,10 @@ function pollPaymentStatus(reference) {
 
                     showNotification('Payment successful!', '#28a745');
                     
-                    // Clear cart data from sessionStorage
                     if('cart_data_obj' in sessionStorage) {
                         sessionStorage.removeItem('cart_data_obj');
                     }
 
-                    // Redirect after a short delay
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 2000);
@@ -880,21 +880,22 @@ function pollPaymentStatus(reference) {
                         </div>
                     `;
                     
-                    // Re-enable buttons
                     const buttons = document.querySelectorAll('#mpesaModal button');
                     buttons.forEach(btn => btn.disabled = false);
                     
                     showNotification('Payment failed', '#dc3545');
                 } 
                 else {
-                    // Still pending, update UI and continue polling
-                    status.innerHTML = `
-                        <div class="text-center">
-                            <div class="spinner-border text-primary mb-2"></div>
-                            <p class="mb-1">Waiting for payment confirmation...</p>
-                            <small>Please check your phone for the M-Pesa prompt</small>
-                        </div>
-                    `;
+                    // Only update pending status if we're not already in success or failed state
+                    if (!status.classList.contains('alert-success') && !status.classList.contains('alert-danger')) {
+                        status.innerHTML = `
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-2"></div>
+                                <p class="mb-1">Waiting for payment confirmation...</p>
+                                <small>Please check your phone for the M-Pesa prompt</small>
+                            </div>
+                        `;
+                    }
                     attempts++;
                     setTimeout(checkStatus, pollInterval);
                 }
@@ -906,7 +907,6 @@ function pollPaymentStatus(reference) {
             });
     };
 
-    // Start the polling
     checkStatus();
 }
 
