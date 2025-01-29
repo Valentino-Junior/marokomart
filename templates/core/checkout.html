@@ -245,8 +245,24 @@
             <div id="cash_status" class="alert mt-3" style="display: none"></div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" onclick="hideCashModal()">Cancel</button> 
-            <button type="button" class="btn btn-secondary" id="confirmCashPayment" onclick="processCashPayment()">
+            <button type="button" class="btn btn-outline-secondary" onclick="hideCashModal()" 
+                    style="color: black; 
+                           border: 2px solid #6c757d;
+                           background: transparent;
+                           padding: 8px 20px;
+                           border-radius: 5px;
+                           font-weight: 500;
+                           transition: all 0.3s ease;
+                           margin-right: 10px;
+                           hover: {
+                             background: #6c757d;
+                             color: white;
+                             transform: translateY(-2px);
+                           }">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="confirmCashPayment" onclick="processCashPayment()">
+                <i class="fas fa-check me-2"></i>
                 Confirm Order
             </button>
         </div>
@@ -348,10 +364,10 @@ function validateAndShowCash() {
 
     const addressCard = selectedRadio.closest('.address-card');
     document.getElementById('cashDeliveryAddress').innerHTML = `
-        <p class="mb-1"><strong>Name: ${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
-        <p class="mb-1">Region: ${addressCard.querySelector('[data-field="region"]').textContent}</p>
-        <p class="mb-1">Phone: ${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</p>
-        <p class="mb-1">Email: ${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</p>
+        <p class="mb-1">Name: <strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
+        <p class="mb-1">Region: <strong>${addressCard.querySelector('[data-field="region"]').textContent}</strong></p>
+        <p class="mb-1">Phone: <strong>${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</strong></p>
+        <p class="mb-1">Email: <strong>${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</strong></p>
     `;
 
     document.getElementById('selected_address_id').value = selectedRadio.value;
