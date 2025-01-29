@@ -1,0 +1,39 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-body text-center p-5">
+            <i class="fas fa-check-circle fa-5x text-success mb-4"></i>
+            <h1 class="mb-3">Payment Successful!</h1>
+            <p class="lead">Thank you for your purchase. Your payment has been processed successfully.</p>
+            <p>You will be redirected to the home page in <span id="countdown">5</span> seconds...</p>
+            <a href="/" class="btn btn-primary mt-4">Go to Home Page</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let seconds = 5;
+  const countdownElem = document.getElementById('countdown');
+
+  const countdownInterval = setInterval(function() {
+    seconds--;
+    countdownElem.textContent = seconds;
+
+    if (seconds <= 0) {
+      clearInterval(countdownInterval);
+      window.location.href = "/";
+    }
+  }, 1000);
+});
+</script>
+{% endblock %}

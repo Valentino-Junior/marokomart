@@ -849,7 +849,7 @@ def checkout(request, oid):
         "order_items": cart_items,
         "cart_total": cart_total,
         "shipping_addresses": shipping_addresses,
-        "stripe_publishable_key": settings.STRIPE_PUBLIC_KEY,
+        "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
         "coupon_data": coupon_data,
     }
 
@@ -986,6 +986,14 @@ def process_stripe_payment(request):
         final_total = cart_total - float(coupon_data.get('total_saved', 0))
         amount_in_cents = int(final_total * 100)  # Stripe expects amounts in cents
 
+        # Check if the order amount meets the minimum value
+        min_amount_cents = 50  # Minimum amount in cents (50 cents)
+        if amount_in_cents < min_amount_cents:
+            return JsonResponse({
+                'success': False,
+                'message': f'Order total must be at least KSh{min_amount_cents/100:.2f}'
+            })
+
         try:
             # Get shipping address
             shipping_address = ShippingAddress.objects.get(
@@ -1000,12 +1008,15 @@ def process_stripe_payment(request):
                 payment_method=payment_method_id,
                 confirmation_method='manual',
                 confirm=True,
+                return_url=request.build_absolute_uri('/payment/success/'),
                 metadata={
                     'shipping_address_id': shipping_address_id,
-                    'user_id': str(request.user.id)
+                    'user_id': str(request.user.id),
+                    'order_items': str(len(cart_data))
                 }
             )
 
+            # Handle different payment intent statuses
             if intent.status == 'succeeded':
                 # Create order
                 order = CartOrder.objects.create(
@@ -1018,7 +1029,7 @@ def process_stripe_payment(request):
                     stripe_payment_intent=intent.id
                 )
 
-                # Create order items
+                # Create order items and update stock
                 for item in cart_data.values():
                     CartOrderProducts.objects.create(
                         order=order,
@@ -1053,10 +1064,18 @@ def process_stripe_payment(request):
                     'success': True,
                     'message': 'Payment processed successfully'
                 })
+            elif intent.status == 'requires_action':
+                # Handle 3D Secure authentication if required
+                return JsonResponse({
+                    'success': False,
+                    'requires_action': True,
+                    'payment_intent_client_secret': intent.client_secret,
+                    'message': 'Authentication required'
+                })
             else:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Payment failed'
+                    'message': f'Payment failed: {intent.status}'
                 })
 
         except ShippingAddress.DoesNotExist:
@@ -1081,6 +1100,8 @@ def process_stripe_payment(request):
             'message': f"An error occurred: {str(e)}"
         })
 
+def payment_success(request):
+    return render(request, 'core/payment_success.html')
 
 
 @login_required
