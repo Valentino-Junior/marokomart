@@ -206,8 +206,8 @@
                         <input type="hidden" name="oid" value="{{ oid }}">
                         <input type="hidden" name="shipping_address_id" id="selected_address_id">
                             
-                        <button type="button" onclick="validateAndSubmitPayment('stripe')" class="btn btn-primary w-100 mb-2 payment-button">
-                            Pay With Stripe
+                        <button type="button" onclick="validateAndShowStripe()" class="btn btn-primary w-100 mb-2 payment-button">
+                            <i class="fas fa-credit-card me-2"></i>Pay with Card
                         </button>
                         <button type="button" onclick="validateAndShowMpesa()" class="btn btn-success w-100 mb-2">
                             <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
@@ -222,7 +222,400 @@
 
 
 
-  <!-- start Cash Payment Modal -->
+                <!-- start Stripe Payment Modal -->
+                <div id="stripeModal" class="modal-js">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5><i class="fas fa-credit-card me-2"></i>Card Payment</h5>
+                            <button type="button" class="close-modal" onclick="hideStripeModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="selected-address mb-4 p-3 bg-light rounded">
+                                <h6 class="mb-2">Delivery Address:</h6>
+                                <div id="stripeDeliveryAddress"></div>
+                            </div>
+                
+                            <div class="payment-amount mb-4 p-3 bg-light rounded">
+                                <h6 class="mb-2">Amount Due:</h6>
+                                <h4 class="text-primary mb-0">
+                                    KES {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
+                                </h4>
+                            </div>
+                
+                            <div id="card-element" class="mb-3"></div>
+                            <div id="card-errors" class="alert alert-danger" style="display: none;"></div>
+                            <div id="stripe_status" class="alert mt-3" style="display: none;"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" onclick="hideStripeModal()" 
+                                    style="color: black; 
+                                           border: 2px solid #6c757d;
+                                           background: transparent;
+                                           padding: 8px 20px;
+                                           border-radius: 5px;
+                                           font-weight: 500;
+                                           transition: all 0.3s ease;
+                                           margin-right: 10px;">
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-primary" id="stripe-submit-btn">
+                                <i class="fas fa-lock me-2"></i>Pay Securely
+                            </button>
+                        </div>
+                    </div>
+                </div>
+  <!-- end stripe Payment Modal -->
+
+
+
+                 <!-- start stripe styling and script -->
+                 <style>
+                    /* Stripe Modal Styles */
+                    .modal-js {
+                        display: none;
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 1050;
+                        overflow-y: auto;
+                    }
+                    
+                    .modal-js .modal-content {
+                        position: relative;
+                        width: 90%;
+                        max-width: 500px;
+                        margin: 40px auto;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 5px 15px rgba(0,0,0,.5);
+                        max-height: calc(100vh - 80px);
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    
+                    .modal-js .modal-body {
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 1.5rem;
+                    }
+                    
+                    .modal-js .modal-header {
+                        padding: 1rem 1.5rem;
+                        background-color: #0d6efd;
+                        border-radius: 8px 8px 0 0;
+                        position: relative;
+                    }
+                    
+                    .modal-js .modal-footer {
+                        padding: 1rem 1.5rem;
+                        border-top: 1px solid #dee2e6;
+                        background: white;
+                        border-radius: 0 0 8px 8px;
+                    }
+                    
+                    .close-modal {
+                        background: transparent;
+                        border: none;
+                        color: white;
+                        font-size: 1.5rem;
+                        cursor: pointer;
+                        padding: 0;
+                        opacity: 0.8;
+                        transition: opacity 0.2s;
+                    }
+                    
+                    .close-modal:hover {
+                        opacity: 1;
+                    }
+                    
+                    /* Stripe Card Element Styles */
+                    #card-element {
+                        padding: 12px;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 4px;
+                        background: white;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .StripeElement--focus {
+                        border-color: #80bdff;
+                        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+                    }
+                    
+                    .StripeElement--invalid {
+                        border-color: #dc3545;
+                    }
+                    
+                    #stripeDeliveryAddress {
+                        background: #f8f9fa;
+                        padding: 1rem;
+                        border-radius: 6px;
+                        border: 1px solid #e9ecef;
+                    }
+                    
+                    /* Cancel Button Hover Effect */
+                    .btn-outline-secondary:hover {
+                        background-color: #6c757d !important;
+                        color: white !important;
+                    }
+                    
+                    /* Submit Button Styles */
+                    #stripe-submit-btn {
+                        min-width: 140px;
+                    }
+                    
+                    #stripe-submit-btn:disabled {
+                        opacity: 0.7;
+                        cursor: not-allowed;
+                    }
+                    
+                    /* Error Message Styles */
+                    #card-errors {
+                        display: none;
+                        margin-top: 10px;
+                        font-size: 14px;
+                    }
+                    
+                    /* Status Message Styles */
+                    #stripe_status {
+                        margin-top: 15px;
+                        display: none;
+                    }
+                    </style>
+                    
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Initialize Stripe with your publishable key
+                        const stripe = Stripe('{{ stripe_publishable_key }}');
+                        const elements = stripe.elements();
+                    
+                        // Create card Element
+                        const card = elements.create('card', {
+                            style: {
+                                base: {
+                                    fontSize: '16px',
+                                    color: '#32325d',
+                                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                    '::placeholder': {
+                                        color: '#aab7c4'
+                                    }
+                                },
+                                invalid: {
+                                    color: '#fa755a',
+                                    iconColor: '#fa755a'
+                                }
+                            }
+                        });
+                    
+                        function validateAndShowStripe() {
+                            if (!document.getElementById('terms').checked) {
+                                const termsError = document.getElementById('terms-error');
+                                termsError.style.display = 'block';
+                                
+                                const notification = document.createElement('div');
+                                notification.innerHTML = `
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span>Please accept terms and conditions</span>
+                                    </div>
+                                `;
+                                notification.style.cssText = `
+                                    position: fixed;
+                                    top: 20px;
+                                    right: 20px;
+                                    padding: 15px 25px;
+                                    background: #ffc107;
+                                    color: #000;
+                                    border-radius: 8px;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                    z-index: 1060;
+                                    opacity: 0;
+                                    transform: translateY(-20px);
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                    font-weight: 500;
+                                `;
+                                document.body.appendChild(notification);
+                    
+                                requestAnimationFrame(() => {
+                                    notification.style.opacity = '1';
+                                    notification.style.transform = 'translateY(0)';
+                                });
+                                
+                                setTimeout(() => {
+                                    notification.style.opacity = '0';
+                                    notification.style.transform = 'translateY(-20px)';
+                                    setTimeout(() => notification.remove(), 300);
+                                }, 3000);
+                                return;
+                            }
+                    
+                            const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
+                            if (!selectedRadio) {
+                                showNotification('Please select shipping address', '#ffc107');
+                                return;
+                            }
+                    
+                            const addressCard = selectedRadio.closest('.address-card');
+                            document.getElementById('stripeDeliveryAddress').innerHTML = `
+                                <p class="mb-1">Name: <strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
+                                <p class="mb-1">Region: <strong>${addressCard.querySelector('[data-field="region"]').textContent}</strong></p>
+                                <p class="mb-1">Phone: <strong>${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</strong></p>
+                                <p class="mb-1">Email: <strong>${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</strong></p>
+                            `;
+                    
+                            document.getElementById('selected_address_id').value = selectedRadio.value;
+                            document.getElementById('stripeModal').style.display = 'block';
+                            document.body.style.overflow = 'hidden';
+                    
+                            // Mount Stripe Elements
+                            card.mount('#card-element');
+                        }
+                    
+                        function hideStripeModal() {
+                            const modal = document.getElementById('stripeModal');
+                            modal.style.display = 'none';
+                            document.body.style.overflow = '';
+                            
+                            // Clear any error messages
+                            document.getElementById('card-errors').style.display = 'none';
+                            document.getElementById('stripe_status').style.display = 'none';
+                            
+                            // Re-enable submit button
+                            document.getElementById('stripe-submit-btn').disabled = false;
+                        }
+                    
+                        // Close modal when clicking outside
+                        const modal = document.getElementById('stripeModal');
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === this) {
+                                hideStripeModal();
+                            }
+                        });
+                    
+                        // Close modal on ESC key
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 'Escape' && modal.style.display === 'block') {
+                                hideStripeModal();
+                            }
+                        });
+                    
+                        // Make functions globally available
+                        window.validateAndShowStripe = validateAndShowStripe;
+                        window.hideStripeModal = hideStripeModal;
+                    
+                        // Handle form submission
+                        document.getElementById('stripe-submit-btn').addEventListener('click', handleStripeSubmit);
+                    
+                        function handleStripeSubmit(event) {
+                            event.preventDefault();
+                            const button = this;
+                            const status = document.getElementById('stripe_status');
+                            
+                            button.disabled = true;
+                            status.className = 'alert alert-info mt-3';
+                            status.innerHTML = `
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="spinner-border spinner-border-sm me-2"></div>
+                                    <span>Processing payment...</span>
+                                </div>
+                            `;
+                            status.style.display = 'block';
+                    
+                            stripe.createPaymentMethod({
+                                type: 'card',
+                                card: card,
+                                billing_details: {
+                                    address: {
+                                        line1: document.querySelector('[data-field="region"]').textContent
+                                    }
+                                }
+                            }).then(handleStripeResult);
+                        }
+                    
+                        function handleStripeResult(result) {
+                            const button = document.getElementById('stripe-submit-btn');
+                            const status = document.getElementById('stripe_status');
+                            
+                            if (result.error) {
+                                const errorElement = document.getElementById('card-errors');
+                                errorElement.textContent = result.error.message;
+                                errorElement.style.display = 'block';
+                                button.disabled = false;
+                                status.style.display = 'none';
+                            } else {
+                                processStripePayment(result.paymentMethod.id);
+                            }
+                        }
+                    
+                        function processStripePayment(paymentMethodId) {
+                            const formData = new FormData(document.getElementById('payment-form'));
+                            formData.append('payment_method_id', paymentMethodId);
+                            formData.append('payment_method', 'stripe');
+                    
+                            fetch('/process-stripe-payment/', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {'X-Requested-With': 'XMLHttpRequest'}
+                            })
+                            .then(response => response.json())
+                            .then(handlePaymentResponse)
+                            .catch(handlePaymentError);
+                        }
+                    
+                        function handlePaymentResponse(data) {
+                            const status = document.getElementById('stripe_status');
+                            
+                            if (data.success) {
+                                status.className = 'alert alert-success mt-3';
+                                status.innerHTML = `
+                                    <div class="text-center">
+                                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                        <p class="mb-1">Payment successful!</p>
+                                        <small>Redirecting to home page...</small>
+                                    </div>
+                                `;
+                                
+                                showNotification('Payment successful!', '#28a745');
+                                
+                                if('cart_data_obj' in sessionStorage) {
+                                    sessionStorage.removeItem('cart_data_obj');
+                                }
+                                
+                                setTimeout(() => {
+                                    window.location.href = '/';
+                                }, 2000);
+                            } else {
+                                throw new Error(data.message || 'Payment failed');
+                            }
+                        }
+                    
+                        function handlePaymentError(error) {
+                            const status = document.getElementById('stripe_status');
+                            const button = document.getElementById('stripe-submit-btn');
+                            
+                            status.className = 'alert alert-danger mt-3';
+                            status.innerHTML = `
+                                <div class="text-center">
+                                    <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                    <p class="mb-0">${error.message}</p>
+                                </div>
+                            `;
+                            button.disabled = false;
+                            showNotification('Payment failed', '#dc3545');
+                        }
+                    });
+                    </script>
+                 <!-- end stripe styling and script -->
+
+
+
+
+<!-- start Cash Payment Modal -->
 <div id="cashModal" class="modal-js">
     <div class="modal-content">
         <div class="modal-header bg-secondary text-white">
@@ -270,7 +663,7 @@
 </div>
                  <!-- end cash modal -->
 
-
+                 
 
                  <!-- start cash styling and script -->
 
