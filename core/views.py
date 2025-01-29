@@ -57,6 +57,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 from .services import check_transaction_status
+from django.contrib.sessions.models import Session
 
 
 
