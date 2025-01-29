@@ -636,10 +636,10 @@ function validateAndShowMpesa() {
     };
 
     document.getElementById('selectedAddressDetails').innerHTML = `
-        <p class="mb-1"><strong>${addressDetails.fullName}</strong></p>
-        <p class="mb-1">${addressDetails.region}</p>
-        <p class="mb-1">Phone: ${addressDetails.phone}</p>
-        <p class="mb-0">Email: ${addressDetails.email}</p>
+        <p class="mb-1"> Name: <strong>${addressDetails.fullName}</strong></p>
+        <p class="mb-1">Region: <strong>${addressDetails.region}</strong></p>
+        <p class="mb-1">Phone: <strong>${addressDetails.phone}</strong></p>
+        <p class="mb-0">Email: <strong>${addressDetails.email}</strong></p>
     `;
 
     document.getElementById('selected_address_id').value = selectedRadio.value;
