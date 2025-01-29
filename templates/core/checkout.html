@@ -348,9 +348,10 @@ function validateAndShowCash() {
 
     const addressCard = selectedRadio.closest('.address-card');
     document.getElementById('cashDeliveryAddress').innerHTML = `
-        <p class="mb-1"><strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
-        <p class="mb-1">${addressCard.querySelector('[data-field="region"]').textContent}</p>
+        <p class="mb-1"><strong>Name: ${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
+        <p class="mb-1">Region: ${addressCard.querySelector('[data-field="region"]').textContent}</p>
         <p class="mb-1">Phone: ${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</p>
+        <p class="mb-1">Email: ${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</p>
     `;
 
     document.getElementById('selected_address_id').value = selectedRadio.value;
