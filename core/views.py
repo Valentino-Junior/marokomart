@@ -965,10 +965,6 @@ def send_order_emails(order):
         return False
 
 
-# api pswd
-# AQjrk2UH0OC4crhB5UfTO3ZMZZ7OTMcBpUGPEZxW
-
-
 
 @login_required
 def mpesa_payment(request):
@@ -1064,6 +1060,8 @@ def mpesa_payment(request):
         'success': False, 
         'message': 'Invalid request method'
     })
+
+
 @login_required
 def check_payment_status(request):
     reference = request.GET.get('reference')
@@ -1140,6 +1138,7 @@ def check_payment_status(request):
             'success': False,
             'message': f'Error checking payment status'
         })
+
 
 @csrf_exempt
 def mpesa_callback(request):
@@ -1289,6 +1288,7 @@ def mpesa_callback(request):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
+    
     
 def cash_payment(request):
     if request.method == 'POST':
