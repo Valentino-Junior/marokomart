@@ -1007,21 +1007,24 @@ def mpesa_payment(request):
            )
 
            if response.status_code == 201:
-               data = response.json()
-               if data.get('success'):
-                   payment.checkout_request_id = data.get('CheckoutRequestID')
-                   payment.save()
-                   return JsonResponse({
-                       'success': True,
-                       'message': 'Check your phone to complete payment'
-                   })
+                data = response.json()
+                if data.get('success'):
+                    payment.checkout_request_id = data.get('CheckoutRequestID')
+                    payment.save()
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Check your phone to complete payment'
+                    })
+                
+           else:
+                payment.status = 'FAILED'  # Update status instead of deleting
+                payment.save()
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Failed to initiate payment'
+                })
 
-           payment.delete()
-           return JsonResponse({
-               'success': False, 
-               'message': 'Failed to initiate payment'
-           })
-
+           
        except Exception as e:
            return JsonResponse({'success': False, 'message': str(e)})
 

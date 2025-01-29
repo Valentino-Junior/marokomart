@@ -251,6 +251,7 @@ class CartOrder(models.Model):
     coupons = models.ManyToManyField("core.Coupon", blank=True)
     tracking_id = models.CharField(max_length=100, null=True, blank=True)
     payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, null=True)
+    external_reference = models.CharField(max_length=100, null=True, blank=True)
 
     paid_status = models.BooleanField(default=False)
     order_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)

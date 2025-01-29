@@ -24,7 +24,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://2ac9-102-0-11-108.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://1311-102-219-208-154.ngrok-free.app']
 SECURE_CROSS_ORIGIN_OPENER_POLICY='same-origin-allow-popups'
 
 
@@ -88,13 +88,11 @@ WSGI_APPLICATION = 'ecomprj.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': config('ENGINE'),
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD':config('DB_PASSWORD'),
-        'PORT': '',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",  # Ensure this is correctly set
     }
 }
+
 
 # ************customizing user model**********
 # AUTH_USER_MODEL="writers.Employee"
@@ -163,7 +161,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-CSRF_TRUSTED_ORIGINS = ["https://2ac9-102-0-11-108.ngrok-free.app"]
+CSRF_TRUSTED_ORIGINS = ["https://1311-102-219-208-154.ngrok-free.app"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
