@@ -981,6 +981,7 @@ def mpesa_payment(request):
         try:
             shipping_address = ShippingAddress.objects.get(id=shipping_address_id, user=request.user)
             
+            # Calculate total amount
             cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
             final_total = cart_total - float(coupon_data.get('total_saved', 0))
             
@@ -1009,6 +1010,8 @@ def mpesa_payment(request):
                 "callback_url": PayHeroConfig.get_callback_url(request)
             }
 
+            logger.info(f"Initiating payment: Amount={final_total}, Phone={phone}")
+
             # Make request to PayHero
             response = requests.post(
                 'https://backend.payhero.co.ke/api/v2/payments',
@@ -1022,135 +1025,120 @@ def mpesa_payment(request):
             if response.status_code == 201:
                 data = response.json()
                 if data.get('success'):
-                    # Store checkout request ID
+                    # Store both references
+                    payment.payhero_reference = data.get('reference')
                     payment.checkout_request_id = data.get('CheckoutRequestID')
                     payment.save()
 
-                    # Store reference in session for status checking
-                    request.session['pending_payment_ref'] = external_reference
+                    logger.info(f"Payment initiated successfully. PayHero ref: {data.get('reference')}")
                     
                     return JsonResponse({
                         'success': True,
                         'message': 'Check your phone to complete payment',
-                        'reference': external_reference
+                        'reference': data.get('reference')  # Send PayHero's reference
                     })
 
             # If we get here, something went wrong
+            logger.error(f"Failed to initiate payment: {response.text}")
             payment.delete()
             return JsonResponse({
                 'success': False, 
                 'message': 'Failed to initiate payment. Please try again.'
             })
 
+        except ShippingAddress.DoesNotExist:
+            logger.error(f"Shipping address {shipping_address_id} not found for user {request.user.id}")
+            return JsonResponse({
+                'success': False, 
+                'message': 'Invalid shipping address'
+            })
         except Exception as e:
+            logger.error(f"Error initiating payment: {str(e)}")
             return JsonResponse({
                 'success': False, 
                 'message': f'An error occurred: {str(e)}'
             })
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    logger.warning("Invalid request method for mpesa_payment")
+    return JsonResponse({
+        'success': False, 
+        'message': 'Invalid request method'
+    })
 @login_required
 def check_payment_status(request):
-    """Check payment status both locally and via PayHero API"""
     reference = request.GET.get('reference')
+    logger.info(f"Checking status for reference: {reference}")
     
     try:
-        payment = PayHeroPayment.objects.get(
-            external_reference=reference,
+        # Try to find payment by PayHero reference first
+        payment = PayHeroPayment.objects.filter(
+            Q(payhero_reference=reference) | Q(external_reference=reference),
             user=request.user
-        )
+        ).first()
+
+        if not payment:
+            return JsonResponse({
+                'success': False,
+                'message': 'Payment not found'
+            })
+
+        # Use PayHero's reference for status check
+        check_reference = payment.payhero_reference or reference
         
-        # First check if we already know it's successful
-        if payment.status == 'SUCCESS':
+        try:
+            status_data = check_transaction_status(check_reference)
+            logger.info(f"Status check response: {status_data}")
+            
+            if status_data:
+                status = status_data.get('status')
+                if status == 'SUCCESS':
+                    # Clear session
+                    if 'cart_data_obj' in request.session:
+                        del request.session['cart_data_obj']
+                    if 'coupon_data' in request.session:
+                        del request.session['coupon_data']
+                    request.session.modified = True
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'status': 'SUCCESS',
+                        'message': 'Payment completed successfully!'
+                    })
+                elif status == 'FAILED':
+                    return JsonResponse({
+                        'success': False,
+                        'status': 'FAILED',
+                        'message': 'Payment failed. Please try again.'
+                    })
+            
+            # If still pending or no status
             return JsonResponse({
                 'success': True,
-                'status': 'SUCCESS',
-                'message': 'Payment completed successfully!'
+                'status': 'PENDING',
+                'message': 'Payment is being processed...'
             })
             
-        # If not successful locally, check with PayHero
-        status_data = check_transaction_status(reference)
-        
-        if status_data:
-            payhero_status = status_data.get('status')
-            
-            # If PayHero says it's successful, update our record
-            if payhero_status == 'SUCCESS':
-                payment.status = 'SUCCESS'
-                payment.save()
-                
-                # Create order if not already created
-                if not CartOrder.objects.filter(external_reference=reference).exists():
-                    order = CartOrder.objects.create(
-                        user=payment.user,
-                        shipping_address=payment.shipping_address,
-                        price=payment.amount,
-                        cart_data=payment.cart_data,
-                        payment_method='mpesa',
-                        paid_status=True,
-                        mpesa_receipt=status_data.get('provider_reference')
-                    )
-                    
-                    # Create order items
-                    for item in payment.cart_data.values():
-                        CartOrderProducts.objects.create(
-                            order=order,
-                            invoice_no=f"INVOICE-{order.id}",
-                            item=item['title'],
-                            image=item['image'],
-                            qty=item['qty'],
-                            price=item['price'],
-                            total=float(item['qty']) * float(item['price'])
-                        )
-                        
-                        # Update stock
-                        try:
-                            product = Product.objects.get(title=item['title'])
-                            if product.stock_count.isdigit():
-                                new_stock = int(product.stock_count) - int(item['qty'])
-                                product.stock_count = str(max(0, new_stock))
-                                product.save()
-                        except Product.DoesNotExist:
-                            continue
-                    
-                    # Send order confirmation
-                    send_order_emails(order)
-                
+        except Exception as e:
+            logger.error(f"Error checking transaction status: {str(e)}")
+            # Continue checking if payment exists locally
+            if payment.status == 'SUCCESS':
                 return JsonResponse({
                     'success': True,
                     'status': 'SUCCESS',
                     'message': 'Payment completed successfully!'
                 })
-            elif payhero_status == 'FAILED':
-                payment.status = 'FAILED'
-                payment.save()
-                return JsonResponse({
-                    'success': False,
-                    'status': 'FAILED',
-                    'message': 'Payment failed. Please try again.'
-                })
-            else:  # QUEUED or other status
-                return JsonResponse({
-                    'success': True,
-                    'status': 'PENDING',
-                    'message': 'Payment is being processed...'
-                })
-        
-        return JsonResponse({
-            'success': False,
-            'status': 'PENDING',
-            'message': 'Payment status verification in progress...'
-        })
             
-    except PayHeroPayment.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'Payment record not found'
-        })
+            return JsonResponse({
+                'success': True,
+                'status': 'PENDING',
+                'message': 'Payment is being processed...'
+            })
+            
     except Exception as e:
+        logger.error(f"Error in check_payment_status: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': f'Error checking payment status: {str(e)}'
+            'message': f'Error checking payment status'
         })
 
 @csrf_exempt
@@ -1163,51 +1151,59 @@ def mpesa_callback(request):
             logger.info(f"Raw callback data: {raw_data}")
             
             data = json.loads(raw_data)
-            if not data.get('response'):
-                logger.error("No response data in callback")
-                return JsonResponse({'success': False, 'message': 'Invalid callback data'})
-
-            response_data = data['response']
+            response_data = data.get('response', {})
             
             # Extract data from callback response
             external_ref = response_data.get('ExternalReference')
             result_code = response_data.get('ResultCode')
             mpesa_receipt = response_data.get('MpesaReceiptNumber')
-            checkout_id = response_data.get('CheckoutRequestID')
             
             logger.info(f"Processing payment: Reference: {external_ref}, Receipt: {mpesa_receipt}")
 
             try:
-                payment = PayHeroPayment.objects.get(external_reference=external_ref)
+                # Find payment by either reference
+                payment = PayHeroPayment.objects.filter(
+                    Q(external_reference=external_ref) | Q(payhero_reference=external_ref)
+                ).first()
+
+                if not payment:
+                    logger.error(f"Payment not found for reference: {external_ref}")
+                    return JsonResponse({'success': False, 'message': 'Payment not found'})
                 
                 if result_code == 0:  # Payment successful
-                    try:
-                        # Update payment status
-                        payment.status = 'SUCCESS'
-                        payment.mpesa_receipt = mpesa_receipt
-                        payment.save()
-                        
-                        # Create order if doesn't exist
-                        order, created = CartOrder.objects.get_or_create(
-                            external_reference=external_ref,
-                            defaults={
-                                'user': payment.user,
-                                'shipping_address': payment.shipping_address,
-                                'price': payment.amount,
-                                'cart_data': payment.cart_data,
-                                'payment_method': 'mpesa',
-                                'paid_status': True,
-                                'mpesa_receipt': mpesa_receipt,
-                            }
-                        )
+                    payment.status = 'SUCCESS'
+                    payment.mpesa_receipt = mpesa_receipt
+                    payment.save()
+                    
+                    # Check if order already exists
+                    existing_order = CartOrder.objects.filter(
+                        Q(external_reference=external_ref) | 
+                        Q(external_reference=payment.external_reference)
+                    ).first()
 
-                        if created:
-                            logger.info(f"Created new order: {order.id}")
-                            # Create order items
+                    if not existing_order:
+                        try:
+                            # Create the order
+                            order = CartOrder.objects.create(
+                                user=payment.user,
+                                shipping_address=payment.shipping_address,
+                                price=payment.amount,
+                                cart_data=payment.cart_data,
+                                payment_method='mpesa',
+                                paid_status=True,
+                                external_reference=payment.external_reference,
+                                product_status='processing',
+                                saved=0.00  # Set default value
+                            )
+                            
+                            logger.info(f"Created order: {order.id}")
+
+                            # Create order products
                             for item in payment.cart_data.values():
                                 CartOrderProducts.objects.create(
                                     order=order,
                                     invoice_no=f"INVOICE-{order.id}",
+                                    product_status='processing',
                                     item=item['title'],
                                     image=item['image'],
                                     qty=item['qty'],
@@ -1225,38 +1221,43 @@ def mpesa_callback(request):
                                 except Product.DoesNotExist:
                                     logger.error(f"Product not found: {item['title']}")
 
+                            # Clear session data
+                            try:
+                                # Find relevant sessions
+                                for session in Session.objects.filter(expire_date__gte=timezone.now()):
+                                    session_data = session.get_decoded()
+                                    user_id = session_data.get('_auth_user_id')
+                                    
+                                    # Only clear for this user's session
+                                    if user_id and int(user_id) == payment.user.id:
+                                        if 'cart_data_obj' in session_data:
+                                            del session_data['cart_data_obj']
+                                        if 'coupon_data' in session_data:
+                                            del session_data['coupon_data']
+                                        session.session_data = session.encode(session_data)
+                                        session.save()
+                            except Exception as e:
+                                logger.error(f"Error clearing session: {str(e)}")
+
                             # Send confirmation emails
                             try:
                                 send_order_emails(order)
                             except Exception as e:
                                 logger.error(f"Failed to send order emails: {str(e)}")
-                                
-                            # Clear session data
-                            try:
-                                from django.contrib.sessions.models import Session
-                                sessions = Session.objects.filter(expire_date__gte=timezone.now())
-                                for session in sessions:
-                                    session_data = session.get_decoded()
-                                    if session_data.get('cart_data_obj'):
-                                        del session_data['cart_data_obj']
-                                    if session_data.get('coupon_data'):
-                                        del session_data['coupon_data']
-                                    session.session_data = session.encode(session_data)
-                                    session.save()
-                            except Exception as e:
-                                logger.error(f"Failed to clear session data: {str(e)}")
-
-                        return JsonResponse({
-                            'success': True,
-                            'message': 'Payment processed successfully'
-                        })
-
-                    except Exception as e:
-                        logger.error(f"Error processing successful payment: {str(e)}")
-                        return JsonResponse({
-                            'success': False,
-                            'message': f'Error processing payment: {str(e)}'
-                        })
+                            
+                            logger.info("Order created and processed successfully")
+                            
+                        except Exception as e:
+                            logger.error(f"Error creating order: {str(e)}")
+                            return JsonResponse({
+                                'success': False,
+                                'message': f'Error creating order: {str(e)}'
+                            })
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Payment processed successfully'
+                    })
                 else:
                     payment.status = 'FAILED'
                     payment.save()
@@ -1266,11 +1267,11 @@ def mpesa_callback(request):
                         'message': 'Payment failed'
                     })
 
-            except PayHeroPayment.DoesNotExist:
-                logger.error(f"Payment not found for reference: {external_ref}")
+            except Exception as e:
+                logger.error(f"Error processing payment: {str(e)}")
                 return JsonResponse({
                     'success': False,
-                    'message': 'Payment record not found'
+                    'message': f'Error processing payment: {str(e)}'
                 })
 
         except json.JSONDecodeError as e:

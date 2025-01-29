@@ -480,6 +480,7 @@ class PayHeroPayment(models.Model):
     checkout_request_id = models.CharField(max_length=100, blank=True, null=True)
     mpesa_receipt = models.CharField(max_length=100, blank=True, null=True)
     external_reference = models.CharField(max_length=100, unique=True)
+    payhero_reference = models.CharField(max_length=100, null=True, blank=True)  # PayHero's reference
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='PENDING')
     cart_data = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
