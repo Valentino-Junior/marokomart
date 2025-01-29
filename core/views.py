@@ -1181,55 +1181,82 @@ def mpesa_callback(request):
                 payment = PayHeroPayment.objects.get(external_reference=external_ref)
                 
                 if result_code == 0:  # Payment successful
-                    payment.status = 'SUCCESS'
-                    payment.mpesa_receipt = mpesa_receipt
-                    payment.save()
-                    
-                    # Create order if doesn't exist
-                    if not CartOrder.objects.filter(external_reference=external_ref).exists():
-                        order = CartOrder.objects.create(
-                            user=payment.user,
-                            shipping_address=payment.shipping_address,
-                            price=payment.amount,
-                            cart_data=payment.cart_data,
-                            payment_method='mpesa',
-                            paid_status=True,
-                            mpesa_receipt=mpesa_receipt,
-                            external_reference=external_ref
+                    try:
+                        # Update payment status
+                        payment.status = 'SUCCESS'
+                        payment.mpesa_receipt = mpesa_receipt
+                        payment.save()
+                        
+                        # Create order if doesn't exist
+                        order, created = CartOrder.objects.get_or_create(
+                            external_reference=external_ref,
+                            defaults={
+                                'user': payment.user,
+                                'shipping_address': payment.shipping_address,
+                                'price': payment.amount,
+                                'cart_data': payment.cart_data,
+                                'payment_method': 'mpesa',
+                                'paid_status': True,
+                                'mpesa_receipt': mpesa_receipt,
+                            }
                         )
-                        
-                        # Create order items
-                        for item in payment.cart_data.values():
-                            CartOrderProducts.objects.create(
-                                order=order,
-                                invoice_no=f"INVOICE-{order.id}",
-                                item=item['title'],
-                                image=item['image'],
-                                qty=item['qty'],
-                                price=item['price'],
-                                total=float(item['qty']) * float(item['price'])
-                            )
-                            
-                            # Update stock
+
+                        if created:
+                            logger.info(f"Created new order: {order.id}")
+                            # Create order items
+                            for item in payment.cart_data.values():
+                                CartOrderProducts.objects.create(
+                                    order=order,
+                                    invoice_no=f"INVOICE-{order.id}",
+                                    item=item['title'],
+                                    image=item['image'],
+                                    qty=item['qty'],
+                                    price=item['price'],
+                                    total=float(item['qty']) * float(item['price'])
+                                )
+                                
+                                # Update stock
+                                try:
+                                    product = Product.objects.get(title=item['title'])
+                                    if product.stock_count.isdigit():
+                                        new_stock = int(product.stock_count) - int(item['qty'])
+                                        product.stock_count = str(max(0, new_stock))
+                                        product.save()
+                                except Product.DoesNotExist:
+                                    logger.error(f"Product not found: {item['title']}")
+
+                            # Send confirmation emails
                             try:
-                                product = Product.objects.get(title=item['title'])
-                                if product.stock_count.isdigit():
-                                    new_stock = int(product.stock_count) - int(item['qty'])
-                                    product.stock_count = str(max(0, new_stock))
-                                    product.save()
-                            except Product.DoesNotExist:
-                                logger.error(f"Product not found: {item['title']}")
-                        
-                        # Send confirmation emails
-                        try:
-                            send_order_emails(order)
-                        except Exception as e:
-                            logger.error(f"Failed to send order emails: {str(e)}")
-                    
-                    return JsonResponse({
-                        'success': True,
-                        'message': 'Payment processed successfully'
-                    })
+                                send_order_emails(order)
+                            except Exception as e:
+                                logger.error(f"Failed to send order emails: {str(e)}")
+                                
+                            # Clear session data
+                            try:
+                                from django.contrib.sessions.models import Session
+                                sessions = Session.objects.filter(expire_date__gte=timezone.now())
+                                for session in sessions:
+                                    session_data = session.get_decoded()
+                                    if session_data.get('cart_data_obj'):
+                                        del session_data['cart_data_obj']
+                                    if session_data.get('coupon_data'):
+                                        del session_data['coupon_data']
+                                    session.session_data = session.encode(session_data)
+                                    session.save()
+                            except Exception as e:
+                                logger.error(f"Failed to clear session data: {str(e)}")
+
+                        return JsonResponse({
+                            'success': True,
+                            'message': 'Payment processed successfully'
+                        })
+
+                    except Exception as e:
+                        logger.error(f"Error processing successful payment: {str(e)}")
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Error processing payment: {str(e)}'
+                        })
                 else:
                     payment.status = 'FAILED'
                     payment.save()
@@ -1259,7 +1286,7 @@ def mpesa_callback(request):
                 'message': str(e)
             })
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'})@login_required
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
     
 def cash_payment(request):
