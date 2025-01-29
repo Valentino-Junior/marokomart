@@ -60,6 +60,8 @@ from .services import check_transaction_status
 from django.contrib.sessions.models import Session
 
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
 
 # views.py
 def index(request):
@@ -964,6 +966,120 @@ def send_order_emails(order):
     except Exception as e:
         print(f"Failed to send order emails: {str(e)}")
         return False
+
+
+
+@login_required
+def process_stripe_payment(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+    try:
+        # Get payment info
+        payment_method_id = request.POST.get('payment_method_id')
+        shipping_address_id = request.POST.get('shipping_address_id')
+        cart_data = request.session.get('cart_data_obj', {})
+        coupon_data = request.session.get('coupon_data', {})
+
+        # Calculate amount
+        cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
+        final_total = cart_total - float(coupon_data.get('total_saved', 0))
+        amount_in_cents = int(final_total * 100)  # Stripe expects amounts in cents
+
+        try:
+            # Get shipping address
+            shipping_address = ShippingAddress.objects.get(
+                id=shipping_address_id,
+                user=request.user
+            )
+
+            # Create payment intent
+            intent = stripe.PaymentIntent.create(
+                amount=amount_in_cents,
+                currency='kes',
+                payment_method=payment_method_id,
+                confirmation_method='manual',
+                confirm=True,
+                metadata={
+                    'shipping_address_id': shipping_address_id,
+                    'user_id': str(request.user.id)
+                }
+            )
+
+            if intent.status == 'succeeded':
+                # Create order
+                order = CartOrder.objects.create(
+                    user=request.user,
+                    shipping_address=shipping_address,
+                    price=final_total,
+                    cart_data=cart_data,
+                    payment_method='stripe',
+                    paid_status=True,
+                    stripe_payment_intent=intent.id
+                )
+
+                # Create order items
+                for item in cart_data.values():
+                    CartOrderProducts.objects.create(
+                        order=order,
+                        invoice_no=f"INVOICE-{order.id}",
+                        item=item['title'],
+                        image=item['image'],
+                        qty=item['qty'],
+                        price=item['price'],
+                        total=float(item['qty']) * float(item['price'])
+                    )
+
+                    # Update stock
+                    try:
+                        product = Product.objects.get(title=item['title'])
+                        if product.stock_count.isdigit():
+                            new_stock = int(product.stock_count) - int(item['qty'])
+                            product.stock_count = str(max(0, new_stock))
+                            product.save()
+                    except Product.DoesNotExist:
+                        continue
+
+                # Clear session data
+                if 'cart_data_obj' in request.session:
+                    del request.session['cart_data_obj']
+                if 'coupon_data' in request.session:
+                    del request.session['coupon_data']
+
+                # Send confirmation emails
+                send_order_emails(order)
+
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Payment processed successfully'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Payment failed'
+                })
+
+        except ShippingAddress.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid shipping address'
+            })
+
+    except stripe.error.CardError as e:
+        return JsonResponse({
+            'success': False,
+            'message': f"Card error: {str(e)}"
+        })
+    except stripe.error.InvalidRequestError as e:
+        return JsonResponse({
+            'success': False,
+            'message': f"Invalid request: {str(e)}"
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f"An error occurred: {str(e)}"
+        })
 
 
 

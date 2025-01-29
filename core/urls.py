@@ -1,6 +1,6 @@
 from django import views
 from django.urls import path, include
-from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, order_tracking_view, new_arrivals_view, special_offers_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, clear_cart, track_order_ajax, my_orders_view, cancel_order, delete_address, make_address_default, redirect_to_checkout, contact_submit, submit_review, submit_support_ticket, get_support_tickets, edit_shipping_address, refund_policy, terms_conditions,mpesa_callback, mpesa_test, mpesa_payment, cash_payment,check_payment_status
+from core.views import create_checkout_session, save_checkout_info, add_to_cart, add_to_wishlist, ajax_add_review, cart_view, category_list_view, category_product_list__view, checkout, customer_dashboard, delete_item_from_cart, filter_product, index, order_detail, product_detail_view, product_list_view, remove_wishlist, search_view, update_cart, wishlist_view, contact, about_us, purchase_guide, privacy_policy, order_tracking_view, new_arrivals_view, special_offers_view, apply_coupon_view, get_shipping_addresses,save_shipping_address, clear_cart, track_order_ajax, my_orders_view, cancel_order, delete_address, make_address_default, redirect_to_checkout, contact_submit, submit_review, submit_support_ticket, get_support_tickets, edit_shipping_address, refund_policy, terms_conditions,mpesa_callback, mpesa_test, mpesa_payment, cash_payment,check_payment_status, process_stripe_payment
 
 app_name = "core"
 
@@ -78,6 +78,7 @@ urlpatterns = [
     path('check-payment-status/', check_payment_status, name='check-payment-status'),
     path('mpesa/callback/', mpesa_callback, name='mpesa-callback'),
     path('cash/payment/', cash_payment, name='cash_payment'),
+    path('process-stripe-payment/', process_stripe_payment, name='process-stripe-payment'),
 
     path('mpesa-test/', mpesa_test, name='mpesa_test'),
 
