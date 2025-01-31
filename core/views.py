@@ -970,6 +970,127 @@ def send_order_emails(order):
 
 
 @login_required
+def process_paypal_payment(request):
+    if request.method == 'POST':
+        cart_data = request.session.get('cart_data_obj', {})
+        coupon_data = request.session.get('coupon_data', {})
+        shipping_address_id = request.POST.get('shipping_address_id')
+
+        try:
+            cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
+            final_total = cart_total - float(coupon_data.get('total_saved', 0))
+            shipping_address = ShippingAddress.objects.get(id=shipping_address_id, user=request.user)
+
+            paypalrestsdk.configure({
+                'mode': 'sandbox',
+                'client_id': 'your-client-id',
+                'client_secret': 'your-client-secret'
+            })
+
+            payment = paypalrestsdk.Payment({
+                "intent": "sale",
+                "payer": {
+                    "payment_method": "paypal"
+                },
+                "redirect_urls": {
+                    "return_url": request.build_absolute_uri(reverse('paypal-return')),
+                    "cancel_url": request.build_absolute_uri(reverse('paypal-cancel'))
+                },
+                "transactions": [{
+                    "item_list": {
+                        "items": [{
+                            "name": f"Order - {request.user.username}",
+                            "sku": "order",
+                            "price": str(final_total),
+                            "currency": "USD",
+                            "quantity": 1
+                        }]
+                    },
+                    "amount": {
+                        "total": str(final_total),
+                        "currency": "USD"
+                    },
+                    "description": f"Order placed by {request.user.username}"
+                }]
+            })
+
+            if payment.create():
+                for link in payment.links:
+                    if link.rel == 'approval_url':
+                        return JsonResponse({
+                            'success': True,
+                            'redirect_url': link.href
+                        })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Failed to create payment.'
+                })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            })
+
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    })
+
+@login_required
+def paypal_return(request):
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        try:
+            order = CartOrder.objects.create(
+                user=request.user,
+                price=float(payment.transactions[0].amount.total),
+                payment_method='paypal',
+                paid_status=True,
+                shipping_address=ShippingAddress.objects.get(user=request.user, is_default=True)
+            )
+
+            PayPalPayment.objects.create(
+                user=request.user,
+                order=order,
+                payment_id=payment.id,
+                payer_id=payer_id,
+                status=payment.state
+            )
+
+            for item in payment.transactions[0].item_list.items:
+                product = Product.objects.get(title=item.name)
+                CartOrderProducts.objects.create(
+                    order=order,
+                    item=product.title,
+                    image=product.image.url,
+                    qty=item.quantity,
+                    price=item.price,
+                    total=float(item.price) * int(item.quantity)
+                )
+                product.stock_count = str(int(product.stock_count) - int(item.quantity))
+                product.save()
+
+            request.session['cart_data_obj'] = {}
+            request.session.modified = True
+
+            return redirect('payment-success')
+        except:
+            return redirect('payment-failed')
+    else:
+        return redirect('payment-failed')
+
+def paypal_cancel(request):
+    return redirect('checkout')
+
+    
+
+@login_required
 def process_stripe_payment(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Invalid request method'})
