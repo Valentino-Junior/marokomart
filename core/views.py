@@ -58,7 +58,7 @@ import logging
 logger = logging.getLogger(__name__)
 from .services import check_transaction_status
 from django.contrib.sessions.models import Session
-
+import paypalrestsdk # type: ignore
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -1088,7 +1088,7 @@ def paypal_return(request):
 def paypal_cancel(request):
     return redirect('checkout')
 
-    
+
 
 @login_required
 def process_stripe_payment(request):
