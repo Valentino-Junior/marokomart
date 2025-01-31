@@ -212,6 +212,9 @@
                         <button type="button" onclick="validateAndShowMpesa()" class="btn btn-success w-100 mb-2">
                             <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
                         </button>
+                        <button type="button" onclick="validateAndShowPaypal()" class="btn btn-warning text-white w-100 mb-2">
+                            <i class="fab fa-paypal me-2"></i>Pay with PayPal
+                          </button>
                         <button type="button" onclick="validateAndShowCash()" class="btn btn-secondary w-100 mb-2">
                             <i class="fas fa-money-bill me-2"></i>Cash on Delivery
                         </button>
@@ -222,10 +225,38 @@
 
 
 
+<!-- start PayPal Modal -->
+<div id="paypalModal" class="modal-js">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-white">
+        <h5><i class="fab fa-paypal me-2"></i>PayPal Payment</h5>
+        <button type="button" class="close-modal" onclick="hidePaypalModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="selected-address mb-4 p-3 bg-light rounded">
+          <h6 class="mb-2">Delivery Address:</h6>
+          <div id="paypalDeliveryAddress"></div>
+        </div>
+        <div class="payment-amount mb-4 p-3 bg-light rounded">
+          <h6 class="mb-2">Amount Due:</h6>
+          <h4 class="text-warning mb-0">
+            USD {{ coupon_data.final_total|default:cart_total|floatformat:2 }}  
+          </h4>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" onclick="hidePaypalModal()">Cancel</button>
+        <button type="button" class="btn btn-warning text-white" id="paypal-button">
+          <i class="fab fa-paypal me-2"></i>Pay with PayPal
+        </button>  
+      </div>
+    </div>
+  </div>
+
+<!-- end PayPal Modal -->
 
 
-
-
+<!-- start paypal script and styling -->
 
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
@@ -360,6 +391,7 @@
                       border-color: #d39e00;
                     }
                     </style>
+<!-- start paypal script and styling -->
 
 
 
