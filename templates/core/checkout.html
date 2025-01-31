@@ -222,6 +222,148 @@
 
 
 
+
+
+
+
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                      const paypalButton = document.getElementById('paypal-button');
+                      const termsCheckbox = document.getElementById('terms');
+                      const paypalModal = document.getElementById('paypalModal');
+                    
+                      paypalButton.addEventListener('click', function() {
+                        if (!termsCheckbox.checked) {
+                          showNotification('Please accept terms and conditions', '#ffc107');
+                          return;
+                        }
+                    
+                        const selectedAddress = document.querySelector('input[name="address_selection"]:checked');
+                        if (!selectedAddress) {
+                          showNotification('Please select shipping address', '#ffc107');
+                          return;  
+                        }
+                    
+                        const addressCard = selectedAddress.closest('.address-card');
+                        document.getElementById('paypalDeliveryAddress').innerHTML = `
+                          <p class="mb-1">Name: <strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
+                          <p class="mb-1">Region: <strong>${addressCard.querySelector('[data-field="region"]').textContent}</strong></p>
+                          <p class="mb-1">Phone: <strong>${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</strong></p>
+                          <p class="mb-1">Email: <strong>${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</strong></p>
+                        `;
+                    
+                        document.getElementById('selected_address_id').value = selectedAddress.value;
+                        paypalModal.style.display = 'block';
+                        document.body.style.overflow = 'hidden';
+                      });
+                    
+                      paypalModal.querySelector('.close-modal').addEventListener('click', function() {
+                        paypalModal.style.display = 'none';
+                        document.body.style.overflow = '';  
+                      });
+                    
+                      paypalModal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                          paypalModal.style.display = 'none';
+                          document.body.style.overflow = '';
+                        }
+                      });
+                    
+                      document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape' && paypalModal.style.display === 'block') {
+                          paypalModal.style.display = 'none';
+                          document.body.style.overflow = '';
+                        }  
+                      });
+                    
+                      paypalModal.querySelector('.btn-warning').addEventListener('click', function() {
+                        const formData = new FormData(document.getElementById('payment-form'));
+                    
+                        fetch('/process-paypal-payment/', {
+                          method: 'POST',
+                          body: formData,  
+                          headers: {'X-Requested-With': 'XMLHttpRequest'}
+                        })
+                        .then(response => response.json()) 
+                        .then(data => {
+                          if (data.success) {
+                            window.location.href = data.redirect_url;
+                          } else {
+                            showNotification(data.message, '#dc3545');
+                          }
+                        })
+                        .catch(error => {
+                          console.error('Error:', error);
+                          showNotification('An error occurred. Please try again.', '#dc3545');
+                        });
+                      });
+                    });
+                    </script>
+                    
+                    <style>
+                    .modal-js {
+                      display: none;
+                      position: fixed; 
+                      z-index: 1050;
+                      left: 0;
+                      top: 0;
+                      width: 100%;
+                      height: 100%; 
+                      overflow: auto;
+                      background-color: rgba(0,0,0,0.5);
+                    }
+                    
+                    .modal-content {
+                      background-color: #fefefe;
+                      margin: 15% auto;
+                      padding: 20px;
+                      border: 1px solid #888;
+                      width: 80%;
+                      max-width: 500px;
+                      border-radius: 8px;
+                      position: relative;
+                    }
+                    
+                    .close-modal {
+                      color: #aaa;
+                      position: absolute;
+                      top: 10px;
+                      right: 20px;  
+                      font-size: 28px;
+                      font-weight: bold;
+                      cursor: pointer;
+                    }
+                    
+                    .close-modal:hover,
+                    .close-modal:focus {
+                      color: black;
+                      text-decoration: none;
+                      cursor: pointer;
+                    }
+                    
+                    .bg-warning { 
+                      background-color: #ffc107;
+                    }
+                    
+                    .text-warning {
+                      color: #ffc107;  
+                    }
+                    
+                    .btn-warning {
+                      background-color: #ffc107;
+                      border-color: #ffc107;
+                    }
+                    
+                    .btn-warning:hover {
+                      background-color: #e0a800;
+                      border-color: #d39e00;
+                    }
+                    </style>
+
+
+
+
                 <!-- start Stripe Payment Modal -->
                 <div id="stripeModal" class="modal-js">
                     <div class="modal-content">
