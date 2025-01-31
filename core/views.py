@@ -993,8 +993,8 @@ def process_paypal_payment(request):
                     "payment_method": "paypal"
                 },
                 "redirect_urls": {
-                    "return_url": request.build_absolute_uri(reverse('paypal-return')),
-                    "cancel_url": request.build_absolute_uri(reverse('paypal-cancel'))
+                    "return_url": request.build_absolute_uri(reverse('core:paypal-return')),  # Add namespace
+                    "cancel_url": request.build_absolute_uri(reverse('core:paypal-cancel')),
                 },
                 "transactions": [{
                     "item_list": {
@@ -1079,14 +1079,14 @@ def paypal_return(request):
             request.session['cart_data_obj'] = {}
             request.session.modified = True
 
-            return redirect('payment-success')
+            return redirect('core: payment-success')
         except:
-            return redirect('payment-failed')
+            return redirect('core: payment-failed')
     else:
-        return redirect('payment-failed')
+        return redirect('core: payment-failed')
 
 def paypal_cancel(request):
-    return redirect('checkout')
+    return redirect('core:checkout')
 
 
 
