@@ -1040,6 +1040,22 @@ def process_paypal_payment(request):
 
 @csrf_exempt
 def paypal_success(request):
+    # Clear cart if payment was completed
+    if request.user.is_authenticated:
+        sessions = Session.objects.filter(expire_date__gte=timezone.now())
+        for session in sessions:
+            session_data = session.get_decoded()
+            if (session_data.get('_auth_user_id') == str(request.user.id) and 
+                'completed_paypal_transaction' in session_data):
+                # Clear cart data
+                if 'cart_data_obj' in session_data:
+                    del session_data['cart_data_obj']
+                if 'coupon_data' in session_data:
+                    del session_data['coupon_data']
+                del session_data['completed_paypal_transaction']
+                session.session_data = Session.encode(session_data)
+                session.save()
+
     messages.success(request, "Payment successful! Your order has been placed.")
     return render(request, 'core/paypal_success.html')
 
@@ -1073,78 +1089,103 @@ def payment_notification(sender, **kwargs):
             session_data = user_session.get_decoded()
             cart_data = session_data.get('cart_data_obj', {})
             
-            # Calculate the total correctly
-            cart_total = sum(
-                int(item['qty']) * float(item['price'].replace(',', ''))  # Remove commas
-                for item in cart_data.values()
-            )
+            # Store original cart data for order items
+            original_cart_items = []
+            for item_id, item_data in cart_data.items():
+                original_cart_items.append({
+                    'title': item_data['title'],
+                    'qty': int(item_data['qty']),
+                    'price': Decimal(item_data['price'].replace(',', '')),
+                    'image': item_data['image']
+                })
+
+            # Default fallback exchange rate
+            FALLBACK_RATE = Decimal('130.0')
             
-            # Get any coupon discount
-            coupon_data = session_data.get('coupon_data', {})
-            discount = float(coupon_data.get('total_saved', 0))
-            final_total = cart_total - discount
+            # Try to get current exchange rate from API, fallback to default if fails
+            try:
+                response = requests.get(
+                    'https://v6.exchangerate-api.com/v6/9a113ecc8e9e1c9d46b78a7d/pair/USD/KES',
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    exchange_data = response.json()
+                    exchange_rate = Decimal(str(exchange_data['conversion_rate']))
+                    logger.info(f"Using live exchange rate: {exchange_rate} KES/USD")
+                else:
+                    exchange_rate = FALLBACK_RATE
+                    logger.warning(f"API returned status {response.status_code}. Using fallback rate: {FALLBACK_RATE} KES/USD")
+            except Exception as e:
+                exchange_rate = FALLBACK_RATE
+                logger.warning(f"Failed to fetch exchange rate ({str(e)}). Using fallback rate: {FALLBACK_RATE} KES/USD")
+
+            # Convert PayPal USD payment to KSH
+            paypal_amount_usd = Decimal(str(ipn_obj.mc_gross))
+            paypal_amount_ksh = paypal_amount_usd * exchange_rate
+            
+            logger.info(f"PayPal payment: USD {paypal_amount_usd:.2f} converted to KSH {paypal_amount_ksh:.2f}")
 
             # Get shipping address
             shipping_address = ShippingAddress.objects.filter(user=user, is_default=True).first()
             
-            # Create order with correct total
+            # Create order with converted KSH total
             order = CartOrder.objects.create(
                 user=user,
                 shipping_address=shipping_address,
-                price=Decimal(str(final_total)),
+                price=paypal_amount_ksh,
                 payment_method='paypal',
                 paid_status=True,
                 external_reference=ipn_obj.txn_id
             )
 
-            # Create order items with correct prices
-            for item_id, item_data in cart_data.items():
-                item_price = float(item_data['price'].replace(',', ''))  # Remove commas
-                item_qty = int(item_data['qty'])
+            # Create order items using original cart quantities and prices
+            for item in original_cart_items:
                 CartOrderProducts.objects.create(
                     order=order,
                     invoice_no=f"INVOICE-{order.id}",
-                    item=item_data['title'],
-                    image=item_data['image'],
-                    qty=item_qty,
-                    price=item_price,
-                    total=item_price * item_qty
+                    item=item['title'],
+                    image=item['image'],
+                    qty=item['qty'],
+                    price=item['price'],
+                    total=item['price'] * item['qty']
                 )
 
                 # Update stock
                 try:
-                    product = Product.objects.get(title=item_data['title'])
+                    product = Product.objects.get(title=item['title'])
                     if product.stock_count.isdigit():
-                        new_stock = int(product.stock_count) - item_qty
+                        new_stock = int(product.stock_count) - item['qty']
                         product.stock_count = str(max(0, new_stock))
                         product.save()
                 except Product.DoesNotExist:
-                    logger.error(f"Product not found: {item_data['title']}")
+                    logger.error(f"Product not found: {item['title']}")
 
-            # Clear cart session data properly
+            # Clear cart session data from ALL user sessions
+            for session in sessions:
+                try:
+                    session_data = session.get_decoded()
+                    if session_data.get('_auth_user_id') == str(user.id):
+                        if 'cart_data_obj' in session_data:
+                            del session_data['cart_data_obj']
+                        if 'coupon_data' in session_data:
+                            del session_data['coupon_data']
+                        session.session_data = Session.encode(session_data)
+                        session.save()
+                        logger.info(f"Cleared cart data from session: {session.session_key}")
+                except Exception as e:
+                    logger.error(f"Error clearing session {session.session_key}: {str(e)}")
+
+            # Double-check and force clear cart data
             try:
-                # Clear from current session
-                if 'cart_data_obj' in session_data:
-                    del session_data['cart_data_obj']
-                if 'coupon_data' in session_data:
-                    del session_data['coupon_data']
-                user_session.session_data = Session.encode(session_data)
-                user_session.save()
-
-                # Clear from all other sessions for this user
-                for other_session in sessions:
-                    if other_session.session_key != user_session.session_key:
-                        other_data = other_session.get_decoded()
-                        if '_auth_user_id' in other_data and other_data['_auth_user_id'] == str(user.id):
-                            if 'cart_data_obj' in other_data:
-                                del other_data['cart_data_obj']
-                            if 'coupon_data' in other_data:
-                                del other_data['coupon_data']
-                            other_session.session_data = Session.encode(other_data)
-                            other_session.save()
-
+                if user_session:
+                    session_data = user_session.get_decoded()
+                    session_data['cart_data_obj'] = {}
+                    session_data['coupon_data'] = {}
+                    user_session.session_data = Session.encode(session_data)
+                    user_session.save()
+                    user_session.modified = True
             except Exception as e:
-                logger.error(f"Error clearing cart session: {str(e)}")
+                logger.error(f"Error force clearing cart: {str(e)}")
 
             # Send confirmation email
             try:
@@ -1152,7 +1193,6 @@ def payment_notification(sender, **kwargs):
                 logger.info(f"Confirmation emails sent for order {order.id}")
             except Exception as e:
                 logger.error(f"Error sending confirmation email: {str(e)}")
-                # Continue execution even if email fails
 
         except Exception as e:
             logger.error(f"PayPal IPN Error: {str(e)}")
