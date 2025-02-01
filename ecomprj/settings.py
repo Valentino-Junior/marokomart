@@ -24,7 +24,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://1311-102-219-208-154.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://d23b-102-219-208-154.ngrok-free.app']
 SECURE_CROSS_ORIGIN_OPENER_POLICY='same-origin-allow-popups'
 
 
@@ -161,7 +161,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-CSRF_TRUSTED_ORIGINS = ["https://1311-102-219-208-154.ngrok-free.app"]
+CSRF_TRUSTED_ORIGINS = ["https://d23b-102-219-208-154.ngrok-free.app"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

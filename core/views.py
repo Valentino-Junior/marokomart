@@ -1008,14 +1008,12 @@ def process_paypal_payment(request):
                 'item_name': 'Order Payment',
                 'invoice': str(uuid.uuid4())[:8],
                 'currency_code': 'USD',
-                'notify_url': f'http://{host}{reverse("core:paypal-ipn")}',
+                'notify_url': f'http://{host}{reverse("core:paypal-ipn")}', 
                 'return_url': f'http://{host}{reverse("core:paypal-success")}',
                 'cancel_return': f'http://{host}{reverse("core:paypal-cancelled")}',
                 'custom': request.user.id,
 
-                'lc': 'US',           # Language and country code - sets PayPal checkout page language
-                'no_shipping': '1',   # Disable shipping address on PayPal's end (since we collect it ourselves)
-                'no_note': '1',       # Disable the note field on PayPal's checkout page
+                
             }
 
             # Create form
