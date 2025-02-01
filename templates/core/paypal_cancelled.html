@@ -1,0 +1,13 @@
+{% extends 'partials/base.html' %}
+{% block content %}
+
+<div class="container py-5">
+    <div class="text-center">
+        <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+        <h2 class="mt-4">Payment Cancelled</h2>
+        <p class="lead">Your payment was cancelled.</p>
+        <a href="{% url 'core:cart' %}" class="btn btn-primary mt-4">Return to Cart</a>
+    </div>
+</div>
+
+{% endblock %}

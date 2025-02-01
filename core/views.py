@@ -16,7 +16,6 @@ from django.contrib import messages
 from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from paypal.standard.forms import PayPalPaymentsForm
 from django.contrib.auth.decorators import login_required
 
 import calendar
@@ -58,7 +57,12 @@ import logging
 logger = logging.getLogger(__name__)
 from .services import check_transaction_status
 from django.contrib.sessions.models import Session
-import paypalrestsdk # type: ignore
+
+
+from paypal.standard.ipn.signals import valid_ipn_received
+from paypal.standard.forms import PayPalPaymentsForm
+from django.dispatch import receiver
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -972,60 +976,41 @@ def send_order_emails(order):
 @login_required
 def process_paypal_payment(request):
     if request.method == 'POST':
-        cart_data = request.session.get('cart_data_obj', {})
-        coupon_data = request.session.get('coupon_data', {})
-        shipping_address_id = request.POST.get('shipping_address_id')
-
         try:
+            cart_data = request.session.get('cart_data_obj', {})
+            coupon_data = request.session.get('coupon_data', {})
+            shipping_address_id = request.POST.get('shipping_address_id')
+            
+            # Calculate totals
             cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
             final_total = cart_total - float(coupon_data.get('total_saved', 0))
-            shipping_address = ShippingAddress.objects.get(id=shipping_address_id, user=request.user)
 
-            paypalrestsdk.configure({
-                'mode': 'sandbox',
-                'client_id': 'your-client-id',
-                'client_secret': 'your-client-secret'
+            # Get hosting domain
+            host = request.get_host()
+
+            # PayPal dictionary with custom button style
+            paypal_dict = {
+                'business': settings.PAYPAL_RECEIVER_EMAIL,
+                'amount': '%.2f' % Decimal(final_total),
+                'item_name': 'Order Payment',
+                'invoice': str(uuid.uuid4())[:8],
+                'currency_code': 'USD',
+                'notify_url': f'http://{host}{reverse("core:paypal-ipn")}',
+                'return_url': f'http://{host}{reverse("core:paypal-success")}',
+                'cancel_return': f'http://{host}{reverse("core:paypal-cancelled")}',
+                'custom': request.user.id,
+                
+            }
+
+            # Create form with custom class
+            form = PayPalPaymentsForm(initial=paypal_dict)
+            form_html = form.render()
+            
+            return JsonResponse({
+                'success': True,
+                'form_html': form_html,
+                'final_total': str(final_total)
             })
-
-            payment = paypalrestsdk.Payment({
-                "intent": "sale",
-                "payer": {
-                    "payment_method": "paypal"
-                },
-                "redirect_urls": {
-                    "return_url": request.build_absolute_uri(reverse('core:paypal-return')),  # Add namespace
-                    "cancel_url": request.build_absolute_uri(reverse('core:paypal-cancel')),
-                },
-                "transactions": [{
-                    "item_list": {
-                        "items": [{
-                            "name": f"Order - {request.user.username}",
-                            "sku": "order",
-                            "price": str(final_total),
-                            "currency": "USD",
-                            "quantity": 1
-                        }]
-                    },
-                    "amount": {
-                        "total": str(final_total),
-                        "currency": "USD"
-                    },
-                    "description": f"Order placed by {request.user.username}"
-                }]
-            })
-
-            if payment.create():
-                for link in payment.links:
-                    if link.rel == 'approval_url':
-                        return JsonResponse({
-                            'success': True,
-                            'redirect_url': link.href
-                        })
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Failed to create payment.'
-                })
 
         except Exception as e:
             return JsonResponse({
@@ -1038,56 +1023,76 @@ def process_paypal_payment(request):
         'message': 'Invalid request method'
     })
 
-@login_required
-def paypal_return(request):
-    payment_id = request.GET.get('paymentId')
-    payer_id = request.GET.get('PayerID')
+@csrf_exempt
+def paypal_success(request):
+    messages.success(request, "Payment successful! Your order has been placed.")
+    return render(request, 'core/paypal_success.html')
 
-    payment = paypalrestsdk.Payment.find(payment_id)
+@csrf_exempt  
+def paypal_cancelled(request):
+    messages.warning(request, "Payment was cancelled.")
+    return render(request, 'core/paypal_cancelled.html')
 
-    if payment.execute({"payer_id": payer_id}):
+@receiver(valid_ipn_received)
+def payment_notification(sender, **kwargs):
+    ipn_obj = sender
+    
+    if ipn_obj.payment_status == "Completed":
+        # Payment was successful
         try:
+            # Get user
+            user = User.objects.get(id=int(ipn_obj.custom))
+            
+            # Create order
             order = CartOrder.objects.create(
-                user=request.user,
-                price=float(payment.transactions[0].amount.total),
+                user=user,
+                price=Decimal(ipn_obj.mc_gross),
                 payment_method='paypal',
                 paid_status=True,
-                shipping_address=ShippingAddress.objects.get(user=request.user, is_default=True)
+                external_reference=ipn_obj.txn_id
             )
 
-            PayPalPayment.objects.create(
-                user=request.user,
-                order=order,
-                payment_id=payment.id,
-                payer_id=payer_id,
-                status=payment.state
-            )
+            # Find cart data in session
+            session = Session.objects.filter(
+                expire_date__gte=timezone.now()
+            ).get(session_data__contains=f'"_auth_user_id":"{user.id}"')
+            
+            session_data = session.get_decoded()
+            cart_data = session_data.get('cart_data_obj', {})
 
-            for item in payment.transactions[0].item_list.items:
-                product = Product.objects.get(title=item.name)
+            # Create order items
+            for item_id, item_data in cart_data.items():
                 CartOrderProducts.objects.create(
                     order=order,
-                    item=product.title,
-                    image=product.image.url,
-                    qty=item.quantity,
-                    price=item.price,
-                    total=float(item.price) * int(item.quantity)
+                    invoice_no=f"INVOICE-{order.id}",
+                    item=item_data['title'],
+                    image=item_data['image'],
+                    qty=item_data['qty'],
+                    price=item_data['price'],
+                    total=float(item_data['qty']) * float(item_data['price'])
                 )
-                product.stock_count = str(int(product.stock_count) - int(item.quantity))
-                product.save()
 
-            request.session['cart_data_obj'] = {}
-            request.session.modified = True
+                # Update stock
+                try:
+                    product = Product.objects.get(title=item_data['title'])
+                    if product.stock_count.isdigit():
+                        new_stock = int(product.stock_count) - int(item_data['qty'])
+                        product.stock_count = str(max(0, new_stock))
+                        product.save()
+                except Product.DoesNotExist:
+                    continue
 
-            return redirect('core: payment-success')
-        except:
-            return redirect('core: payment-failed')
-    else:
-        return redirect('core: payment-failed')
+            # Clear cart
+            if 'cart_data_obj' in session_data:
+                del session_data['cart_data_obj']
+                session.session_data = Session.encode(session_data)
+                session.save()
 
-def paypal_cancel(request):
-    return redirect('core:checkout')
+            # Send confirmation emails
+            send_order_emails(order)
 
+        except Exception as e:
+            logger.error(f"PayPal IPN Error: {str(e)}")
 
 
 @login_required

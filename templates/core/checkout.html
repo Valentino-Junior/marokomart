@@ -223,222 +223,294 @@
                     <p id="payment-message" class="animate__animated animate__fadeInUp text-center mt-4"></p>
                 </div>
 
-
-
-<!-- start PayPal Modal -->
+<!-- START PAYPAL MODAL -->
 <div id="paypalModal" class="modal-js">
     <div class="modal-content">
-      <div class="modal-header bg-warning text-white">
-        <h5><i class="fab fa-paypal me-2"></i>PayPal Payment</h5>
-        <button type="button" class="close-modal" onclick="hidePaypalModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="selected-address mb-4 p-3 bg-light rounded">
-          <h6 class="mb-2">Delivery Address:</h6>
-          <div id="paypalDeliveryAddress"></div>
+        <div class="modal-header bg-warning text-white">
+            <h5><i class="fab fa-paypal me-2"></i>PayPal Payment</h5>
+            <button type="button" class="close-modal">&times;</button>
         </div>
-        <div class="payment-amount mb-4 p-3 bg-light rounded">
-          <h6 class="mb-2">Amount Due:</h6>
-          <h4 class="text-warning mb-0">
-            USD {{ coupon_data.final_total|default:cart_total|floatformat:2 }}  
-          </h4>
+        <div class="modal-body">
+            <!-- Delivery Address -->
+            <div class="selected-address mb-4 p-3 bg-light rounded">
+                <h6 class="mb-2">Delivery Address:</h6>
+                <div id="paypalDeliveryAddress"></div>
+            </div>
+ 
+            <!-- Order Summary -->
+            <div class="payment-amount mb-4 p-3 bg-light rounded">
+                <h6 class="mb-2">Amount Due:</h6>
+                <h4 class="text-warning mb-0" id="paypal-amount">
+                    USD {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
+                </h4>
+            </div>
+ 
+            <!-- PayPal Form Container -->
+            <div id="paypal-form-container" class="text-center paypal-button-container"></div>
+ 
+            <!-- Status Messages -->
+            <div id="paypal_status" class="alert mt-3" style="display: none;"></div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" onclick="hidePaypalModal()">Cancel</button>
-        <button type="button" class="btn btn-warning text-white" id="paypal-button">
-          <i class="fab fa-paypal me-2"></i>Pay with PayPal
-        </button>  
-      </div>
     </div>
-  </div>
-
-<!-- end PayPal Modal -->
-
-
-<!-- start paypal script and styling -->
-
-                <script>
-                function validateAndShowPaypal() {
-                    // Check terms acceptance
-                    if (!document.getElementById('terms').checked) {
-                        const notification = document.createElement('div');
-                        notification.innerHTML = `
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span>Please accept terms and conditions</span>
-                            </div>
-                        `;
-                        notification.style.cssText = `
-                            position: fixed;
-                            top: 20px;
-                            right: 20px;
-                            padding: 15px 25px;
-                            background: #ffc107;
-                            color: #000;
-                            border-radius: 8px;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                            z-index: 1060;
-                            opacity: 0;
-                            transform: translateY(-20px);
-                            transition: all 0.3s ease;
-                            display: flex;
-                            align-items: center;
-                            font-weight: 500;
-                        `;
-                        document.body.appendChild(notification);
-
-                        requestAnimationFrame(() => {
-                            notification.style.opacity = '1';
-                            notification.style.transform = 'translateY(0)';
-                        });
-                        
-                        setTimeout(() => {
-                            notification.style.opacity = '0';
-                            notification.style.transform = 'translateY(-20px)';
-                            setTimeout(() => notification.remove(), 300);
-                        }, 3000);
-                        return;
-                    }
-
-                    // Check address selection
-                    const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
-                    if (!selectedRadio) {
-                        showNotification('Please select shipping address', '#ffc107');
-                        return;
-                    }
-
-                    // Get address details and update modal
-                    const addressCard = selectedRadio.closest('.address-card');
-                    document.getElementById('paypalDeliveryAddress').innerHTML = `
-                        <p class="mb-1">Name: <strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
-                        <p class="mb-1">Region: <strong>${addressCard.querySelector('[data-field="region"]').textContent}</strong></p>
-                        <p class="mb-1">Phone: <strong>${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</strong></p>
-                        <p class="mb-1">Email: <strong>${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</strong></p>
+ </div>
+ <!-- END PAYPAL MODAL -->
+ 
+ <!-- START PAYPAL SCRIPT -->
+ <script>
+ // Main function to validate and show PayPal modal
+ function validateAndShowPaypal() {
+    // Validate terms
+    if (!document.getElementById('terms').checked) {
+        showNotification('Please accept terms and conditions', '#ffc107');
+        return;
+    }
+ 
+    // Validate shipping address
+    const selectedRadio = document.querySelector('input[name="address_selection"]:checked');
+    if (!selectedRadio) {
+        showNotification('Please select shipping address', '#ffc107');
+        return;
+    }
+ 
+    // Set shipping address display
+    const addressCard = selectedRadio.closest('.address-card');
+    document.getElementById('paypalDeliveryAddress').innerHTML = `
+        <p class="mb-1">Name: <strong>${addressCard.querySelector('[data-field="full_name"]').textContent}</strong></p>
+        <p class="mb-1">Region: <strong>${addressCard.querySelector('[data-field="region"]').textContent}</strong></p>
+        <p class="mb-1">Phone: <strong>${addressCard.querySelector('[data-field="phone"]').textContent.replace('Phone: ', '')}</strong></p>
+        <p class="mb-1">Email: <strong>${addressCard.querySelector('[data-field="email"]').textContent.replace('Email: ', '')}</strong></p>
+    `;
+ 
+    // Store selected address ID
+    document.getElementById('selected_address_id').value = selectedRadio.value;
+ 
+    // Show modal and initialize PayPal
+    const paypalModal = document.getElementById('paypalModal');
+    paypalModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    // Initialize PayPal form with AJAX
+    const formData = new FormData();
+    formData.append('shipping_address_id', selectedRadio.value);
+ 
+    fetch('{% url "core:process-paypal-payment" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update PayPal form and amount
+            document.getElementById('paypal-form-container').innerHTML = data.form_html;
+            document.getElementById('paypal-amount').textContent = 
+                'USD ' + parseFloat(data.final_total).toFixed(2);
+            document.getElementById('paypal_status').style.display = 'none';
+        } else {
+            showNotification(data.message || 'Error loading PayPal form', '#dc3545');
+        }
+    })
+    .catch(error => {
+        showNotification('Error initializing payment', '#dc3545');
+        console.error('Error:', error);
+    });
+ }
+ 
+ // Function to hide modal
+ function hidePaypalModal() {
+    const modal = document.getElementById('paypalModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    
+    // Reset containers
+    const formContainer = document.getElementById('paypal-form-container');
+    const status = document.getElementById('paypal_status');
+    if(formContainer) formContainer.innerHTML = '';
+    if(status) status.style.display = 'none';
+ }
+ 
+ // Modal event listeners
+ document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('paypalModal');
+ 
+    // Close button handler
+    modal.querySelector('.close-modal').addEventListener('click', hidePaypalModal);
+    
+    // Outside click handler
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) hidePaypalModal();
+    });
+    
+    // ESC key handler
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            hidePaypalModal();
+        }
+    });
+ 
+    // PayPal button style observer
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if(mutation.addedNodes.length) {
+                const paypalButton = document.querySelector('#paypal-form-container input[type="image"]');
+                if(paypalButton) {
+                    paypalButton.style.cssText = `
+                        width: auto !important;
+                        height: 45px !important;
+                        max-width: 250px !important;
+                        margin: 0 auto !important;
+                        display: block !important;
+                        filter: none !important;
+                        -webkit-filter: none !important;
                     `;
-
-                    // Set selected address ID
-                    document.getElementById('selected_address_id').value = selectedRadio.value;
-                    
-                    // Show PayPal modal
-                    const paypalModal = document.getElementById('paypalModal');
-                    paypalModal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
                 }
+            }
+        });
+    });
+ 
+    observer.observe(document.getElementById('paypal-form-container'), {
+        childList: true,
+        subtree: true
+    });
+ });
+ </script>
+ <!-- END PAYPAL SCRIPT -->
+ 
+ <!-- START PAYPAL STYLES -->
+ <style>
+ /* Modal Base Styles */
+ .modal-js {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1050;
+ }
+ 
+ .modal-content {
+    background: white;
+    margin: 5% auto;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+ }
+ 
+ /* Modal Header */
+.modal-header {
+    padding: 1.25rem;
+    background: #ffc107;
+    color: white;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-                // Add event listeners when document is ready
-                document.addEventListener('DOMContentLoaded', function() {
-                    const paypalModal = document.getElementById('paypalModal');
-                    
-                    // Close modal handlers
-                    function hidePaypalModal() {
-                        paypalModal.style.display = 'none';
-                        document.body.style.overflow = '';
-                    }
+/* Modal Body */
+.modal-body {
+    padding: 1.5rem;
+    max-height: calc(90vh - 140px);
+    overflow-y: auto;
+}
 
-                    // Close on X button click
-                    paypalModal.querySelector('.close-modal').addEventListener('click', hidePaypalModal);
+/* PayPal Button Container */
+#paypal-form-container {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    width: 100%;
+}
 
-                    // Close on outside click
-                    paypalModal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            hidePaypalModal();
-                        }
-                    });
+#paypal-form-container form {
+    max-width: 500px; /* Increased from 400px */
+    margin: 0 auto;
+    width: 100%;
+}
 
-                    // Close on ESC key
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape' && paypalModal.style.display === 'block') {
-                            hidePaypalModal();
-                        }
-                    });
+/* PayPal Button Styling */
+.paypal-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px; /* Increased from 70px */
+}
 
-                    // PayPal payment processing
-                    document.getElementById('paypal-button').addEventListener('click', function() {
-                        const formData = new FormData(document.getElementById('payment-form'));
-                        formData.append('payment_method', 'paypal');
-
-                        fetch('/process-paypal-payment/', {
-                            method: 'POST',
-                            body: formData,
-                            headers: {'X-Requested-With': 'XMLHttpRequest'}
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = data.redirect_url;
-                            } else {
-                                showNotification(data.message, '#dc3545');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showNotification('An error occurred. Please try again.', '#dc3545');
-                        });
-                    });
-                });
-                </script>
-                    
-                    <style>
-                    .modal-js {
-                      display: none;
-                      position: fixed; 
-                      z-index: 1050;
-                      left: 0;
-                      top: 0;
-                      width: 100%;
-                      height: 100%; 
-                      overflow: auto;
-                      background-color: rgba(0,0,0,0.5);
-                    }
-                    
-                    .modal-content {
-                      background-color: #fefefe;
-                      margin: 15% auto;
-                      padding: 20px;
-                      border: 1px solid #888;
-                      width: 80%;
-                      max-width: 500px;
-                      border-radius: 8px;
-                      position: relative;
-                    }
-                    
-                    .close-modal {
-                      color: #aaa;
-                      position: absolute;
-                      top: 10px;
-                      right: 20px;  
-                      font-size: 28px;
-                      font-weight: bold;
-                      cursor: pointer;
-                    }
-                    
-                    .close-modal:hover,
-                    .close-modal:focus {
-                      color: black;
-                      text-decoration: none;
-                      cursor: pointer;
-                    }
-                    
-                    .bg-warning { 
-                      background-color: #ffc107;
-                    }
-                    
-                    .text-warning {
-                      color: #ffc107;  
-                    }
-                    
-                    .btn-warning {
-                      background-color: #ffc107;
-                      border-color: #ffc107;
-                    }
-                    
-                    .btn-warning:hover {
-                      background-color: #e0a800;
-                      border-color: #d39e00;
-                    }
-                    </style>
-<!-- start paypal script and styling -->
+/* PayPal Button Specific Styling */
+#paypal-form-container input[type="image"] {
+    width: 100% !important;
+    height: 60px !important; /* Increased button height */
+    max-width: 350px !important; /* Increased from default */
+    margin: 0 auto !important;
+    display: block !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+}
+ 
+ /* Close Button */
+ .close-modal {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 28px;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    opacity: 0.8;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+ }
+ 
+ .close-modal:hover {
+    opacity: 1;
+ }
+ 
+ /* Content Sections */
+ .selected-address,
+ .payment-amount {
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+ }
+ 
+ #paypal-amount {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffc107;
+ }
+ 
+ /* Alert Styles */
+ .alert {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 4px;
+ }
+ 
+ .alert-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+ }
+ 
+ .alert-danger {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+ }
+ 
+ .alert-info {
+    background: #cce5ff;
+    border: 1px solid #b8daff;
+    color: #004085;
+ }
+ </style>
+ <!-- END PAYPAL STYLES -->
 
 
 

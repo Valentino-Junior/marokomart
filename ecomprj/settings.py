@@ -399,9 +399,10 @@ CKEDITOR_5_CONFIGS = {
 # PAYPAL_RECEIVER_EMAIL=config('PAYPAL_RECEIVER_EMAIL')
 # PAYPAL_TEST=config('PAYPAL_TEST')
 
-
-PAYPAL_RECEIVER_EMAIL = 'marokoinvest25@gmail.com'
 PAYPAL_TEST = True  # Set to False for production
+# PAYPAL_BUY_BUTTON_IMAGE = 'https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png'
+PAYPAL_RECEIVER_EMAIL = 'sb-uvsj737095012@business.example.com'
+
 
 
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51QZU8gDKdRzNNaZQKDeyABI1E9vl6mTU1PxuIpuBP0586TkNFw8TgpuIFVVwzNYlAVIho3YV7K7GADzTnFmGyJ1A00RHmnEZva'
