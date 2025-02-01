@@ -981,17 +981,30 @@ def process_paypal_payment(request):
             coupon_data = request.session.get('coupon_data', {})
             shipping_address_id = request.POST.get('shipping_address_id')
             
-            # Calculate totals
+            # Calculate totals in KSH
             cart_total = sum(int(item['qty']) * float(item['price']) for item in cart_data.values())
-            final_total = cart_total - float(coupon_data.get('total_saved', 0))
+            final_total_ksh = cart_total - float(coupon_data.get('total_saved', 0))
+
+            # Convert KSH to USD (using exchange rate API)
+            try:
+                # Using exchangerate-api.com (you can use any other service)
+                response = requests.get('https://v6.exchangerate-api.com/v6/9a113ecc8e9e1c9d46b78a7d/pair/KES/USD/' + str(final_total_ksh))
+                conversion_data = response.json()
+                final_total_usd = Decimal(str(conversion_data['conversion_result']))
+            except:
+                # Fallback to approximate conversion if API fails (1 USD = ~130 KSH)
+                final_total_usd = Decimal(str(final_total_ksh)) / Decimal('130')
+
+            # Round to 2 decimal places
+            final_total_usd = final_total_usd.quantize(Decimal('0.01'))
 
             # Get hosting domain
             host = request.get_host()
 
-            # PayPal dictionary with custom button style
+            # PayPal dictionary
             paypal_dict = {
                 'business': settings.PAYPAL_RECEIVER_EMAIL,
-                'amount': '%.2f' % Decimal(final_total),
+                'amount': str(final_total_usd),
                 'item_name': 'Order Payment',
                 'invoice': str(uuid.uuid4())[:8],
                 'currency_code': 'USD',
@@ -999,17 +1012,21 @@ def process_paypal_payment(request):
                 'return_url': f'http://{host}{reverse("core:paypal-success")}',
                 'cancel_return': f'http://{host}{reverse("core:paypal-cancelled")}',
                 'custom': request.user.id,
-                
+
+                'lc': 'US',           # Language and country code - sets PayPal checkout page language
+                'no_shipping': '1',   # Disable shipping address on PayPal's end (since we collect it ourselves)
+                'no_note': '1',       # Disable the note field on PayPal's checkout page
             }
 
-            # Create form with custom class
+            # Create form
             form = PayPalPaymentsForm(initial=paypal_dict)
             form_html = form.render()
             
             return JsonResponse({
                 'success': True,
                 'form_html': form_html,
-                'final_total': str(final_total)
+                'final_total_usd': str(final_total_usd),
+                'final_total_ksh': str(final_total_ksh)
             })
 
         except Exception as e:

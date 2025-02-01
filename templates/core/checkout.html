@@ -240,9 +240,14 @@
             <!-- Order Summary -->
             <div class="payment-amount mb-4 p-3 bg-light rounded">
                 <h6 class="mb-2">Amount Due:</h6>
-                <h4 class="text-warning mb-0" id="paypal-amount">
-                    USD {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
+                <h4 class="text-warning mb-0" id="paypal-amount-ksh">
+                    KSH {{ coupon_data.final_total|default:cart_total|floatformat:2 }}
                 </h4>
+                <p class="text-muted mb-0" id="paypal-amount-usd"></p>
+                <!-- Currency conversion disclaimer -->
+                <small class="text-muted d-block mt-2">
+                    *Amount will be charged in USD. Final amount may vary slightly due to exchange rates and PayPal fees.
+                </small>
             </div>
  
             <!-- PayPal Form Container -->
@@ -303,16 +308,22 @@
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            // Update PayPal form and amount
-            document.getElementById('paypal-form-container').innerHTML = data.form_html;
-            document.getElementById('paypal-amount').textContent = 
-                'USD ' + parseFloat(data.final_total).toFixed(2);
-            document.getElementById('paypal_status').style.display = 'none';
-        } else {
-            showNotification(data.message || 'Error loading PayPal form', '#dc3545');
-        }
-    })
+    if (data.success) {
+        // Update PayPal form
+        document.getElementById('paypal-form-container').innerHTML = data.form_html;
+        
+        // Update amounts
+        document.getElementById('paypal-amount-ksh').textContent = 
+            'KSH ' + parseFloat(data.final_total_ksh).toFixed(2);
+        document.getElementById('paypal-amount-usd').textContent = 
+            'Approximately USD ' + parseFloat(data.final_total_usd).toFixed(2);
+        
+        const status = document.getElementById('paypal_status');
+        status.style.display = 'none';
+    } else {
+        showNotification(data.message || 'Error loading PayPal form', '#dc3545');
+    }
+})
     .catch(error => {
         showNotification('Error initializing payment', '#dc3545');
         console.error('Error:', error);
