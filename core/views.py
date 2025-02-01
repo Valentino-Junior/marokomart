@@ -1051,63 +1051,113 @@ def paypal_cancelled(request):
 @receiver(valid_ipn_received)
 def payment_notification(sender, **kwargs):
     ipn_obj = sender
+    logger.info("====== PayPal IPN Process Starting ======")
     
     if ipn_obj.payment_status == "Completed":
-        # Payment was successful
         try:
-            # Get user
             user = User.objects.get(id=int(ipn_obj.custom))
             
-            # Create order
+            # Get active session data first
+            sessions = Session.objects.filter(expire_date__gte=timezone.now())
+            user_session = None
+            for session in sessions:
+                session_data = session.get_decoded()
+                if session_data.get('_auth_user_id') == str(user.id):
+                    user_session = session
+                    break
+
+            if not user_session:
+                logger.error("No active session found")
+                return
+
+            session_data = user_session.get_decoded()
+            cart_data = session_data.get('cart_data_obj', {})
+            
+            # Calculate the total correctly
+            cart_total = sum(
+                int(item['qty']) * float(item['price'].replace(',', ''))  # Remove commas
+                for item in cart_data.values()
+            )
+            
+            # Get any coupon discount
+            coupon_data = session_data.get('coupon_data', {})
+            discount = float(coupon_data.get('total_saved', 0))
+            final_total = cart_total - discount
+
+            # Get shipping address
+            shipping_address = ShippingAddress.objects.filter(user=user, is_default=True).first()
+            
+            # Create order with correct total
             order = CartOrder.objects.create(
                 user=user,
-                price=Decimal(ipn_obj.mc_gross),
+                shipping_address=shipping_address,
+                price=Decimal(str(final_total)),
                 payment_method='paypal',
                 paid_status=True,
                 external_reference=ipn_obj.txn_id
             )
 
-            # Find cart data in session
-            session = Session.objects.filter(
-                expire_date__gte=timezone.now()
-            ).get(session_data__contains=f'"_auth_user_id":"{user.id}"')
-            
-            session_data = session.get_decoded()
-            cart_data = session_data.get('cart_data_obj', {})
-
-            # Create order items
+            # Create order items with correct prices
             for item_id, item_data in cart_data.items():
+                item_price = float(item_data['price'].replace(',', ''))  # Remove commas
+                item_qty = int(item_data['qty'])
                 CartOrderProducts.objects.create(
                     order=order,
                     invoice_no=f"INVOICE-{order.id}",
                     item=item_data['title'],
                     image=item_data['image'],
-                    qty=item_data['qty'],
-                    price=item_data['price'],
-                    total=float(item_data['qty']) * float(item_data['price'])
+                    qty=item_qty,
+                    price=item_price,
+                    total=item_price * item_qty
                 )
 
                 # Update stock
                 try:
                     product = Product.objects.get(title=item_data['title'])
                     if product.stock_count.isdigit():
-                        new_stock = int(product.stock_count) - int(item_data['qty'])
+                        new_stock = int(product.stock_count) - item_qty
                         product.stock_count = str(max(0, new_stock))
                         product.save()
                 except Product.DoesNotExist:
-                    continue
+                    logger.error(f"Product not found: {item_data['title']}")
 
-            # Clear cart
-            if 'cart_data_obj' in session_data:
-                del session_data['cart_data_obj']
-                session.session_data = Session.encode(session_data)
-                session.save()
+            # Clear cart session data properly
+            try:
+                # Clear from current session
+                if 'cart_data_obj' in session_data:
+                    del session_data['cart_data_obj']
+                if 'coupon_data' in session_data:
+                    del session_data['coupon_data']
+                user_session.session_data = Session.encode(session_data)
+                user_session.save()
 
-            # Send confirmation emails
-            send_order_emails(order)
+                # Clear from all other sessions for this user
+                for other_session in sessions:
+                    if other_session.session_key != user_session.session_key:
+                        other_data = other_session.get_decoded()
+                        if '_auth_user_id' in other_data and other_data['_auth_user_id'] == str(user.id):
+                            if 'cart_data_obj' in other_data:
+                                del other_data['cart_data_obj']
+                            if 'coupon_data' in other_data:
+                                del other_data['coupon_data']
+                            other_session.session_data = Session.encode(other_data)
+                            other_session.save()
+
+            except Exception as e:
+                logger.error(f"Error clearing cart session: {str(e)}")
+
+            # Send confirmation email
+            try:
+                send_order_emails(order)
+                logger.info(f"Confirmation emails sent for order {order.id}")
+            except Exception as e:
+                logger.error(f"Error sending confirmation email: {str(e)}")
+                # Continue execution even if email fails
 
         except Exception as e:
             logger.error(f"PayPal IPN Error: {str(e)}")
+
+    logger.info("====== PayPal IPN Process Complete ======")
 
 
 @login_required
