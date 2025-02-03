@@ -442,18 +442,43 @@ def change_order_status(request, oid):
     
     return redirect("useradmin:order_detail", order.id)
 
+# views.py
 @admin_required
 def shop_page(request):
-    products = Product.objects.filter(user=request.user)
-    revenue = CartOrder.objects.filter(paid_status=True).aggregate(price=Sum("price"))
-    total_sales = CartOrderProducts.objects.filter(order__paid_status=True).aggregate(qty=Sum("qty"))
+   # Get products and basic stats
+   products = Product.objects.filter(user=request.user)
+   total_orders = CartOrder.objects.filter(paid_status=True)
+   total_order_items = CartOrderProducts.objects.filter(order__paid_status=True)
 
-    context = {
-        'products':products,
-        'revenue':revenue,
-        'total_sales':total_sales,
-    }
-    return render(request, "useradmin/shop_page.html", context)
+   # Calculate revenue
+   revenue = total_orders.aggregate(total=Sum('price'))['total'] or 0
+   
+   # Calculate total sales quantity
+   total_sales = total_order_items.aggregate(qty=Sum('qty'))['qty'] or 0
+   
+   # Calculate total cost and profit
+   total_cost = 0
+   total_profit = 0
+   
+   for item in total_order_items:
+       try:
+           product = Product.objects.get(title=item.item)
+           item_cost = product.buying_price * item.qty
+           item_profit = (item.price - product.buying_price) * item.qty
+           total_cost += item_cost
+           total_profit += item_profit
+       except Product.DoesNotExist:
+           continue
+
+   context = {
+       'products': products,
+       'revenue': revenue,
+       'total_sales': total_sales,
+       'total_profit': total_profit,
+       'total_cost': total_cost,
+       'profit_margin': (total_profit/revenue * 100) if revenue > 0 else 0
+   }
+   return render(request, "useradmin/shop_page.html", context)
 
 
 @admin_required
