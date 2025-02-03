@@ -6,12 +6,24 @@ from django.utils import timezone
 
 
 class User(AbstractUser):
+    USER_TYPE_CHOICES = [
+        ('CLIENT', 'Client'),
+        ('VENDOR', 'Vendor'),
+        ('STAFF', 'Staff'),
+        ('ADMIN', 'Admin'),
+    ]
+    
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=100)
     bio = models.CharField(max_length=100)
     date_of_birth = models.DateField(null=True)
     is_email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=100, blank=True, null=True)
+    user_type = models.CharField(
+        max_length=10, 
+        choices=USER_TYPE_CHOICES,
+        default='CLIENT'
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['username']
