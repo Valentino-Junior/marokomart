@@ -2,7 +2,8 @@ from django.contrib import admin
 from userauths.models import User, ContactUs, Profile
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'bio', 'date_of_birth', 'is_email_verified']
+    list_display = ['username', 'email', 'bio', 'date_of_birth', 'is_email_verified', 'user_type']
+    list_filter = ['user_type', 'is_active', 'is_email_verified']
 
 class ContactUsAdmin(admin.ModelAdmin):
     list_display = ['full_name', 'email', 'subject', 'message', 'is_viewed', 'created_at',]
