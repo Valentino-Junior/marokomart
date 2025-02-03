@@ -20,7 +20,7 @@ class UserRegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'date_of_birth']
+        fields = ['username', 'email', 'date_of_birth', 'user_type']
         
 
     def clean_date_of_birth(self):
@@ -32,6 +32,12 @@ class UserRegisterForm(UserCreationForm):
             raise ValidationError('You must be at least 18 years old to register.')
         
         return dob
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hide user_type field as all new registrations are clients by default
+        self.fields['user_type'].widget = forms.HiddenInput()
+        self.fields['user_type'].initial = 'CLIENT'
 
 
 
