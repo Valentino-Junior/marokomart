@@ -90,11 +90,17 @@
                                     title="Share Coupon">
                                 <i class="fas fa-share-alt"></i>
                             </button>
+
                             <button class="btn btn-sm rounded-circle edit-coupon" 
-                                    data-id="{{ coupon.pk }}"
-                                    title="Edit Coupon">
-                                <i class="fas fa-edit"></i>
+                            data-id="{{ coupon.pk }}"
+                            data-discount="{{ coupon.discount }}"
+                            data-active="{{ coupon.active }}"
+                            data-usage-limit="{{ coupon.usage_limit }}"
+                            data-expiry-date="{{ coupon.expiry_date|date:'Y-m-d\TH:i' }}"
+                            title="Edit Coupon">
+                            <i class="fas fa-edit"></i>
                             </button>
+
                             <button class="btn btn-sm rounded-circle delete-coupon" 
                                     data-id="{{ coupon.pk }}"
                                     title="Delete Coupon">
@@ -320,19 +326,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Edit Coupon Button Click
     document.querySelector('.coupon-list').addEventListener('click', function(e) {
-        const editBtn = e.target.closest('.edit-coupon');
-        if (editBtn) {
-            currentCouponId = editBtn.dataset.id;
-            document.getElementById('modalTitle').textContent = 'Edit Coupon';
-            
-            // Fill form with existing data
-            const form = document.getElementById('couponForm');
-            form.querySelector('[name="discount"]').value = editBtn.dataset.discount;
-            form.querySelector('[name="active"]').checked = editBtn.dataset.active === 'True';
-            form.querySelector('[name="usage_limit"]').value = editBtn.dataset.usageLimit;
-            
-            couponModal.show();
-        }
+    const editBtn = e.target.closest('.edit-coupon');
+    if (editBtn) {
+        currentCouponId = editBtn.dataset.id;
+        document.getElementById('modalTitle').textContent = 'Edit Coupon';
+        
+        const form = document.getElementById('couponForm');
+        form.querySelector('[name="discount"]').value = editBtn.dataset.discount;
+        form.querySelector('[name="usage_limit"]').value = editBtn.dataset.usageLimit;
+        form.querySelector('[name="expiry_date"]').value = editBtn.dataset.expiryDate;
+        form.querySelector('[name="active"]').checked = editBtn.dataset.active === 'True';
+        
+        couponModal.show();
+    }
     });
 
      // Copy Code Click
