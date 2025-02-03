@@ -17,10 +17,10 @@ class UserRegisterForm(UserCreationForm):
             "class": "form-control"
         })
     )
-
+    
     class Meta:
         model = User
-        fields = ['username', 'email', 'date_of_birth', 'user_type']
+        fields = ['username', 'email', 'date_of_birth',]
         
 
     def clean_date_of_birth(self):
@@ -33,13 +33,37 @@ class UserRegisterForm(UserCreationForm):
         
         return dob
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Hide user_type field as all new registrations are clients by default
-        self.fields['user_type'].widget = forms.HiddenInput()
-        self.fields['user_type'].initial = 'CLIENT'
+    def save(self, commit=True):
+       user = super().save(commit=False)
+       user.user_type = 'CLIENT'
+       if commit:
+           user.save()
+       return user
 
 
+# Will add this in future to signup with different user types
+# class UserRegisterForm(UserCreationForm):
+#     # Existing fields...
+#     user_type = forms.ChoiceField(
+#         choices=User.USER_TYPE_CHOICES,
+#         widget=forms.Select(attrs={
+#             "class": "form-control",
+#             "placeholder": "Account Type"
+#         })
+#     )
+
+#     class Meta:
+#         model = User
+#         fields = ['username', 'email', 'date_of_birth', 'user_type']
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Optionally restrict available choices
+#         allowed_types = ['CLIENT', 'VENDOR']  # Example: only allow client/vendor signup
+#         self.fields['user_type'].choices = [
+#             (choice[0], choice[1]) for choice in User.USER_TYPE_CHOICES 
+#             if choice[0] in allowed_types
+#         ]
 
 class ProfileForm(forms.ModelForm):
     full_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder":"Full Name"}))
