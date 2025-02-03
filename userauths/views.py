@@ -71,6 +71,7 @@ def register_view(request):
                 new_user.is_active = False  # Deactivate account until verification
                 new_user.email_verification_token = get_random_string(64)
                 new_user.date_of_birth = form.cleaned_data['date_of_birth']
+                new_user.user_type = 'CLIENT'  # Set default user type
                 new_user.save()
 
                 # Generate verification URL
