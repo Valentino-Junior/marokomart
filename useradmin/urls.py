@@ -60,4 +60,8 @@ urlpatterns = [
 
 
     path('update-payment-status/<str:oid>/', views.update_payment_status, name='update_payment_status'),
+
+    path('clients/', views.client_list, name='clients'),
+    path('clients/<int:pk>/update/', views.update_client, name='update_client'),
+    path('clients/<int:pk>/delete/', views.delete_client, name='delete_client'),
 ]
