@@ -861,3 +861,42 @@ def get_users_list(request):
     } for user in users[:100]]  # Limit to 100 users for performance
     
     return JsonResponse({'users': users_data})
+
+
+@admin_required
+def client_list(request):
+    clients = User.objects.filter(is_staff=False, is_superuser=False).select_related('profile')
+    return render(request, 'useradmin/clients.html', {'clients': clients})
+
+@admin_required
+def update_client(request, pk):
+    if request.method == 'POST':
+        try:
+            client = User.objects.get(pk=pk)
+            profile = client.profile
+            
+            client.email = request.POST.get('email')
+            client.is_active = request.POST.get('is_active') == 'on'
+            client.save()
+            
+            profile.full_name = request.POST.get('full_name')
+            profile.phone = request.POST.get('phone')
+            profile.save()
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+@admin_required
+def delete_client(request, pk):
+    if request.method == 'POST':
+        try:
+            client = User.objects.get(pk=pk)
+            client.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
