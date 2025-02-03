@@ -55,5 +55,9 @@ urlpatterns = [
     path('coupons/<int:pk>/update/', views.coupon_update, name='coupon_update'),
     path('coupons/<int:pk>/delete/', views.coupon_delete, name='coupon_delete'),
 
+    path('coupons/<int:pk>/share/', views.share_coupon, name='share_coupon'),
+    path('users/list/', views.get_users_list, name='get_users_list'),
+
+
     path('update-payment-status/<str:oid>/', views.update_payment_status, name='update_payment_status'),
 ]

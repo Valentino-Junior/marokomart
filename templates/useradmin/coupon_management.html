@@ -80,14 +80,24 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <h5 class="card-title">{{ coupon.discount }}% OFF</h5>
                         <div class="coupon-actions">
+                            <button class="btn btn-sm rounded-circle share-coupon" 
+                                    data-id="{{ coupon.pk }}"
+                                    data-code="{{ coupon.code }}"
+                                    data-discount="{{ coupon.discount }}"
+                                    data-usage-limit="{{ coupon.usage_limit }}"
+                                    data-times-used="{{ coupon.times_used }}"
+                                    data-expiry-date="{{ coupon.expiry_date|date:'Y-m-d H:i' }}"
+                                    title="Share Coupon">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
                             <button class="btn btn-sm rounded-circle edit-coupon" 
                                     data-id="{{ coupon.pk }}"
-                                    data-discount="{{ coupon.discount }}"
-                                    data-active="{{ coupon.active }}"
-                                    data-usage-limit="{{ coupon.usage_limit }}">
+                                    title="Edit Coupon">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm rounded-circle delete-coupon" data-id="{{ coupon.pk }}">
+                            <button class="btn btn-sm rounded-circle delete-coupon" 
+                                    data-id="{{ coupon.pk }}"
+                                    title="Delete Coupon">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -104,7 +114,7 @@
                         </p>
                         <p class="mb-1">Used: {{ coupon.times_used }}/{{ coupon.usage_limit }}</p>
                         {% if coupon.expiry_date %}
-                        <p class="mb-1">Expires: {{ coupon.expiry_date|date:"Y-m-d H:i" }}</p>
+                            <p class="mb-1">Expires: {{ coupon.expiry_date|date:"Y-m-d H:i" }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -116,6 +126,101 @@
         </div>
         {% endfor %}
     </div>
+
+  
+<!-- Share Coupon Modal -->
+<div class="modal fade" id="shareCouponModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Share Coupon</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Coupon Preview Section -->
+            <div class="coupon-preview p-3 bg-light border-bottom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-2">Coupon Details:</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2" id="previewDiscount"></span>
+                            <span class="coupon-code" id="previewCode"></span>
+                        </div>
+                        <small class="text-muted" id="previewValidity"></small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="usage-details">
+                            <p class="mb-1">Usage Limit: <span id="previewUsageLimit"></span></p>
+                            <p class="mb-0">Times Used: <span id="previewTimesUsed"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <form id="shareCouponForm" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <!-- Email Configuration -->
+                    <div class="mb-4">
+                        <label class="form-label required">Email Subject</label>
+                        <input type="text" class="form-control" name="subject" required
+                               placeholder="Enter email subject">
+                        <div class="invalid-feedback">Please enter an email subject</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label required">Email Message</label>
+                        <textarea class="form-control" name="message" rows="4" required
+                                  placeholder="Enter your message to recipients"></textarea>
+                        <div class="invalid-feedback">Please enter an email message</div>
+                    </div>
+
+                    <!-- Recipient Selection -->
+                    <div class="mb-4">
+                        <label class="form-label required">Select Recipients</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="share_with_all" id="shareWithAll">
+                                <label class="form-check-label">Share with all users</label>
+                            </div>
+                        </div>
+
+                        <!-- User Selection Section -->
+                        <div id="userSelectionContainer">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="userSearchInput" 
+                                       placeholder="Search users by name or email">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+
+                            <div class="user-list-container border rounded">
+                                <div class="list-group list-group-flush" id="userList">
+                                    <!-- Users loaded dynamically -->
+                                </div>
+                            </div>
+
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary" id="selectedUsersCount">0 users selected</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllVisible">
+                                    Select All Visible
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="shareCouponBtn">
+                    <i class="fas fa-paper-plane me-1"></i> Share Coupon
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Coupon Modal -->
     <div class="modal fade" id="couponModal" tabindex="-1">
@@ -394,5 +499,240 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+
+<!-- start share coupon functionlity -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const shareCouponModal = new bootstrap.Modal(document.getElementById('shareCouponModal'));
+    let currentCoupon = null;
+    let userList = [];
+    let selectedUsers = new Set();
+    let filteredUsers = [];
+
+    // Share Button Click Handler
+    document.querySelector('.coupon-list').addEventListener('click', function(e) {
+        const shareBtn = e.target.closest('.share-coupon');
+        if (shareBtn) {
+            currentCoupon = {
+                id: shareBtn.dataset.id,
+                code: shareBtn.dataset.code,
+                discount: shareBtn.dataset.discount,
+                usageLimit: shareBtn.dataset.usageLimit,
+                timesUsed: shareBtn.dataset.timesUsed,
+                expiryDate: shareBtn.dataset.expiryDate
+            };
+            
+            resetShareModal();
+            updateCouponPreview();
+            loadUsers();
+            shareCouponModal.show();
+        }
+    });
+
+    function updateCouponPreview() {
+        document.getElementById('previewDiscount').textContent = `${currentCoupon.discount}% OFF`;
+        document.getElementById('previewCode').textContent = currentCoupon.code;
+        document.getElementById('previewUsageLimit').textContent = currentCoupon.usageLimit;
+        document.getElementById('previewTimesUsed').textContent = currentCoupon.timesUsed;
+        
+        if (currentCoupon.expiryDate) {
+            document.getElementById('previewValidity').textContent = 
+                `Valid until ${new Date(currentCoupon.expiryDate).toLocaleDateString()}`;
+        }
+    }
+
+    // Form Validation
+    function validateForm() {
+        const form = document.getElementById('shareCouponForm');
+        form.classList.add('was-validated');
+
+        const subject = form.querySelector('[name="subject"]').value.trim();
+        const message = form.querySelector('[name="message"]').value.trim();
+        const shareWithAll = form.querySelector('[name="share_with_all"]').checked;
+
+        if (!subject || !message) {
+            return false;
+        }
+
+        if (!shareWithAll && selectedUsers.size === 0) {
+            toastr.error('Please select at least one recipient');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Toggle User Selection Container
+    document.getElementById('shareWithAll').addEventListener('change', function() {
+        const container = document.getElementById('userSelectionContainer');
+        container.style.display = this.checked ? 'none' : 'block';
+        if (this.checked) {
+            selectedUsers.clear();
+            updateSelectedUsersCount();
+        }
+    });
+
+    // User Search with Debounce
+    let searchTimeout;
+    document.getElementById('userSearchInput').addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = e.target.value.toLowerCase();
+            filterUsers(searchTerm);
+        }, 300);
+    });
+
+    // Select All Visible Users
+    document.getElementById('selectAllVisible').addEventListener('click', function() {
+        const allSelected = filteredUsers.every(user => selectedUsers.has(user.id));
+        
+        filteredUsers.forEach(user => {
+            if (allSelected) {
+                selectedUsers.delete(user.id);
+            } else {
+                selectedUsers.add(user.id);
+            }
+        });
+        
+        renderUserList(filteredUsers);
+        updateSelectedUsersCount();
+    });
+
+    async function loadUsers() {
+        try {
+            const response = await fetch('/useradmin/users/list/');
+            const data = await response.json();
+            userList = data.users;
+            filteredUsers = [...userList];
+            renderUserList(userList);
+        } catch (error) {
+            toastr.error('Failed to load users');
+        }
+    }
+
+    function filterUsers(searchTerm) {
+        filteredUsers = userList.filter(user => 
+            user.email.toLowerCase().includes(searchTerm) ||
+            user.username.toLowerCase().includes(searchTerm)
+        );
+        renderUserList(filteredUsers);
+    }
+
+    function renderUserList(users) {
+        const userListElement = document.getElementById('userList');
+        userListElement.innerHTML = users.map(user => `
+            <div class="list-group-item ${selectedUsers.has(user.id) ? 'selected-user' : ''}"
+                 data-user-id="${user.id}">
+                <div class="form-check">
+                    <input class="form-check-input user-checkbox" type="checkbox" 
+                           value="${user.id}" ${selectedUsers.has(user.id) ? 'checked' : ''}>
+                    <label class="form-check-label w-100">
+                        <div class="d-flex justify-content-between">
+                            <span>${user.username}</span>
+                            <small class="user-email">${user.email}</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        `).join('');
+
+        // Add click handlers
+        userListElement.querySelectorAll('.list-group-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.classList.contains('form-check-input')) return;
+                
+                const checkbox = this.querySelector('.user-checkbox');
+                checkbox.checked = !checkbox.checked;
+                const userId = parseInt(checkbox.value);
+                
+                if (checkbox.checked) {
+                    selectedUsers.add(userId);
+                    this.classList.add('selected-user');
+                } else {
+                    selectedUsers.delete(userId);
+                    this.classList.remove('selected-user');
+                }
+                updateSelectedUsersCount();
+            });
+        });
+
+        // Separate checkbox click handler
+        userListElement.querySelectorAll('.user-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const userId = parseInt(this.value);
+                const listItem = this.closest('.list-group-item');
+                
+                if (this.checked) {
+                    selectedUsers.add(userId);
+                    listItem.classList.add('selected-user');
+                } else {
+                    selectedUsers.delete(userId);
+                    listItem.classList.remove('selected-user');
+                }
+                updateSelectedUsersCount();
+            });
+        });
+    }
+
+    function updateSelectedUsersCount() {
+        document.getElementById('selectedUsersCount').textContent = 
+            `${selectedUsers.size} users selected`;
+    }
+
+    // Share Coupon Handler
+    document.getElementById('shareCouponBtn').addEventListener('click', async function() {
+        if (!validateForm()) return;
+
+        const form = document.getElementById('shareCouponForm');
+        const data = {
+            subject: form.querySelector('[name="subject"]').value.trim(),
+            message: form.querySelector('[name="message"]').value.trim(),
+            share_with_all: form.querySelector('[name="share_with_all"]').checked,
+            selected_users: Array.from(selectedUsers)
+        };
+
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+
+        try {
+            const response = await fetch(`/useradmin/coupons/${currentCoupon.id}/share/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                toastr.success('Coupon shared successfully');
+                shareCouponModal.hide();
+            } else {
+                toastr.error(result.message || 'Failed to share coupon');
+            }
+        } catch (error) {
+            toastr.error('An error occurred while sharing the coupon');
+        } finally {
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Share Coupon';
+        }
+    });
+
+    function resetShareModal() {
+        const form = document.getElementById('shareCouponForm');
+        form.reset();
+        form.classList.remove('was-validated');
+        selectedUsers.clear();
+        updateSelectedUsersCount();
+        document.getElementById('userSearchInput').value = '';
+        document.getElementById('userSelectionContainer').style.display = 'block';
+    }
+});
+</script>
+<!-- end share coupon functionlity -->
+
 
 {% endblock content %}

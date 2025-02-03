@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 
 
-from core.models import CartOrder, CartOrderProducts, Product, Category, ProductReview, ProductImages, SupportTicket, Order_Review
+from core.models import *
 from userauths.models import Profile, User, ContactUs
 from useradmin.forms import AddProductForm, EditProductForm, CategoryForm, CouponForm, Coupon
 from useradmin.decorators import admin_required
@@ -26,7 +26,10 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django.db.models import Q 
 
-
+from django.views.decorators.http import require_http_methods
+from django.template.loader import render_to_string
+from .utils.email_thread import send_email_threaded
+from django.conf import settings
 
 @admin_required
 def dashboard(request):
@@ -776,3 +779,85 @@ def get_order_review_details(request, review_id):
 def get_unread_order_reviews_count(request):
     count = Order_Review.objects.filter(is_viewed=False).count()
     return JsonResponse({'count': count})
+
+
+
+@admin_required
+@require_http_methods(["POST"])
+def share_coupon(request, pk):
+    try:
+        coupon = get_object_or_404(Coupon, pk=pk)
+        data = json.loads(request.body)
+        
+        subject = data.get('subject')
+        message = data.get('message')
+        share_with_all = data.get('share_with_all', False)
+        selected_users = data.get('selected_users', [])
+
+
+        if not subject or not message:
+            return JsonResponse({
+                'success': False,
+                'message': 'Subject and message are required'
+            }, status=400)
+
+        # Get target users
+        if share_with_all:
+            users = User.objects.filter(is_active=True)
+        else:
+            if not selected_users:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'No recipients selected'
+                }, status=400)
+            users = User.objects.filter(id__in=selected_users, is_active=True)
+
+        # Send emails
+        for user in users:
+            html_message = render_to_string('useradmin/emails/coupon_share.html', {
+                
+                'user': user,
+                'coupon': coupon,
+                'message': message,
+                
+            })
+            
+            send_email_threaded(
+                subject=subject,
+                html_message=html_message,
+                recipient_list=[user.email]
+            )
+            
+            # Update coupon shared_with field
+            coupon.shared_with.add(user)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Coupon shared with {users.count()} users'
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@admin_required
+def get_users_list(request):
+    search = request.GET.get('search', '')
+    users = User.objects.filter(is_active=True)
+    
+    if search:
+        users = users.filter(
+            Q(username__icontains=search) |
+            Q(email__icontains=search)
+        )
+    
+    users_data = [{
+        'id': user.id,
+        'username': user.username,
+        'email': user.email
+    } for user in users[:100]]  # Limit to 100 users for performance
+    
+    return JsonResponse({'users': users_data})

@@ -366,6 +366,14 @@ class Coupon(models.Model):
     expiry_date = models.DateTimeField(null=True, blank=True)
     usage_limit = models.IntegerField(default=1)  # How many times the coupon can be used
     times_used = models.IntegerField(default=0)   # Track how many times it's been used
+
+    shared_with = models.ManyToManyField(User, related_name='received_coupons', blank=True)
+    shared_with_all = models.BooleanField(default=False)
+    last_shared_at = models.DateTimeField(null=True, blank=True)
+    email_subject = models.CharField(max_length=200, null=True, blank=True)
+    email_message = models.TextField(null=True, blank=True)
+    share_count = models.IntegerField(default=0)
+
     
     def is_valid(self):
         if not self.active:
