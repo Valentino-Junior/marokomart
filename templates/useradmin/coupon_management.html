@@ -81,6 +81,13 @@
                         <h5 class="card-title">{{ coupon.discount }}% OFF</h5>
                         <div class="coupon-actions">
                             <button class="btn btn-sm rounded-circle share-coupon" 
+                                    style="background-color: #4CAF50 !important; 
+                                           color: white !important;
+                                           transition: all 0.3s ease;
+                                           box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                                           margin-right: 5px;"
+                                    onmouseover="this.style.transform='rotate(20deg) scale(1.1)'"
+                                    onmouseout="this.style.transform='rotate(0deg) scale(1)'"
                                     data-id="{{ coupon.pk }}"
                                     data-code="{{ coupon.code }}"
                                     data-discount="{{ coupon.discount }}"
