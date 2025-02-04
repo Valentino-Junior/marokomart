@@ -1,5 +1,5 @@
 from ast import Add
-from core.models import Product, Category, CartOrder, ProductImages, ProductReview, wishlist_model, Address
+from core.models import *
 from django.db.models import Min, Max
 from django.contrib import messages
 
@@ -18,15 +18,8 @@ def default(request):
         wishlist = 0
 
     
-    
-    try:
-        address = Address.objects.get(user=request.user)
-    except:
-        address = None
-
     return {
         'categories':categories,
         'wishlist':wishlist,
-        'address':address,
         'min_max_price':min_max_price,
     }

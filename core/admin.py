@@ -91,9 +91,6 @@ class wishlistAdmin(admin.ModelAdmin):
     list_display = ['user', 'product', 'date']
 
 
-class AddressAdmin(admin.ModelAdmin):
-    list_editable = ['mobile', 'address']
-    list_display = ['user', 'mobile', 'address']
 
 
 class ShippingAddressAdmin(admin.ModelAdmin):
@@ -138,7 +135,6 @@ admin.site.register(CartOrder, CartOrderAdmin)
 admin.site.register(CartOrderProducts, CartOrderProductsAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(wishlist_model, wishlistAdmin)
-admin.site.register(Address, AddressAdmin)
 admin.site.register(Coupon)
 
 admin.site.register(ShippingAddress, ShippingAddressAdmin)

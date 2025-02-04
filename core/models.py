@@ -349,14 +349,6 @@ class wishlist_model(models.Model):
         return self.product.title
 
 
-class Address(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    mobile = models.CharField(max_length=300, null=True)
-    address = models.CharField(max_length=100, null=True)
-
-    class Meta:
-        verbose_name_plural = "Address"
-
 
 class Coupon(models.Model):
     code = models.CharField(max_length=1000, unique=True)
