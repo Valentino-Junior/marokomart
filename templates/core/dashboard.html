@@ -260,11 +260,13 @@
     
     .chart-selector:hover {
         background: blue;
+        color: white
     }
     
     .chart-selector:focus {
         outline: none;
         box-shadow: 0 0 0 2px rgba(59, 183, 126, 0.1);
+        color: black
     }
     
     .chart-container {
@@ -782,14 +784,14 @@
                     label: 'Orders',
                     data: orderData,
                     backgroundColor: type === 'pie' ? colors : 
-                                   type === 'line' ? 'rgba(59, 183, 126, 0.2)' : 
-                                   'rgba(59, 183, 126, 0.8)',
+                                   type === 'line' ? 'rgba(54, 162, 235, 0.2)' : 
+                                   'rgba(54, 162, 235, 0.8)',
                     borderColor: type === 'pie' ? colors.map(color => color.replace('0.8', '1')) : 
-                               'rgb(59, 183, 126)',
+                               'rgb(54, 162, 235)',
                     borderWidth: type === 'pie' ? 1 : 2,
                     fill: type === 'line',
                     tension: type === 'line' ? 0.4 : 0,
-                    pointBackgroundColor: type === 'line' ? 'rgb(59, 183, 126)' : null,
+                    pointBackgroundColor: type === 'line' ? 'rgba(54, 162, 235)' : null,
                     pointBorderColor: type === 'line' ? '#fff' : null,
                     pointRadius: type === 'line' ? 4 : 0,
                     pointHoverRadius: type === 'line' ? 6 : 0,
