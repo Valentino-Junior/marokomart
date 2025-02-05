@@ -175,26 +175,31 @@
                     
                 </ul>
                 <hr />
-                <ul class="menu-aside">
+                <!-- <ul class="menu-aside">
                     <li class="menu-item">
-                        <a class="menu-link" href="{% url 'useradmin:settings' %}">
+                        <a class="menu-link" href="#">
                             <i class="icon material-icons md-settings"></i>
                             <span class="text">Settings</span>
                         </a>
                     </li>
+
                     <li class="menu-item">
-                        <a class="menu-link" href="{% url 'useradmin:change_password' %}">
-                            <i class="icon material-icons md-lock"></i>
-                            <span class="text">Change Password</span>
+                        <a class="menu-link" href="#">
+                            <i class="icon material-icons md-account_balance_wallet"></i>
+                            <span class="text">Wallet</span>
                         </a>
                     </li>
+
+                    
                     <li class="menu-item">
-                        <a class="menu-link" href="{% url 'userauths:sign-out' %}">
-                            <i class="icon material-icons md-arrow_forward"></i>
-                            <span class="text">Logout</span>
+                        <a class="menu-link" href="#">
+                            <i class="icon material-icons md-help_outline"></i>
+                            <span class="text">Help center</span>
                         </a>
                     </li>
-                </ul>
+
+                  
+                </ul> -->
                 <br />
                 <br />
             </nav>
@@ -223,13 +228,10 @@
                                 {% endif %}
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                                <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
+                                <a class="dropdown-item" href="{% url 'useradmin:settings' %}"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
+                                <a class="dropdown-item" href="{% url 'useradmin:change_password' %}"><i class="material-icons md-perm_identity"></i>Change Password</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
+                                <a class="dropdown-item text-danger" href="{% url 'userauths:sign-out' %}"><i class="material-icons md-exit_to_app"></i>Logout</a>
                             </div>
                         </li>
                     </ul>
