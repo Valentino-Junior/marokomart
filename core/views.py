@@ -48,7 +48,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth import get_user_model
 
 
-from .utils import PayHeroConfig
+from .utils import PayHeroConfig, process_order_completion
 import json
 import requests
 
@@ -655,15 +655,22 @@ def create_checkout_session(request, oid):
 def apply_coupon_view(request):
     if request.method == "POST":
         try:
-            code = request.POST.get("code")
+            code = request.POST.get("code", '').strip()
             if not code:
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Please enter a coupon code'
                 })
 
-            cart_total = Decimal(request.POST.get("cart_total", "0"))
+            # Get and validate cart total
+            cart_total = Decimal(str(request.POST.get("cart_total", "0")).replace(',', ''))
+            if cart_total <= 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid cart total'
+                })
 
+            # Get coupon
             try:
                 coupon = Coupon.objects.get(code=code)
             except Coupon.DoesNotExist:
@@ -672,13 +679,41 @@ def apply_coupon_view(request):
                     'message': 'Invalid coupon code'
                 })
 
-            # Validate coupon
-            is_valid, message = coupon.is_valid()
-            if not is_valid:
+            # Check if coupon is active
+            if not coupon.active:
                 return JsonResponse({
                     'status': 'error',
-                    'message': message
+                    'message': 'This coupon is no longer active'
                 })
+
+            # Check expiry
+            if coupon.expiry_date and coupon.expiry_date < timezone.now():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'This coupon has expired'
+                })
+
+            # Check usage limit
+            if coupon.times_used >= coupon.usage_limit:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'This coupon has reached its usage limit'
+                })
+
+            # Check if user has already used this coupon
+            previous_orders = CartOrder.objects.filter(
+                user=request.user,
+                paid_status=True
+            )
+
+            for order in previous_orders:
+                if order.applied_coupons_data:  # Check if order has coupon data
+                    for coupon_info in order.applied_coupons_data:
+                        if isinstance(coupon_info, dict) and coupon_info.get('code') == code:
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': 'You have already used this coupon'
+                            })
 
             # Get or initialize coupon session data
             coupon_data = request.session.get('coupon_data', {
@@ -687,39 +722,38 @@ def apply_coupon_view(request):
                 'final_total': str(cart_total)
             })
 
-            # Check if any coupon is already applied
-            if any(c['code'] == code for c in coupon_data.get('applied_coupons', [])):
+            # Check if coupon already applied in current session
+            if any(c.get('code') == code for c in coupon_data.get('applied_coupons', [])):
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'This coupon has already been applied'
+                    'message': 'This coupon has already been applied to your cart'
                 })
 
             # Calculate discount
             discount_amount = (cart_total * Decimal(str(coupon.discount))) / Decimal('100')
-            
-            # If this is the first coupon, initialize total_saved
-            current_total_saved = Decimal(coupon_data.get('total_saved', '0'))
-            total_saved = current_total_saved + discount_amount
+            total_saved = Decimal(str(coupon_data.get('total_saved', '0'))) + discount_amount
             final_total = cart_total - total_saved
 
-            # Update coupon data
+            if final_total < 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Discount cannot exceed cart total'
+                })
+
+            # Update session data
             if 'applied_coupons' not in coupon_data:
                 coupon_data['applied_coupons'] = []
-                
+
             coupon_data['applied_coupons'].append({
                 'code': coupon.code,
-                'discount': coupon.discount
+                'discount': coupon.discount,
+                'discount_amount': str(discount_amount)
             })
             coupon_data['total_saved'] = str(total_saved)
             coupon_data['final_total'] = str(final_total)
-
-            # Save to session
+            
             request.session['coupon_data'] = coupon_data
             request.session.modified = True
-
-            # Increment coupon usage
-            coupon.times_used += 1
-            coupon.save()
 
             return JsonResponse({
                 'status': 'success',
@@ -731,9 +765,10 @@ def apply_coupon_view(request):
             })
 
         except Exception as e:
+            print(f"Error in apply_coupon_view: {str(e)}")
             return JsonResponse({
                 'status': 'error',
-                'message': f'Error applying coupon: {str(e)}'
+                'message': 'Error applying coupon. Please try again.'
             })
 
     return JsonResponse({
@@ -1017,6 +1052,11 @@ def payment_notification(sender, **kwargs):
                 if session_data.get('_auth_user_id') == str(user.id):
                     user_session = session
                     break
+            
+            if user_session:
+                request = type('Request', (), {'session': session, 'user': user})()
+                process_order_completion(order, request)
+
 
             if not user_session:
                 logger.error("No active session found")
@@ -1195,6 +1235,11 @@ def process_stripe_payment(request):
                     paid_status=True,
                     stripe_payment_intent=intent.id
                 )
+
+
+                # Process order completion and handle coupons
+                process_order_completion(order, request)
+                
 
                 # Create order items and update stock
                 for item in cart_data.values():
@@ -1502,6 +1547,9 @@ def mpesa_callback(request):
                             
                             logger.info(f"Created order: {order.id}")
 
+                            # Process order completion and handle coupons
+                            process_order_completion(order, request)
+
                             # Create order products
                             for item in payment.cart_data.values():
                                 CartOrderProducts.objects.create(
@@ -1614,6 +1662,11 @@ def cash_payment(request):
                 paid_status=False,
                 cart_data=cart_data
             )
+
+
+            # Process order completion and handle coupons
+            process_order_completion(order, request)
+            
 
             # Create order items
             for item in cart_data.values():

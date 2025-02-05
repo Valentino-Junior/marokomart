@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, LowStockAlert
+from .models import *
 from core.models import *
 
 
@@ -76,7 +76,23 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class CartOrderAdmin(admin.ModelAdmin):
     list_editable = ['paid_status', 'product_status', 'sku', 'is_viewed']
-    list_display = ['user',  'price', 'paid_status', 'payment_method', 'order_date','product_status', 'external_reference', 'sku', 'is_viewed']
+    list_display = ['user', 'get_initial_price','discount_amount', 'price', 'get_applied_coupons',
+                   'paid_status', 'payment_method', 'order_date', 'product_status', 
+                   'external_reference', 'sku', 'is_viewed']
+    list_filter = ['paid_status', 'product_status', 'payment_method', 'order_date']
+    search_fields = ['user__username', 'external_reference', 'sku']
+    readonly_fields = ['discount_amount', 'applied_coupons_data']
+
+    def get_initial_price(self, obj):
+        return obj.price + obj.discount_amount
+    get_initial_price.short_description = 'Initial Price'
+
+    def get_applied_coupons(self, obj):
+        if obj.applied_coupons_data:
+            return ', '.join([f"{coupon['code']} ({coupon['discount']}%)" 
+                            for coupon in obj.applied_coupons_data])
+        return '-'
+    get_applied_coupons.short_description = 'Applied Coupons'
 
 
 class CartOrderProductsAdmin(admin.ModelAdmin):
@@ -126,7 +142,71 @@ class PayHeroPaymentAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ['code', 'discount', 'get_active_status', 'get_usage_stats', 
+                   'get_expiry_status', 'get_shared_status', 'created_at']
+    list_filter = ['active', 'shared_with_all', 'created_at']
+    search_fields = ['code', 'email_subject']
+    filter_horizontal = ['shared_with']
+    readonly_fields = ['created_at', 'times_used', 'share_count', 'last_shared_at']
     
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('code', 'discount', 'active', 'usage_limit', 'times_used')
+        }),
+        ('Validity', {
+            'fields': ('created_at', 'expiry_date')
+        }),
+        ('Sharing Settings', {
+            'fields': ('shared_with_all', 'shared_with', 'share_count', 'last_shared_at')
+        }),
+        ('Email Template', {
+            'fields': ('email_subject', 'email_message'),
+            'classes': ('collapse',)
+        })
+    )
+
+    def get_active_status(self, obj):
+        if obj.active:
+            return '✔ Active'
+        return '✘ Inactive'
+    get_active_status.short_description = 'Status'
+
+    def get_usage_stats(self, obj):
+        return f'{obj.times_used} / {obj.usage_limit}'
+    get_usage_stats.short_description = 'Usage'
+
+    def get_expiry_status(self, obj):
+        if not obj.expiry_date:
+            return 'No Expiry'
+        return str(obj.expiry_date)
+    get_expiry_status.short_description = 'Expiry Status'
+
+    def get_shared_status(self, obj):
+        if obj.shared_with_all:
+            return 'Shared with All'
+        shared_count = obj.shared_with.count()
+        if shared_count > 0:
+            return f'Shared with {shared_count} users'
+        return 'Not Shared'
+    get_shared_status.short_description = 'Sharing Status'
+
+
+
+@admin.register(CouponUsage)
+class CouponUsageAdmin(admin.ModelAdmin):
+    list_display = ['user', 'coupon', 'order', 'used_at']
+    list_filter = ['used_at']
+    search_fields = ['user__username', 'coupon__code']
+    
+  
+
+    
+
+
 
 admin.site.register(LowStockAlert, LowStockAlertAdmin)
 admin.site.register(Product, ProductAdmin)
@@ -135,7 +215,6 @@ admin.site.register(CartOrder, CartOrderAdmin)
 admin.site.register(CartOrderProducts, CartOrderProductsAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(wishlist_model, wishlistAdmin)
-admin.site.register(Coupon)
 
 admin.site.register(ShippingAddress, ShippingAddressAdmin)
 

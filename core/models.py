@@ -263,6 +263,9 @@ class CartOrder(models.Model):
     date = models.DateTimeField(default=timezone.now, null=True, blank=True)
     is_viewed = models.BooleanField(default=False)
 
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default="0.00")
+    applied_coupons_data = models.JSONField(null=True, blank=True)  # To store coupon details
+
 
     @classmethod
     def get_unread_count(cls):
@@ -287,6 +290,24 @@ class CartOrder(models.Model):
                             product.save()
                     except Product.DoesNotExist:
                         continue
+        super().save(*args, **kwargs)
+
+
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_order = CartOrder.objects.get(pk=self.pk)
+            # If payment status changed from False to True
+            if not old_order.paid_status and self.paid_status:
+                # Record coupon usage
+                if self.applied_coupons_data:
+                    for coupon_data in self.applied_coupons_data:
+                        try:
+                            coupon = Coupon.objects.get(code=coupon_data['code'])
+                            coupon.times_used += 1
+                            coupon.save()
+                        except Coupon.DoesNotExist:
+                            continue
         super().save(*args, **kwargs)
 
 
@@ -392,7 +413,19 @@ class Coupon(models.Model):
         return f"{self.code} ({self.discount}% off)"
     
 
+class CouponUsage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
+    used_at = models.DateTimeField(auto_now_add=True)
+    order = models.ForeignKey(CartOrder, on_delete=models.SET_NULL, null=True)
+    
+    class Meta:
+        unique_together = ('user', 'coupon')
+        
+    def __str__(self):
+        return f"{self.user.username} - {self.coupon.code}"
 
+        
 
 class Order_Review(models.Model):
     RATING_CHOICES = (
