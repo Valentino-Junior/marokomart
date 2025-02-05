@@ -656,6 +656,12 @@ def apply_coupon_view(request):
     if request.method == "POST":
         try:
             code = request.POST.get("code")
+            if not code:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Please enter a coupon code'
+                })
+
             cart_total = Decimal(request.POST.get("cart_total", "0"))
 
             try:
@@ -681,20 +687,25 @@ def apply_coupon_view(request):
                 'final_total': str(cart_total)
             })
 
-            # Check if already applied
-            if any(c['code'] == code for c in coupon_data['applied_coupons']):
+            # Check if any coupon is already applied
+            if any(c['code'] == code for c in coupon_data.get('applied_coupons', [])):
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'Coupon already applied'
+                    'message': 'This coupon has already been applied'
                 })
 
             # Calculate discount
-            discount_amount = (
-                cart_total * Decimal(str(coupon.discount))) / Decimal('100')
-            total_saved = Decimal(coupon_data['total_saved']) + discount_amount
+            discount_amount = (cart_total * Decimal(str(coupon.discount))) / Decimal('100')
+            
+            # If this is the first coupon, initialize total_saved
+            current_total_saved = Decimal(coupon_data.get('total_saved', '0'))
+            total_saved = current_total_saved + discount_amount
             final_total = cart_total - total_saved
 
             # Update coupon data
+            if 'applied_coupons' not in coupon_data:
+                coupon_data['applied_coupons'] = []
+                
             coupon_data['applied_coupons'].append({
                 'code': coupon.code,
                 'discount': coupon.discount
@@ -704,6 +715,11 @@ def apply_coupon_view(request):
 
             # Save to session
             request.session['coupon_data'] = coupon_data
+            request.session.modified = True
+
+            # Increment coupon usage
+            coupon.times_used += 1
+            coupon.save()
 
             return JsonResponse({
                 'status': 'success',
@@ -717,7 +733,7 @@ def apply_coupon_view(request):
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
-                'message': str(e)
+                'message': f'Error applying coupon: {str(e)}'
             })
 
     return JsonResponse({
