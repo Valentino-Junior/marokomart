@@ -1562,8 +1562,8 @@
                                         <ul>
                                             <li><a href="{% url 'core:dashboard' %}"><i
                                                         class="fi fi-rs-user mr-10"></i>My Account</a></li>
-                                            <li><a href="{% url 'useradmin:dashboard' %}"><i
-                                                        class="fi fi-rs-user mr-10"></i>Admin Dashboard</a></li>
+                                            <!-- <li><a href="{% url 'useradmin:dashboard' %}"><i
+                                                        class="fi fi-rs-user mr-10"></i>Admin Dashboard</a></li> -->
 
                                             {% if request.user.is_authenticated %}
                                             <li><a href="{% url 'userauths:sign-out' %}"><i
@@ -1791,8 +1791,8 @@
                                 <a href="#">Account</a>
                                 <ul class="dropdown">
                                     <li><a href="{% url 'core:dashboard' %}">My Account</a></li>
-                                    <li><a href="{% url 'useradmin:dashboard' %}"><i
-                                                class="fi fi-rs-user mr-10"></i>Admin Dashboard</a></li>
+                                    <!-- <li><a href="{% url 'useradmin:dashboard' %}"><i
+                                                class="fi fi-rs-user mr-10"></i>Admin Dashboard</a></li> -->
                                     {% if request.user.is_authenticated %}
                                     <li><a href="{% url 'userauths:sign-out' %}"><i
                                                 class="fi fi-rs-sign-out mr-10"></i>Sign out</a></li>
