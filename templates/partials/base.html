@@ -1484,9 +1484,141 @@
 
 
 
+<!-- start Test Mode Banner Styles -->
+<style>
+    .demo-mode-banner {
+        background: linear-gradient(90deg, #FF4E50, #F9D423);
+        color: white;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        padding: 0;
+        z-index: 1000;
+        height: 40px; /* Increased height */
+        line-height: 40px; /* Match height for vertical centering */
+    }
+    
+    .demo-mode-scroll {
+        display: flex;
+        position: absolute;
+        white-space: nowrap;
+        animation: scroll 20s linear infinite;
+        animation-delay: -20s;
+        height: 100%;
+    }
+    
+    .demo-mode-scroll:nth-child(2) {
+        animation: scroll2 20s linear infinite;
+    }
+    
+    .demo-mode-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 30px;
+        font-size: 16px; /* Increased font size */
+        height: 100%;
+    }
+    
+    .demo-mode-banner i {
+        animation: pulse 2s infinite;
+        font-size: 18px; /* Increased icon size */
+    }
+    
+    @keyframes scroll {
+        from {
+            transform: translateX(100%);
+        }
+        to {
+            transform: translateX(-100%);
+        }
+    }
+    
+    @keyframes scroll2 {
+        from {
+            transform: translateX(0%);
+        }
+        to {
+            transform: translateX(-200%);
+        }
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .demo-mode-banner {
+            height: 36px; /* Slightly smaller height on mobile */
+            line-height: 36px;
+        }
+        
+        .demo-mode-content {
+            font-size: 14px;
+            padding: 0 20px;
+        }
+        
+        .demo-mode-banner i {
+            font-size: 16px;
+        }
+    }
+    </style>
+<!-- end Test Mode Banner Styles -->
+
+
+
 </head>
 
 <body>
+
+
+    <!-- start Test Mode Banners -->
+
+    <div class="demo-mode-banner">
+        <!-- First instance of scrolling content -->
+        <div class="demo-mode-scroll">
+            <div class="demo-mode-content">
+                <i class="fas fa-flask"></i>
+                <span>Demo Mode</span>
+            </div>
+            <div class="demo-mode-content">
+                <i class="fas fa-flask"></i>
+                <span>Demo Mode </span>
+            </div>
+            <div class="demo-mode-content">
+                <i class="fas fa-flask"></i>
+                <span>Demo Mode </span>
+            </div>
+        </div>
+        
+        <!-- Second instance for smooth infinite scroll -->
+        <div class="demo-mode-scroll">
+            <div class="demo-mode-content">
+                <i class="fas fa-flask"></i>
+                <span>Demo Mode Active</span>
+            </div>
+            <div class="demo-mode-content">
+                <i class="fas fa-flask"></i>
+                <span>Demo Mode Active</span>
+            </div>
+            <div class="demo-mode-content">
+                <i class="fas fa-flask"></i>
+                <span>Demo Mode Active</span>
+            </div>
+        </div>
+    </div>
+    <!-- end Test Mode Banners -->
+
+
+
 
     <header class="header-area header-style-1 header-height-2">
     
