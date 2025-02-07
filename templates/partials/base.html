@@ -1857,7 +1857,7 @@
                             <input 
                                 type="text" 
                                 class="wakil-search-input"
-                                placeholder="Search for drinks..." 
+                                placeholder="Search for products, brands and categories..." 
                                 name="q" 
                                 autocomplete="off"
                                 style="color: black;" 
@@ -1967,7 +1967,7 @@
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-twitter-white.svg' %}" alt="" /></a>
                     <a href="#"><img src="{% static 'assets/imgs/theme/icons/icon-instagram-white.svg' %}" alt="" /></a>
                 </div>
-                <div class="site-copyright">Copyright 2024 - Maroko mart. All rights reserved.</div>
+                <div class="site-copyright">© {% now "Y" %} - Maroko mart. All rights reserved.</div>
             </div>
         </div>
     </div>
@@ -2080,7 +2080,7 @@
             <div class="mm-footer-bottom">
                 <div class="container">
                     <div class="mm-bottom-content">
-                        <p class="mm-copyright animate-fade-in">© 2024 <strong>Maroko Mart</strong>. All rights reserved</p>
+                        <p class="mm-copyright animate-fade-in">© {% now "Y" %} <strong>Maroko Mart</strong>. All rights reserved</p>
                         <div class="mm-social-links">
                             <a href="#" class="mm-social-icon facebook" aria-label="Facebook">
                                 <i class="fab fa-facebook-f"></i>
