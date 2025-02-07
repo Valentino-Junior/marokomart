@@ -67,7 +67,7 @@ def send_verification_email(user, verification_url, request):
 
         email_sender = EmailSender()
         return email_sender.send_email(
-            subject="[Important] Verify Your Email Address",
+            subject="Verify Your Email Address",
             body="Please verify your email address by clicking the link in this email.",
             recipient_list=[user.email],
             html_content=html_content
