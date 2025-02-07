@@ -20,6 +20,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 
+from .utils import send_verification_email, send_password_reset_email
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 # User = settings.AUTH_USER_MODEL
@@ -68,10 +73,10 @@ def register_view(request):
             try:
                 # Create user but don't save yet
                 new_user = form.save(commit=False)
-                new_user.is_active = False  # Deactivate account until verification
+                new_user.is_active = False
                 new_user.email_verification_token = get_random_string(64)
                 new_user.date_of_birth = form.cleaned_data['date_of_birth']
-                new_user.user_type = 'CLIENT'  # Set default user type
+                new_user.user_type = 'CLIENT'
                 new_user.save()
 
                 # Generate verification URL
@@ -82,33 +87,23 @@ def register_view(request):
                     })
                 )
 
-                # Prepare email content
-                context = {
-                    'user': new_user,
-                    'verification_url': verification_url,
-                    'domain': request.get_host(),
-                }
-
-                # Render email template
-                email_html_content = render_to_string(
-                    'userauths/emails/verification_email.html', 
-                    context
-                )
-
-                # Send verification email in a separate thread
-                send_email_with_thread(
-                    subject="Verify Your Email Address",
-                    body="Please verify your email address by clicking the link in this email.",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[new_user.email],
-                    html_content=email_html_content
-                )
-
-                messages.success(
-                    request, 
-                    f"Hi {new_user.username}, please check your email to verify your account."
-                )
-                return redirect('userauths:verification-sent')
+                # Send verification email
+                try:
+                    send_verification_email(new_user, verification_url, request)
+                    messages.success(
+                        request, 
+                        f"Hi {new_user.username}, please check your email to verify your account."
+                    )
+                    return redirect('userauths:verification-sent')
+                
+                except Exception as email_error:
+                    print(f"Email sending failed: {str(email_error)}")
+                    new_user.delete()
+                    messages.error(
+                        request, 
+                        "Registration failed due to email service error. Please try again."
+                    )
+                    return redirect('userauths:sign-up')
                 
             except Exception as e:
                 print(f"Registration error: {str(e)}")
@@ -131,18 +126,30 @@ def register_view(request):
 
 def verify_email(request, user_id, token):
     try:
+        print(f"Verifying email for user_id: {user_id}, token: {token}")
         user = User.objects.get(id=user_id, email_verification_token=token)
+        
         if not user.is_email_verified:
+            print("User found and not verified yet")
             user.is_email_verified = True
             user.is_active = True
-            user.email_verification_token = None  # Clear the token
+            user.email_verification_token = None
             user.save()
+            print("User verified successfully")
             messages.success(request, "Your email has been verified. You can now login.")
         else:
+            print("User already verified")
             messages.info(request, "Your email was already verified.")
+            
         return redirect('userauths:sign-in')
+        
     except User.DoesNotExist:
+        print("User not found or token mismatch")
         messages.error(request, "Invalid verification link.")
+        return redirect('userauths:sign-up')
+    except Exception as e:
+        print(f"Verification error: {str(e)}")
+        messages.error(request, "Verification failed. Please try again.")
         return redirect('userauths:sign-up')
     
 
@@ -273,37 +280,21 @@ def password_reset_request(request):
         try:
             user = User.objects.get(email=email)
             
-            # Generate the reset token and URL
+            # Generate reset token and URL
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             
-            # Build the absolute URL for password reset
-            domain = request.get_host()
-            protocol = 'https' if request.is_secure() else 'http'
-            reset_url = f"{protocol}://{domain}{reverse('userauths:password-reset-confirm', kwargs={'uidb64': uid, 'token': token})}"
-            
-            # Context for email template
-            context = {
-                "user": user,
-                "reset_url": reset_url,
-                "domain": domain,
-            }
-            
-            # Render email content
-            email_html_content = render_to_string(
-                "userauths/emails/password_reset_email.html", 
-                context
+            # Build the reset URL
+            reset_url = request.build_absolute_uri(
+                reverse('userauths:password-reset-confirm', kwargs={
+                    'uidb64': uid, 
+                    'token': token
+                })
             )
             
             try:
-                # Send password reset email in a separate thread
-                send_email_with_thread(
-                    subject="Password Reset Request",
-                    body="Please reset your password by clicking the link in this email.",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    html_content=email_html_content
-                )
+                # Use the utility function to send email
+                send_password_reset_email(user, reset_url, request)
                 
                 return JsonResponse({
                     'success': True,
@@ -318,14 +309,19 @@ def password_reset_request(request):
                 })
                 
         except User.DoesNotExist:
-            # For security reasons, don't reveal if email exists or not
+            # Don't reveal if email exists
             return JsonResponse({
                 'success': True,
                 'message': 'If an account exists with this email, you will receive password reset instructions.'
             })
+        except Exception as e:
+            print(f"Password reset error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred. Please try again later.'
+            })
     
     return render(request, "userauths/password_reset.html")
-
 
 
 def password_reset_confirm(request, uidb64, token):
