@@ -5,8 +5,8 @@ from .models import Coupon, CouponUsage
 class PayHeroConfig:
     @staticmethod
     def generate_auth_token():
-        username = "ZOE6GtrwIi9PeRy5UtjB"  # Replace with your username
-        password = "AQjrk2UH0OC4crhB5UfTO3ZMZZ7OTMcBpUGPEZxW"
+        username = "vmb99lVKaTQpHOYyR2Mq"  # Replace with your username
+        password = "8iDRZunX6SaPeM8mqS7kOtRKnsZlkSz5EUSpLZjY"
         credentials = f"{username}:{password}"
         return f"Basic {base64.b64encode(credentials.encode()).decode()}"
 

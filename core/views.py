@@ -1349,7 +1349,7 @@ def mpesa_payment(request):
             payload = {
                 "amount": final_total,
                 "phone_number": phone,
-                "channel_id": 1351,
+                "channel_id": 1493,
                 "provider": "m-pesa",
                 "external_reference": external_reference,
                 "customer_name": shipping_address.full_name,
