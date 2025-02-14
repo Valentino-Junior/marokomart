@@ -30,8 +30,10 @@ from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
 from .utils.email_thread import send_email_threaded
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 
-@admin_required
+
+@user_passes_test(admin_required)
 def dashboard(request):
     time_period = request.GET.get('time_period', 'total')
     
@@ -111,16 +113,21 @@ def dashboard(request):
             order__paid_status=True
         ).values('item').annotate(total_sold=Sum('qty')).order_by('-total_sold')[:5]
 
-    # Get the product titles for the top-selling products
-    top_selling_products = [
-        {
-            'title': Product.objects.filter(title=product['item']).first().title,
-            'total_sold': product['total_sold']
-        }
-        for product in top_selling_products
-    ]
-
-
+    # Get the product titles for the top-selling products with error handling
+    top_selling_products_list = []
+    for product in top_selling_products:
+        product_obj = Product.objects.filter(title=product['item']).first()
+        if product_obj:  # Only add if product still exists
+            top_selling_products_list.append({
+                'title': product_obj.title,
+                'total_sold': product['total_sold']
+            })
+        else:
+            # Handle deleted products
+            top_selling_products_list.append({
+                'title': f"{product['item']} (Deleted)",
+                'total_sold': product['total_sold']
+            })
     
     # Get products data and check for low stock
     all_products = Product.objects.all()
@@ -147,7 +154,7 @@ def dashboard(request):
         'total_sales': total_sales,
         'total_profit': total_profit,
         'products_count': products_count,
-        'top_selling_products': top_selling_products,
+        'top_selling_products': top_selling_products_list,
         'orders_summary': {
             'total_count': total_orders,
             'paid_count': paid_orders_count,
