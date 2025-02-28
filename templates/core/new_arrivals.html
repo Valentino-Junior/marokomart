@@ -2,6 +2,25 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .subcategory-badge {
+    display: inline-block;
+    background-color: #f1f1f1;
+    color: #555;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.subcategory-badge:hover {
+    background-color: #e6f3ff;
+    border-color: #c0d9ff;
+    color: blue;
+}
+</style>
+
 <main class="main pages">
     <div class="page-header breadcrumb-wrap">
         <div class="container">
@@ -84,6 +103,9 @@
                             <div class="product-content-wrap">
                                 <div class="product-category">
                                     <a href="/category/{{p.category.cid}}/">{{ p.category.title }}</a>
+                                    {% if p.subcategory %}
+                                    <span class="subcategory-badge">{{ p.subcategory }}</span>
+                                    {% endif %}
                                 </div>
 
                                 <h2><a href="{% url 'core:product-detail' p.pid %}">{{ p.title }}</a></h2>

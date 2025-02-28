@@ -55,7 +55,32 @@
 
             <div class="product-content-wrap">
                 <div class="product-category">
-                    <a href="/category/{{p.category.cid}}/">{{ p.category.title }}</a>
+                    <a href="/category/{{p.category.cid}}/">{{ p.category.title }}</a> 
+                    
+                    {% if p.subcategory %}
+                    <span class="subcategory-badge">{{ p.subcategory }}</span>
+                    {% endif %}
+
+                    <style>
+                        .subcategory-badge {
+                            display: inline-block;
+                            background-color: #f0f0f0;
+                            color: #666;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 0.75rem;
+                            margin-left: 8px;
+                            border: 1px solid #ddd;
+                            transition: all 0.3s ease;
+                        }
+
+                        .subcategory-badge:hover {
+                            background-color: #e0e0e0;
+                            color: #333;
+                            transform: translateY(-1px);
+                        }
+                    </style>
+                    
                 </div>
 
                 <h2><a href="{% url 'core:product-detail' p.pid %}">{{ p.title }}</a></h2>

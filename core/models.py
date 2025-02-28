@@ -65,8 +65,12 @@ class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, related_name="category")
+    
 
-    title = models.CharField(max_length=100, default="Fresh Pear")
+    subcategory = models.CharField(max_length=100, blank=True, null=True)
+
+
+    title = models.CharField(max_length=100, default="Title")
     image = models.ImageField(
         upload_to=user_directory_path, default="product.jpg")
     

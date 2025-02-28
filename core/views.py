@@ -127,6 +127,16 @@ def product_list_view(request):
     """Main view for product list page"""
     products = Product.objects.filter(product_status="published")
     sort_by = request.GET.get('sort_by', '')
+    
+    # Category filter
+    category_id = request.GET.get('category', '')
+    if category_id:
+        products = products.filter(category__cid=category_id)
+    
+    # Add subcategory filter
+    subcategory = request.GET.get('subcategory', '')
+    if subcategory:
+        products = products.filter(subcategory__icontains=subcategory)
 
     # Apply sorting
     if sort_by == 'price_low_high':
@@ -135,10 +145,16 @@ def product_list_view(request):
         products = products.order_by('-price', '-id')
     else:
         products = products.order_by("-id")
+        
+    # Get all unique subcategories for filtering
+    subcategories = Product.objects.exclude(subcategory__isnull=True).exclude(subcategory='').values_list('subcategory', flat=True).distinct()
 
     context = {
         "products": products,
         "current_sort": sort_by,
+        "subcategories": subcategories,
+        "selected_subcategory": subcategory,
+        "selected_category": category_id,
     }
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -229,9 +245,31 @@ def product_detail_view(request, pid):
     product_images = ProductImages.objects.filter(
         product=product).order_by('date')
 
-    # Get related products
-    products = Product.objects.filter(
-        category=product.category).exclude(pid=pid)
+    # Get related products - first by subcategory, then by category
+    if product.subcategory:
+        # First try to get products from same subcategory
+        subcategory_products = Product.objects.filter(
+            subcategory=product.subcategory
+        ).exclude(pid=pid).order_by('?')[:4]  # Randomly select 4
+        
+        # If not enough, add some from the same category
+        if subcategory_products.count() < 4:
+            category_products = Product.objects.filter(
+                category=product.category
+            ).exclude(
+                pid=pid
+            ).exclude(
+                pid__in=[p.pid for p in subcategory_products]
+            ).order_by('?')[:4-subcategory_products.count()]
+            
+            related_products = list(subcategory_products) + list(category_products)
+        else:
+            related_products = subcategory_products
+    else:
+        # If no subcategory, get related by category only
+        related_products = Product.objects.filter(
+            category=product.category
+        ).exclude(pid=pid).order_by('?')[:4]
 
     # Get all reviews for the product
     reviews = ProductReview.objects.filter(product=product).order_by("-date")
@@ -295,7 +333,7 @@ def product_detail_view(request, pid):
         "review_form": ProductReviewForm(),
         "average_rating": average_rating,
         "reviews": reviews,
-        "products": products,
+        "products": related_products,  # Use our enhanced related products
         "total_reviews": reviews.count(),
         "rating_bars": rating_bars,
     }
@@ -335,19 +373,30 @@ def ajax_add_review(request, pid):
 def search_view(request):
     query = request.GET.get("q", "")
     category_id = request.GET.get("category", "")
+    subcategory = request.GET.get("subcategory", "")
 
     products = Product.objects.all()
 
     # Filter by search query if provided
     if query:
-        products = products.filter(title__icontains=query)
+        products = products.filter(
+            Q(title__icontains=query) |
+            Q(subcategory__icontains=query)  # Also search in subcategory
+        )
 
     # Filter by category if selected
     if category_id:
         products = products.filter(category__cid=category_id)
+        
+    # Filter by subcategory if selected
+    if subcategory:
+        products = products.filter(subcategory__icontains=subcategory)
 
     # Get all categories for the dropdown
     categories = Category.objects.all()
+    
+    # Get all unique subcategories for the dropdown
+    subcategories = Product.objects.exclude(subcategory__isnull=True).exclude(subcategory='').values_list('subcategory', flat=True).distinct()
 
     # Get the selected category for display
     selected_category = None
@@ -358,7 +407,9 @@ def search_view(request):
         "products": products.order_by("-date"),
         "query": query,
         "categories": categories,
+        "subcategories": subcategories,
         "selected_category": selected_category,
+        "selected_subcategory": subcategory,
         "current_category": category_id,
     }
     return render(request, "core/search.html", context)
@@ -2308,6 +2359,14 @@ def special_offers_view(request):
             x, 'saving_percentage', 0), reverse=True)
     else:  # ending_soon
         special_offers.sort(key=lambda x: x.special_offer_ends)
+        
+    # Additional filter for subcategory (if needed)
+    subcategory = request.GET.get('subcategory', '')
+    if subcategory:
+        special_offers = [p for p in special_offers if p.subcategory == subcategory]
+        
+    # Get all unique subcategories for filtering
+    subcategories = list(set(p.subcategory for p in special_offers if p.subcategory))
 
     context = {
         'products': special_offers,
@@ -2316,7 +2375,9 @@ def special_offers_view(request):
         'product_count': len(special_offers),
         'ending_soon_count': len(ending_soon),
         'total_savings': total_savings,
-        'sort_by': sort_by
+        'sort_by': sort_by,
+        'subcategories': subcategories,  # Add subcategories to context
+        'selected_subcategory': subcategory  # Add currently selected subcategory
     }
 
     # Handle AJAX requests

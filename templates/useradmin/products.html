@@ -33,6 +33,12 @@
 
                 <div class="col-lg-3 col-md-3">
                     <form id="categoryForm" method="get">
+                        {% if search_query %}
+                        <input type="hidden" name="search" value="{{ search_query }}">
+                        {% endif %}
+                        {% if selected_subcategory %}
+                        <input type="hidden" name="subcategory" value="{{ selected_subcategory }}">
+                        {% endif %}
                         <select class="form-select" name="category" onchange="this.form.submit()">
                             <option value="all">All Categories</option>
                             {% for category in all_categories %}
@@ -44,14 +50,27 @@
                     </form>
                 </div>
 
-                <!-- <div class="col-lg-2 col-md-3">
-                    <select class="form-select" name="status" id="status-filter">
-                        <option value="">All Status</option>
-                        <option value="published" {% if selected_status == 'published' %}selected{% endif %}>Published</option>
-                        <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Draft</option>
-                    </select>
-                </div> -->
-
+                <!-- Add subcategory filter after category filter -->
+                <div class="col-lg-3 col-md-3">
+                    <form id="subcategoryForm" method="get">
+                        <!-- Preserve other filter parameters -->
+                        {% if selected_category %}
+                        <input type="hidden" name="category" value="{{ selected_category }}">
+                        {% endif %}
+                        {% if search_query %}
+                        <input type="hidden" name="search" value="{{ search_query }}">
+                        {% endif %}
+                        
+                        <select class="form-select" name="subcategory" onchange="this.form.submit()">
+                            <option value="">All Subcategories</option>
+                            {% for subcategory in all_subcategories %}
+                                <option value="{{ subcategory }}" {% if selected_subcategory == subcategory %}selected{% endif %}>
+                                    {{ subcategory }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
             </div>
         </header>
 
@@ -81,9 +100,14 @@
                             <span class="low-stock-badge">Low Stock</span>
                             {% endif %}
                         </div>
+                        <!-- Display subcategory information -->
                         <div class="col-lg-2 col-sm-2 col-4">
-                            <span class="status-badge status-{{p.product_status}}">
-                                {{p.product_status|title}}
+                            <span class="subcategory">
+                                {% if p.subcategory %}
+                                    {{ p.subcategory }}
+                                {% else %}
+                                    -
+                                {% endif %}
                             </span>
                         </div>
                         <div class="col-lg-2 col-sm-2 col-4">
@@ -112,7 +136,6 @@
         </div>
     </div>
 </section>
-
 
 <style>
 /* Card Styles */
@@ -187,21 +210,21 @@
     color: blue;
 }
 
+/* Subcategory Styles */
+.subcategory {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
 /* Status Badge Styles */
 .status-badge {
     padding: 0.4rem 0.8rem;
     border-radius: 30px;
     font-size: 0.85rem;
-}
-
-.status-published {
-    background: #e8f5e9;
-    color: blue;
-}
-
-.status-draft {
-    background: #eeeeee;
-    color: #616161;
 }
 
 .low-stock-badge {
@@ -255,31 +278,29 @@
 }
 </style>
 
-
-<script>
-// Filter change handlers
-document.getElementById('category-filter').addEventListener('change', function() {
-    this.form.submit();
-});
-
-document.getElementById('status-filter').addEventListener('change', function() {
-    this.form.submit();
-});
-</script>
-
-
 <script>
     document.querySelector('select[name="category"]').addEventListener('change', function() {
-    const searchQuery = new URLSearchParams(window.location.search).get('search');
-    if (searchQuery) {
-        const form = this.closest('form');
-        const searchInput = document.createElement('input');
-        searchInput.type = 'hidden';
-        searchInput.name = 'search';
-        searchInput.value = searchQuery;
-        form.appendChild(searchInput);
-    }
-});
+        const searchQuery = new URLSearchParams(window.location.search).get('search');
+        const subcategoryQuery = new URLSearchParams(window.location.search).get('subcategory');
+        
+        if (searchQuery) {
+            const form = this.closest('form');
+            const searchInput = document.createElement('input');
+            searchInput.type = 'hidden';
+            searchInput.name = 'search';
+            searchInput.value = searchQuery;
+            form.appendChild(searchInput);
+        }
+        
+        if (subcategoryQuery) {
+            const form = this.closest('form');
+            const subcategoryInput = document.createElement('input');
+            subcategoryInput.type = 'hidden';
+            subcategoryInput.name = 'subcategory';
+            subcategoryInput.value = subcategoryQuery;
+            form.appendChild(subcategoryInput);
+        }
+    });
 </script>
 
 {% endblock content %}

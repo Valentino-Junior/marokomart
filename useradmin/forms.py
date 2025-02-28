@@ -82,6 +82,16 @@ class EditProductForm(forms.ModelForm):
             'accept': 'image/*'
         })
     )
+
+
+    subcategory = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': "Subcategory (e.g. Men, Women, Kids, etc.)", 
+            "class":"form-control"
+        })
+    )
+    
     
     # Special Offer Fields
     is_special_offer = forms.BooleanField(required=False)
@@ -132,6 +142,7 @@ class EditProductForm(forms.ModelForm):
             'stock_count',
             'low_stock_threshold',
             'category',
+            'subcategory',
             'is_special_offer',
             'special_offer_price',
             'special_offer_ends',
@@ -154,6 +165,15 @@ class AddProductForm(forms.ModelForm):
         widget=MultipleFileInput(attrs={
             'class': 'form-control',
             'accept': 'image/*'
+        })
+    )
+
+
+    subcategory = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': "Subcategory (e.g. Men, Women, Kids, etc.)", 
+            "class":"form-control"
         })
     )
 
@@ -196,6 +216,7 @@ class AddProductForm(forms.ModelForm):
             'stock_count',
             'low_stock_threshold',
             'category',
+            'subcategory',
             'is_special_offer',
             'special_offer_price',
             'special_offer_ends',

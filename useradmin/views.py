@@ -232,7 +232,8 @@ def products(request):
     if search_query:
         products = products.filter(
             Q(title__icontains=search_query) |
-            Q(sku__icontains=search_query)
+            Q(sku__icontains=search_query) |
+            Q(subcategory__icontains=search_query)  # Also search in subcategory
         )
 
     # Category filter
@@ -240,10 +241,20 @@ def products(request):
     if category and category != 'all':
         products = products.filter(category__cid=category)
 
+    # Subcategory filter
+    subcategory = request.GET.get('subcategory', '')
+    if subcategory:
+        products = products.filter(subcategory__icontains=subcategory)
+
+    # Get all unique subcategories for the filter dropdown
+    subcategories = Product.objects.exclude(subcategory__isnull=True).exclude(subcategory='').values_list('subcategory', flat=True).distinct()
+
     context = {
         "all_products": products,
         "all_categories": categories,
+        "all_subcategories": subcategories,
         "selected_category": category,
+        "selected_subcategory": subcategory,
     }
     return render(request, "useradmin/products.html", context)
 
